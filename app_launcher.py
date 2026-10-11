@@ -2,12 +2,18 @@ import os
 import sys
 import json
 import urllib.request
-import subprocess
-import tempfile
 import webbrowser
 import webview
 
 REPO = "mertahmet41/Velocity-Control-Hub"
+
+def is_newer_version(latest_tag, current_tag):
+    try:
+        l_parts = [int(x) for x in latest_tag.lstrip('v').split('.')]
+        c_parts = [int(x) for x in current_tag.lstrip('v').split('.')]
+        return l_parts > c_parts
+    except Exception:
+        return latest_tag != current_tag and latest_tag != ""
 
 class HubApi:
     def __init__(self):
@@ -30,13 +36,13 @@ class HubApi:
                 body = data.get("body", "")
                 html_url = data.get("html_url", "")
                 
-                download_url = html_url
+                download_url = f"https://github.com/{REPO}/releases/latest"
                 for asset in data.get("assets", []):
                     if asset.get("name", "").lower().endswith(".exe"):
                         download_url = asset.get("browser_download_url")
                         break
                 
-                has_update = (latest_tag != "" and latest_tag != current_version)
+                has_update = is_newer_version(latest_tag, current_version)
                 return {
                     "success": True,
                     "has_update": has_update,
@@ -50,31 +56,6 @@ class HubApi:
                 "success": False,
                 "error": str(e)
             }
-
-    def download_and_install_update(self, download_url):
-        try:
-            temp_dir = tempfile.gettempdir()
-            setup_path = os.path.join(temp_dir, "Velocity_Control_Hub_Setup.exe")
-            
-            headers = {"User-Agent": "VelocityControlHubApp"}
-            req = urllib.request.Request(download_url, headers=headers)
-            
-            with urllib.request.urlopen(req, timeout=120) as response, open(setup_path, 'wb') as out_file:
-                chunk_size = 64 * 1024
-                while True:
-                    chunk = response.read(chunk_size)
-                    if not chunk:
-                        break
-                    out_file.write(chunk)
-            
-            subprocess.Popen([setup_path], shell=True)
-            
-            if self._window:
-                self._window.destroy()
-            sys.exit(0)
-            return {"success": True}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
 
     def open_external(self, url):
         webbrowser.open(url)
