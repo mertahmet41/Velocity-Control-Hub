@@ -1008,21 +1008,37 @@
 
               <div class="glass-panel">
                 <div class="sub-tabs">
-                  <button class="sub-tab-btn active" onclick="switchSubPane('axis')">EKSEN & ENKODER</button>
+                  <button class="sub-tab-btn active" onclick="switchSubPane('axis')">EKSEN & PROFİLLER</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('ffb')">FFB EFEKTLERİ</button>
+                  <button class="sub-tab-btn" onclick="switchSubPane('safety')">MOTOR & GÜVENLİK</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('profile')">KİMLİK & SPOOFING</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('firmware')">FİRMWARE & GÜNCELLEME</button>
                 </div>
 
-                <!-- PANE 1: AXIS & ENCODER (BİREBİR OPENFFBOARD ORİJİNAL AYARLARI) -->
+                <!-- PANE 1: AXIS & DRIVING PROFILES -->
                 <div class="sub-pane active" id="pane-axis">
+                  <div class="control-group" style="background: rgba(0, 180, 216, 0.08); border: 1px solid rgba(0, 180, 216, 0.28); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                      <span class="control-name" style="color:var(--accent); font-weight:800;">🏎️ SÜRÜŞ PROFİLİ SEÇİMİ</span>
+                      <button class="action-btn btn-ghost" style="padding:5px 12px; font-size:11px; border-color:var(--accent); color:#fff;" onclick="resetWheelDefaults()">🔄 Varsayılanlara Sıfırla</button>
+                    </div>
+                    <div class="control-desc">Disipline göre optimize edilmiş tork, açı ve damper şablonunu tek tıkla yükleyin.</div>
+                    <select class="select-box" style="margin-top: 10px;" id="driveProfileSelect" onchange="applyDriveProfile(this.value)">
+                      <option value="gt3" selected>🏆 GT3 / Dayanıklılık (900°, %100 Güç, Dengeli Damper)</option>
+                      <option value="drift">💨 Drift / Sokak (900°, %100 Güç, Sıfır Damper, Hızlı Merkezleme)</option>
+                      <option value="f1">⚡ Formula 1 / Open-Wheel (360°, %85 Güç, Yüksek Direnç)</option>
+                      <option value="rally">🌲 Ralli / WRC (540°, %90 Güç, Çakıl Filtreli Titreşim)</option>
+                      <option value="custom">⚙️ Özel Kullanıcı Ayarı (Custom)</option>
+                    </select>
+                  </div>
+
                   <div class="control-group">
                     <div class="control-header">
                       <span class="control-name">Dönüş Sınırı (Degrees of Rotation)</span>
                       <span class="control-badge" id="badgeDegrees">900°</span>
                     </div>
-                    <div class="control-desc">Direksiyonun yazılımsal maksimum dönüş açısı (180° - 1080°).</div>
-                    <input type="range" min="180" max="1080" value="900" id="slDegrees" oninput="updateVal('badgeDegrees', this.value, '°', 'axis.degrees')">
+                    <div class="control-desc">Direksiyonun donanımsal ve fiziksel maksimum dönüş açısı (180° - 900°).</div>
+                    <input type="range" min="180" max="900" value="900" id="slDegrees" oninput="updateVal('badgeDegrees', this.value, '°', 'axis.degrees')">
                   </div>
 
                   <div class="control-group">
@@ -1053,7 +1069,7 @@
                   </div>
                 </div>
 
-                <!-- PANE 2: FFB EFFECTS (BİREBİR OPENFFBOARD ORİJİNAL AYARLARI) -->
+                <!-- PANE 2: FFB EFFECTS -->
                 <div class="sub-pane" id="pane-ffb">
                   <div class="control-group">
                     <div class="control-header">
@@ -1102,7 +1118,7 @@
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">FFB Filtresi Kesme Frekansı (Low-Pass Filter Cutoff)</span>
+                      <span class="control-name">FFB Filtresi Kesme Frekansı (Low-Pass Filter)</span>
                       <span class="control-badge" id="badgeFilterCf">100 Hz</span>
                     </div>
                     <div class="control-desc">Motora giden yüksek frekanslı parazit ve dişli titreşimlerini yumuşatır.</div>
@@ -1119,7 +1135,53 @@
                   </div>
                 </div>
 
-                <!-- PANE 3: SPOOFING & CONTROLLER PROFILES -->
+                <!-- PANE 3: MOTOR & GÜVENLİK (DİREKSİYONA ÖZEL) -->
+                <div class="sub-pane" id="pane-safety">
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">Donanım Watchdog Zaman Aşımı (Watchdog Timeout)</span>
+                      <span class="control-badge" id="badgeWatchdog">200 ms</span>
+                    </div>
+                    <div class="control-desc">PC iletişimi koptuğu anda motorun torkta takılı kalmaması için güvenlik kesici.</div>
+                    <select class="select-box" style="margin-top: 8px;">
+                      <option value="200" selected>200 ms (Önerilen)</option>
+                      <option value="350">350 ms</option>
+                      <option value="500">500 ms</option>
+                    </select>
+                  </div>
+
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">BTS7960 Akım & Termal Güvenlik Limiti</span>
+                      <span class="control-badge" id="badgeThermal">95%</span>
+                    </div>
+                    <div class="control-desc">Sürücü mosfetlerinin aşırı ısınmasını önleyen yazılımsal akım sınırlayıcı.</div>
+                    <input type="range" min="50" max="100" value="95" id="slThermal" oninput="updateVal('badgeThermal', this.value, '%', 'drv.thermalLimit')">
+                  </div>
+
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">Ani Tork Sıçrama Engelleyici (Slew-Rate Limiter)</span>
+                      <span class="control-badge" id="badgeSlew">Aktif</span>
+                    </div>
+                    <div class="control-desc">Kaldırımlara ve bariyerlere çarpışta ani darbe yumuşatma filtresi.</div>
+                    <input type="range" min="0" max="100" value="80" id="slSlew" oninput="updateVal('badgeSlew', this.value === '0' ? 'Kapalı' : '%' + this.value, '', 'fx.slewRate')">
+                  </div>
+
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">Acil Durdurma (E-Stop) Tuşu</span>
+                    </div>
+                    <div class="control-desc">Kontrolsüz tork salınımında motor çıkışını anında sıfırlar.</div>
+                    <select class="select-box" style="margin-top: 8px;">
+                      <option selected>Klavye: [Space] Tuşu</option>
+                      <option>Klavye: [ESC] Tuşu</option>
+                      <option>Donanım Pini: PB12 (Harici Düğme)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- PANE 4: SPOOFING & CONTROLLER PROFILES -->
                 <div class="sub-pane" id="pane-profile">
                   <div class="control-group">
                     <span class="control-name">USB Cihaz Kimliği (Hardware Spoofing VID/PID)</span>
@@ -1132,7 +1194,7 @@
                   </div>
                 </div>
 
-                <!-- PANE 4: DİREKSİYONA ÖZEL FİRMWARE & GÜNCELLEME -->
+                <!-- PANE 5: DİREKSİYONA ÖZEL FİRMWARE & GÜNCELLEME -->
                 <div class="sub-pane" id="pane-firmware">
                   <div class="control-group">
                     <span class="control-name">Kasa Durum RGB LED'i (PA0, PA1, PA2)</span>
@@ -1259,7 +1321,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.6.0 (Production Channel).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.7.0 (Production Channel).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1339,110 +1401,7 @@
           </div>
         </div>
 
-        <!-- SECTION 3: DIRECTINPUT & FORCE FEEDBACK ÇEKİRDEĞİ -->
-        <div class="glass-panel">
-          <div class="settings-section-title">🏎️ DIRECTINPUT & FFB ÇEKİRDEK AYARLARI</div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Düşük Geçiren Filtre (Low-Pass Filter)</div>
-              <div class="setting-desc">Oyunlardan gelen yüksek frekanslı motor vızıltısını ve dişli parazitlerini filtreler.</div>
-            </div>
-            <select class="select-box" style="width: 170px;">
-              <option>Kapalı (Ham Veri)</option>
-              <option selected>15% (Hafif Yumuşak)</option>
-              <option>30% (Orta Filtre)</option>
-              <option>50% (Pürüzsüz FFB)</option>
-            </select>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">FFB Kırpılma (Clipping) Yumuşatma</div>
-              <div class="setting-desc">Motor gücü tavan sınıra ulaştığında tork eğrisini soft-clip ile yumuşatarak detay kaybını önler.</div>
-            </div>
-            <label class="switch">
-              <input type="checkbox" checked>
-              <span class="slider-toggle"></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Masaüstü Sabit Merkezleme Yayı (Desktop Spring)</div>
-              <div class="setting-desc">Simülatör oyunları kapalıyken veya masaüstündeyken direksiyonu 0° merkezinde tut.</div>
-            </div>
-            <label class="switch">
-              <input type="checkbox" checked>
-              <span class="slider-toggle"></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Acil Durdurma (E-Stop) Güvenlik Tuşu</div>
-              <div class="setting-desc">Kontrolsüz salınım veya kazalarda motor çıkışını tek tuşla sıfırla.</div>
-            </div>
-            <select class="select-box" style="width: 170px;">
-              <option selected>Klavye: [Space] Tuşu</option>
-              <option>Klavye: [ESC] Tuşu</option>
-              <option>Donanım Pini: PB12</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- SECTION 4: GÜVENLİK, ISI & MOTOR KORUMA -->
-        <div class="glass-panel">
-          <div class="settings-section-title">🛡️ GÜVENLİK, ISI & MOTOR KORUMA</div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Donanım Watchdog Zaman Aşımı (Watchdog Timeout)</div>
-              <div class="setting-desc">PC ile USB iletişimi koptuğu an motorun torkta takılı kalmaması için güvenlik kesici.</div>
-            </div>
-            <select class="select-box" style="width: 170px;">
-              <option selected>200 ms (Önerilen)</option>
-              <option>350 ms</option>
-              <option>500 ms</option>
-            </select>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">BTS7960 Akım & Termal Güvenlik Limiti</div>
-              <div class="setting-desc">Sürücü mosfetlerinin aşırı ısınmasını önleyen yazılımsal akım sınırlayıcı.</div>
-            </div>
-            <select class="select-box" style="width: 170px;">
-              <option>85% (Maksimum Güvenli)</option>
-              <option selected>95% (Dengeli Güç)</option>
-              <option>100% (Tam Güç Direct Drive)</option>
-            </select>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Otomatik Uyku & Güç Tasarrufu Modu</div>
-              <div class="setting-desc">5 dakika boyunca direksiyon hareketi algılanmadığında motor sürücü PWM çıkışını kapat.</div>
-            </div>
-            <label class="switch">
-              <input type="checkbox" checked>
-              <span class="slider-toggle"></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Ani Tork Sıçrama Engelleyici (Slew-Rate Limiter)</div>
-              <div class="setting-desc">Kaldırımlara veya bariyerlere çarpış anında bilek incinmelerini önleyen ani darbe filtresi.</div>
-            </div>
-            <label class="switch">
-              <input type="checkbox" checked>
-              <span class="slider-toggle"></span>
-            </label>
-          </div>
-        </div>
-
-        <!-- SECTION 5: GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME -->
+        <!-- SECTION 3: GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME -->
         <div class="glass-panel">
           <div class="settings-section-title">🎨 GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME</div>
 
@@ -1495,7 +1454,7 @@
           </div>
         </div>
 
-        <!-- SECTION 6: SİSTEM & BAŞLANGIÇ -->
+        <!-- SECTION 4: SİSTEM & BAŞLANGIÇ -->
         <div class="glass-panel">
           <div class="settings-section-title">⚙️ SİSTEM & BAŞLANGIÇ TERCİHLERİ</div>
 
@@ -1533,7 +1492,7 @@
           </div>
         </div>
 
-        <!-- SECTION 7: VERİ & CİHAZ YÖNETİMİ -->
+        <!-- SECTION 5: VERİ & CİHAZ YÖNETİMİ -->
         <div class="glass-panel">
           <div class="settings-section-title">🗑️ VERİ & CİHAZ YÖNETİMİ</div>
           
@@ -1546,7 +1505,7 @@
           </div>
         </div>
 
-        <!-- SECTION 8: HAKKINDA (ABOUT VELOCITY CONTROL HUB) -->
+        <!-- SECTION 6: HAKKINDA (ABOUT VELOCITY CONTROL HUB) -->
         <div class="glass-panel" style="border: 1px solid rgba(0, 180, 216, 0.35); background: linear-gradient(180deg, rgba(19, 21, 25, 0.95), rgba(10, 11, 13, 0.98));">
           <div class="settings-section-title" style="display:flex; justify-content:space-between; align-items:center;">
             <span>ℹ️ HAKKINDA — VELOCITY CONTROL HUB</span>
@@ -1567,7 +1526,7 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
-              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.6.0 (Production Stable)</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.7.0 (Production Stable)</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">MOTOR ALTYAPISI</div>
@@ -1575,7 +1534,7 @@
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">GELİŞTİRİCİ</div>
-              <div style="color: #fff; font-weight: 800;">Mert Ahmet (mertahmet41)</div>
+              <div style="color: #fff; font-weight: 800;">Wumpus</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">LİSANS & AÇIK KAYNAK</div>
@@ -1692,7 +1651,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.6.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.7.0</div>
   </footer>
 
   <script>
@@ -1826,6 +1785,94 @@
       sendCmd(cmd + '=' + mapped);
     }
 
+    function setSliderVal(sliderId, badgeId, val, unit, cmd) {
+      const el = document.getElementById(sliderId);
+      if (el) el.value = val;
+      const b = document.getElementById(badgeId);
+      if (b) {
+        if (sliderId === 'slSpeed') {
+          b.innerText = (val === 0 || val === '0') ? 'Sınırsız' : val + ' deg/s';
+        } else if (sliderId === 'slTorqueRate') {
+          b.innerText = (val === 0 || val === '0') ? 'Kapalı' : val;
+        } else if (sliderId === 'slSlew') {
+          b.innerText = (val === 0 || val === '0') ? 'Kapalı' : '%' + val;
+        } else {
+          b.innerText = val + unit;
+        }
+      }
+      if (cmd) {
+        let mapped = (unit === '%') ? Math.round((val / 100) * 10000) : val;
+        sendCmd(cmd + '=' + mapped);
+      }
+    }
+
+    function applyDriveProfile(profile) {
+      if (profile === 'gt3') {
+        setSliderVal('slDegrees', 'badgeDegrees', 900, '°', 'axis.degrees');
+        setSliderVal('slEsGain', 'badgeEsGain', 100, '%', 'axis.esgain');
+        setSliderVal('slPower', 'badgePower', 100, '%', 'axis.power');
+        setSliderVal('slDamper', 'badgeDamper', 15, '%', 'axis.axisdamper');
+        setSliderVal('slFriction', 'badgeFriction', 10, '%', 'axis.axisfriction');
+        setSliderVal('slSpring', 'badgeSpring', 0, '%', 'axis.idlespring');
+        setSliderVal('slInertia', 'badgeInertia', 5, '%', 'axis.axisinertia');
+        setSliderVal('slFilterCf', 'badgeFilterCf', 100, ' Hz', 'axis.filterSpeed');
+        setSliderVal('slSlew', 'badgeSlew', 80, '%', 'fx.slewRate');
+        setSliderVal('slThermal', 'badgeThermal', 95, '%', 'drv.thermalLimit');
+      } else if (profile === 'drift') {
+        setSliderVal('slDegrees', 'badgeDegrees', 900, '°', 'axis.degrees');
+        setSliderVal('slEsGain', 'badgeEsGain', 100, '%', 'axis.esgain');
+        setSliderVal('slPower', 'badgePower', 100, '%', 'axis.power');
+        setSliderVal('slDamper', 'badgeDamper', 0, '%', 'axis.axisdamper');
+        setSliderVal('slFriction', 'badgeFriction', 0, '%', 'axis.axisfriction');
+        setSliderVal('slSpring', 'badgeSpring', 10, '%', 'axis.idlespring');
+        setSliderVal('slInertia', 'badgeInertia', 0, '%', 'axis.axisinertia');
+        setSliderVal('slFilterCf', 'badgeFilterCf', 150, ' Hz', 'axis.filterSpeed');
+        setSliderVal('slSlew', 'badgeSlew', 100, '%', 'fx.slewRate');
+        setSliderVal('slThermal', 'badgeThermal', 95, '%', 'drv.thermalLimit');
+      } else if (profile === 'f1') {
+        setSliderVal('slDegrees', 'badgeDegrees', 360, '°', 'axis.degrees');
+        setSliderVal('slEsGain', 'badgeEsGain', 100, '%', 'axis.esgain');
+        setSliderVal('slPower', 'badgePower', 85, '%', 'axis.power');
+        setSliderVal('slDamper', 'badgeDamper', 25, '%', 'axis.axisdamper');
+        setSliderVal('slFriction', 'badgeFriction', 15, '%', 'axis.axisfriction');
+        setSliderVal('slSpring', 'badgeSpring', 0, '%', 'axis.idlespring');
+        setSliderVal('slInertia', 'badgeInertia', 10, '%', 'axis.axisinertia');
+        setSliderVal('slFilterCf', 'badgeFilterCf', 80, ' Hz', 'axis.filterSpeed');
+        setSliderVal('slSlew', 'badgeSlew', 90, '%', 'fx.slewRate');
+        setSliderVal('slThermal', 'badgeThermal', 95, '%', 'drv.thermalLimit');
+      } else if (profile === 'rally') {
+        setSliderVal('slDegrees', 'badgeDegrees', 540, '°', 'axis.degrees');
+        setSliderVal('slEsGain', 'badgeEsGain', 100, '%', 'axis.esgain');
+        setSliderVal('slPower', 'badgePower', 90, '%', 'axis.power');
+        setSliderVal('slDamper', 'badgeDamper', 10, '%', 'axis.axisdamper');
+        setSliderVal('slFriction', 'badgeFriction', 20, '%', 'axis.axisfriction');
+        setSliderVal('slSpring', 'badgeSpring', 5, '%', 'axis.idlespring');
+        setSliderVal('slInertia', 'badgeInertia', 5, '%', 'axis.axisinertia');
+        setSliderVal('slFilterCf', 'badgeFilterCf', 60, ' Hz', 'axis.filterSpeed');
+        setSliderVal('slSlew', 'badgeSlew', 70, '%', 'fx.slewRate');
+        setSliderVal('slThermal', 'badgeThermal', 95, '%', 'drv.thermalLimit');
+      }
+    }
+
+    function resetWheelDefaults() {
+      const sel = document.getElementById('driveProfileSelect');
+      if (sel) sel.value = 'gt3';
+      applyDriveProfile('gt3');
+      setSliderVal('slSpeed', 'badgeSpeed', 0, '', 'axis.maxspeed');
+      setSliderVal('slTorqueRate', 'badgeTorqueRate', 0, '', 'axis.maxtorquerate');
+      setSliderVal('slFricRamp', 'badgeFricRamp', 10, '%', 'fx.frictionPctSpeedToRampup');
+      showHubModal({
+        icon: "🔄",
+        title: "DİREKSİYON AYARLARI SIFIRLANDI",
+        subtitle: "VARSAYILAN FABRİKA PROFİLİ",
+        content: `<div style="font-size: 13px; line-height: 1.6;">
+          Direksiyon FFB ve motor güvenlik parametreleri varsayılan fabrika değerlerine (GT3 / 900° / %100 Güç / BTS7960 Güvenli Sınır) başarıyla döndürüldü.
+        </div>`,
+        confirmText: "TAMAM",
+        cancelText: null
+      });
+    }
+
     // USB WEB SERIAL
     async function toggleUsbConnection() {
       if (!navigator.serial) {
@@ -1917,6 +1964,9 @@
     }
 
     function setWheelAngle(deg) {
+      // 900 derece fiziksel kilit: -450° ile +450° aralığına sınırla
+      if (deg > 450) deg = 450;
+      if (deg < -450) deg = -450;
       document.getElementById('wheelGraphic').style.transform = `rotate(${deg}deg)`;
       document.getElementById('angleDisplay').innerText = (deg >= 0 ? '+' : '') + deg.toFixed(1) + '°';
     }
@@ -2216,7 +2266,7 @@
       }
     }
 
-    const CURRENT_APP_VERSION = "v3.6.0";
+    const CURRENT_APP_VERSION = "v3.7.0";
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
 
     function isNewerVersion(latest, current) {
@@ -2392,16 +2442,24 @@
 
       if (window.pywebview && window.pywebview.api && window.pywebview.api.perform_silent_update) {
         try {
-          if (statusText) statusText.innerText = 'Son işlemler yapılıyor & yeniden başlatılıyor...';
-          pBar.style.width = '95%';
           const res = await window.pywebview.api.perform_silent_update(downloadUrl);
           clearInterval(timer);
-          if (res && !res.success) {
+          if (res && res.success) {
+            pBar.style.width = '100%';
+            if (statusText) statusText.innerText = '✅ Güncelleme tamamlandı! Yeniden başlatılıyor...';
+            setTimeout(() => {
+              if (window.pywebview && window.pywebview.api && window.pywebview.api.reload_window) {
+                window.pywebview.api.reload_window();
+              } else {
+                location.reload(true);
+              }
+            }, 800);
+          } else {
             showHubModal({
               icon: "⚠️",
               title: "GÜNCELLEME HATASI",
               subtitle: "YENİDEN BAŞLATILAMADI",
-              content: `Güncelleme uygulanırken bir sorun oluştu: ${res.error || 'Bilinmeyen hata'}<br><br>Tarayıcıdan manuel indirmek ister misiniz?`,
+              content: `Güncelleme uygulanırken bir sorun oluştu: ${(res && res.error) || 'Bilinmeyen hata'}<br><br>Tarayıcıdan manuel indirmek ister misiniz?`,
               confirmText: "TARAYICIDA AÇ",
               cancelText: "Kapat",
               onConfirm: () => {
@@ -2417,10 +2475,10 @@
       } else {
         clearInterval(timer);
         pBar.style.width = '100%';
-        if (statusText) statusText.innerText = 'Tamamlandı! Sayfa yenileniyor...';
+        if (statusText) statusText.innerText = '✅ Tamamlandı! Sayfa yenileniyor...';
         setTimeout(() => {
           location.reload();
-        }, 1200);
+        }, 800);
       }
     }
 
