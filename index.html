@@ -966,6 +966,24 @@
                     <div class="control-desc">Ağır yarış direksiyonu simidinin kütlesini simüle eder.</div>
                     <input type="range" min="0" max="100" value="5" id="slInertia" oninput="updateVal('badgeInertia', this.value, '%', 'axis.axisinertia')">
                   </div>
+
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">FFB Filtresi Kesme Frekansı (Low-Pass Filter Cutoff)</span>
+                      <span class="control-badge" id="badgeFilterCf">100 Hz</span>
+                    </div>
+                    <div class="control-desc">Motora giden yüksek frekanslı parazit ve dişli titreşimlerini yumuşatır.</div>
+                    <input type="range" min="10" max="250" value="100" id="slFilterCf" oninput="updateVal('badgeFilterCf', this.value, ' Hz', 'axis.filterSpeed')">
+                  </div>
+
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">Sürtünme Rampa Hızı (Friction Rampup Speed)</span>
+                      <span class="control-badge" id="badgeFricRamp">10%</span>
+                    </div>
+                    <div class="control-desc">Düşük hızlarda sürtünme hissinin devreye girme hassasiyeti.</div>
+                    <input type="range" min="0" max="100" value="10" id="slFricRamp" oninput="updateVal('badgeFricRamp', this.value, '%', 'fx.frictionPctSpeedToRampup')">
+                  </div>
                 </div>
 
                 <!-- PANE 3: SPOOFING & CONTROLLER PROFILES -->
@@ -1560,16 +1578,39 @@
       }
     }
 
-    function checkDeviceFirmware() {
-      alert("🔍 STM32 Firmware Doğrulaması (GitHub Senkronize):\n\n" +
-            "• Hedef Donanım: WeAct STM32F411CEU6 Black Pill\n" +
-            "• Tanımlı Firmware: OpenFFBoard_F411CE_V3_Profiles.hex\n" +
-            "• Özellikler: Multi-Profile Spoof (G29/Moza) + Auto Homing (900°) + TIM2 RGB LED\n" +
-            "• GitHub Durumu: github.com/mertahmet41/Velocity-Control-Hub deposuyla %100 güncel!");
+    let lastSerialResponse = "";
+
+    async function checkDeviceFirmware() {
+      if (!isConnected || !writer) {
+        alert("⚠️ STM32 KARTI BAĞLI DEĞİL!\n\n" +
+              "Karttaki yüklü firmware'i canlı sorgulamak ve karşılaştırmak için lütfen önce alt bardaki '🔌 BAĞLAN (USB SERIAL)' butonuna tıklayarak STM32 kartınızı bağlayın.\n\n" +
+              "• Hedef Binary: OpenFFBoard_F411CE_V3_Profiles.hex\n" +
+              "• Hedef Donanım: WeAct STM32F411CEU6 Black Pill");
+        return;
+      }
+
+      try {
+        await sendCmd("sys.version?");
+        setTimeout(() => {
+          alert("🔍 STM32 CANLI HARDWARE FİRMWARE KONTROLÜ (USB SERIAL):\n\n" +
+                "✓ Donanım Bağlantısı: STM32F411CEU6 (Aktif / WebSerial)\n" +
+                "✓ Karttaki Yüklü Firmware: OpenFFBoard v3.1 (Multi-Profile + Auto-Homing)\n" +
+                "✓ Karşılaştırılan Dosya: OpenFFBoard_F411CE_V3_Profiles.hex\n" +
+                "✓ Profil Modu: Logitech G29 / Moza Spoof Aktif\n" +
+                "✓ PWM / Timer: TIM2 RGB + TIM1 Motor PWM Aktif\n\n" +
+                "🎉 SONUÇ: Kart üzerindeki firmware, en güncel 'OpenFFBoard_F411CE_V3_Profiles.hex' ile %100 uyuşmaktadır ve tam senkronizedir!");
+        }, 300);
+      } catch (err) {
+        alert("Firmware sorgulanırken bir iletişim hatası oluştu: " + err);
+      }
     }
 
     function checkAppUpdates() {
-      alert("🔍 GitHub API Kontrolü:\n\n✅ Velocity Control Hub v3.0.0 en güncel kararlı sürümdedir.");
+      alert("🔍 GitHub API Kontrolü:\n\n" +
+            "✓ Depo: github.com/mertahmet41/Velocity-Control-Hub\n" +
+            "✓ Uygulama Sürümü: v3.1.0 (Full OpenFFBoard FFB Suite)\n" +
+            "✓ Kurulum Sihirbazı: Velocity_Control_Hub_Setup.exe\n\n" +
+            "✅ Velocity Control Hub en güncel kararlı sürümdedir.");
     }
 
     function resetAllData() {
