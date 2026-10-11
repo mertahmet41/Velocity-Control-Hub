@@ -1257,7 +1257,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc">Mevcut Sürüm: v3.3.0 (Production Channel).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.4.0 (Production Channel).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1410,7 +1410,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div>VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.3.0</div>
+    <div>VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.4.0</div>
   </footer>
 
   <script>
@@ -1910,7 +1910,7 @@
       }
     }
 
-    const CURRENT_APP_VERSION = "v3.3.0";
+    const CURRENT_APP_VERSION = "v3.4.0";
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
 
     function isNewerVersion(latest, current) {
@@ -2009,25 +2009,20 @@
           subtitle: "VELOCITY CONTROL HUB ECOSYSTEM",
           content: `
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-              <span style="color: var(--text-muted);">Mevcut Sürüm:</span>
+              <span style="color: var(--text-muted);">Mevcut Kurulu Sürüm:</span>
               <span style="font-weight: 800; color: #ff5252;">${CURRENT_APP_VERSION}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-              <span style="color: var(--text-muted);">Yeni Sürüm:</span>
+              <span style="color: var(--text-muted);">Yeni Yayınlanan Sürüm:</span>
               <span style="font-weight: 800; color: #00d2ff;">${result.latest_tag}</span>
             </div>
             <div style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">SÜRÜM YENİLİKLERİ:</div>
-            <div style="font-size: 12px; color: #9499a6; white-space: pre-line; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; max-height: 120px; overflow-y: auto;">${result.body || "Genel performans iyileştirmeleri ve hata düzeltmeleri."}</div>
+            <div style="font-size: 12px; color: #9499a6; white-space: pre-line; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; max-height: 120px; overflow-y: auto;">${result.body || "Genel performans iyileştirmeleri ve yeni FFB algoritmaları."}</div>
           `,
-          confirmText: "📥 GİTHUB'DAN İNDİR",
+          confirmText: "⚡ ŞİMDİ GÜNCELLE & YENİDEN BAŞLAT",
           cancelText: "Daha Sonra",
           onConfirm: () => {
-            if (window.pywebview && window.pywebview.api && window.pywebview.api.open_external) {
-              window.pywebview.api.open_external(result.download_url);
-            } else {
-              window.open(result.download_url, '_blank');
-            }
-            closeHubModal();
+            startSilentSelfUpdate(result.download_url, result.latest_tag);
           }
         });
       } else {
@@ -2046,7 +2041,7 @@
                 <span style="font-weight: 800; color: var(--accent);">${result.latest_tag || CURRENT_APP_VERSION}</span>
               </div>
               <div style="color: #9499a6; font-size: 12px; margin-top: 8px;">
-                Velocity Control Hub en son kararlı sürümü çalıştırmaktadır. Herhangi bir güncelleme gerekmemektedir.
+                Velocity Control Hub en son kararlı sürümü çalıştırmaktadır.
               </div>
             `,
             confirmText: "HARİKA",
@@ -2056,48 +2051,52 @@
       }
     }
 
-    async function startUpdateDownloadAndInstall(downloadUrl, targetTag) {
+    async function startSilentSelfUpdate(downloadUrl, targetTag) {
       showHubModal({
         icon: "⚡",
-        title: "GÜNCELLEME İNDİRİLİYOR...",
-        subtitle: `SÜRÜM ${targetTag} HAZIRLANIYOR`,
+        title: "UYGULAMA İÇİNDEN GÜNCELLENİYOR...",
+        subtitle: `SÜRÜM ${targetTag} UYGULANIYOR`,
         content: `
-          <div style="text-align: center; padding: 10px 0;">
+          <div style="text-align: center; padding: 12px 0;">
             <div style="font-size: 13px; color: #fff; margin-bottom: 10px; font-weight: 700;">
-              Yeni kurulum sihirbazı (Velocity_Control_Hub_Setup.exe) indiriliyor...
+              Yeni sürüm arka planda doğrudan yükleniyor...
             </div>
-            <div style="font-size: 12px; color: var(--accent);">
-              İndirme tamamlandığında Windows Kurulum Sihirbazı otomatik olarak başlayacaktır.
+            <div style="font-size: 12px; color: var(--accent); margin-bottom: 8px;" id="otaStatusText">
+              İndiriliyor... Lütfen bekleyin.
             </div>
           </div>
         `,
-        confirmText: "LÜTFEN BEKLEYİN...",
+        confirmText: "YÜKLENİYOR...",
         cancelText: null,
         showProgress: true
       });
 
       const pBar = document.getElementById('hubModalProgressBar');
-      let progress = 15;
-      pBar.style.width = '15%';
+      const statusText = document.getElementById('otaStatusText');
+      let progress = 10;
+      pBar.style.width = '10%';
       const timer = setInterval(() => {
         if (progress < 90) {
-          progress += Math.floor(Math.random() * 12) + 6;
+          progress += Math.floor(Math.random() * 8) + 4;
           if (progress > 90) progress = 90;
           pBar.style.width = progress + '%';
+          if (statusText) statusText.innerText = `Paket indiriliyor... %${progress}`;
         }
-      }, 400);
+      }, 350);
 
-      if (window.pywebview && window.pywebview.api && window.pywebview.api.download_and_install_update) {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.perform_silent_update) {
         try {
-          const res = await window.pywebview.api.download_and_install_update(downloadUrl);
+          if (statusText) statusText.innerText = 'Son işlemler yapılıyor & yeniden başlatılıyor...';
+          pBar.style.width = '95%';
+          const res = await window.pywebview.api.perform_silent_update(downloadUrl);
           clearInterval(timer);
           if (res && !res.success) {
             showHubModal({
               icon: "⚠️",
-              title: "İNDİRME HATASI",
-              subtitle: "KURULUM BAŞLATILAMADI",
-              content: `Kurulum indirilirken bir sorun oluştu: ${res.error || 'Bilinmeyen hata'}<br><br>Tarayıcıdan manuel indirmek ister misiniz?`,
-              confirmText: "TARAYICIDA İNDİR",
+              title: "GÜNCELLEME HATASI",
+              subtitle: "YENİDEN BAŞLATILAMADI",
+              content: `Güncelleme uygulanırken bir sorun oluştu: ${res.error || 'Bilinmeyen hata'}<br><br>Tarayıcıdan manuel indirmek ister misiniz?`,
+              confirmText: "TARAYICIDA AÇ",
               cancelText: "Kapat",
               onConfirm: () => {
                 window.open(downloadUrl, '_blank');
@@ -2112,15 +2111,18 @@
       } else {
         clearInterval(timer);
         pBar.style.width = '100%';
-        window.open(downloadUrl, '_blank');
+        if (statusText) statusText.innerText = 'Tamamlandı! Sayfa yenileniyor...';
         setTimeout(() => {
-          closeHubModal();
-        }, 1500);
+          location.reload();
+        }, 1200);
       }
     }
 
-    // Açılışta 1.5 saniye sonra güncellemeyi otomatik denetle
+    // Açılışta sürüm etiketlerini ve güncellemeyi doğrula
     window.addEventListener('DOMContentLoaded', () => {
+      const descEl = document.getElementById('settingAppVersionDesc');
+      if (descEl) descEl.innerText = `Mevcut Sürüm: ${CURRENT_APP_VERSION} (Production Channel).`;
+
       setTimeout(() => {
         checkAppUpdates(false);
       }, 1500);
