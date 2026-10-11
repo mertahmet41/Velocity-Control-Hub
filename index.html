@@ -937,7 +937,6 @@
 
     <div class="header-right">
       <button class="btn-add-device" onclick="openAddModal('device')">+ CİHAZ EKLE</button>
-      <button class="connect-btn" id="usbConnectBtn" onclick="toggleUsbConnection()">🔌 BAĞLAN (USB SERIAL)</button>
     </div>
   </header>
 
@@ -961,9 +960,12 @@
 
     <!-- VIEW 1: DEVICE DETAILED STUDIO WITH VERTICAL SUB-MODULES -->
     <section class="view-section" id="view-cockpit">
-      <div class="top-nav-bar">
-        <button class="back-btn" onclick="switchView('home')">← CİHAZLARA DÖN</button>
-        <div class="device-active-title" id="activeDeviceHeader">PRO DIRECT DRIVE WHEEL (ALL-IN-ONE)</div>
+      <div class="top-nav-bar" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <button class="back-btn" onclick="switchView('home')">← CİHAZLARA DÖN</button>
+          <div class="device-active-title" id="activeDeviceHeader">PRO DIRECT DRIVE WHEEL (ALL-IN-ONE)</div>
+        </div>
+        <button class="connect-btn" id="deviceConnectBtn" onclick="toggleUsbConnection()">🔌 CİHAZA BAĞLAN (USB SERIAL)</button>
       </div>
 
       <div class="device-studio-layout">
@@ -1257,7 +1259,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.5.0 (Production Channel).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.6.0 (Production Channel).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1265,18 +1267,29 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Otomatik Güncellemeleri Aç</div>
-              <div class="setting-desc">Velocity Hub için yeni bir arayüz sürümü çıktığında arka planda bildir.</div>
+              <div class="setting-desc">Velocity Hub için yeni bir sürüm çıktığında uygulama içinde otomatik denetle ve bildir.</div>
             </div>
             <label class="switch">
-              <input type="checkbox" checked>
+              <input type="checkbox" checked id="autoUpdateToggle">
               <span class="slider-toggle"></span>
             </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Güncelleme Dağıtım Kanalı</div>
+              <div class="setting-desc">Kararlı sürümleri (Stable / Production) veya erken test sürümlerini (Beta) tercih edin.</div>
+            </div>
+            <select class="select-box" style="width: 170px;">
+              <option selected>Production (Kararlı)</option>
+              <option>Beta / Erken Erişim</option>
+            </select>
           </div>
         </div>
 
         <!-- SECTION 2: HARDWARE & TELEMETRY PREFERENCES -->
         <div class="glass-panel">
-          <div class="settings-section-title">⚡ BAĞLANTI & ÖRNEKLEME TERCİHLERİ</div>
+          <div class="settings-section-title">⚡ BAĞLANTI, USB & TELEMETRİ TERCİHLERİ</div>
 
           <div class="setting-item">
             <div class="setting-info">
@@ -1292,17 +1305,235 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Hassasiyet & Örnekleme Hızı (Polling Rate)</div>
-              <div class="setting-desc">Enkoder verisi için USB HID üzerinden 1000 Hz / 1 ms gerçek zamanlı okuma.</div>
+              <div class="setting-desc">Enkoder ve FFB telemetrisi için USB HID üzerinden 1000 Hz / 1 ms gerçek zamanlı okuma.</div>
             </div>
-            <select class="select-box" style="width: 140px;">
-              <option>1000 Hz (1ms)</option>
-              <option>500 Hz (2ms)</option>
-              <option>250 Hz (4ms)</option>
+            <select class="select-box" style="width: 170px;">
+              <option selected>1000 Hz (1ms Ultra)</option>
+              <option>500 Hz (2ms Dengeli)</option>
+              <option>250 Hz (4ms Standart)</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Seri Port Haberleşme Hızı (Baud Rate)</div>
+              <div class="setting-desc">STM32 USB CDC VCP sanal seri port donanım haberleşme hızı.</div>
+            </div>
+            <select class="select-box" style="width: 170px;">
+              <option selected>115200 Baud</option>
+              <option>230400 Baud</option>
+              <option>460800 Baud</option>
+              <option>921600 Baud</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Kopma Durumunda Otomatik Yeniden Bağlan</div>
+              <div class="setting-desc">USB kablosu çıkarılıp takıldığında portu otomatik tara ve bağlantıyı yenile.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked id="autoReconnectToggle">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DIRECTINPUT & FORCE FEEDBACK ÇEKİRDEĞİ -->
+        <div class="glass-panel">
+          <div class="settings-section-title">🏎️ DIRECTINPUT & FFB ÇEKİRDEK AYARLARI</div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Düşük Geçiren Filtre (Low-Pass Filter)</div>
+              <div class="setting-desc">Oyunlardan gelen yüksek frekanslı motor vızıltısını ve dişli parazitlerini filtreler.</div>
+            </div>
+            <select class="select-box" style="width: 170px;">
+              <option>Kapalı (Ham Veri)</option>
+              <option selected>15% (Hafif Yumuşak)</option>
+              <option>30% (Orta Filtre)</option>
+              <option>50% (Pürüzsüz FFB)</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">FFB Kırpılma (Clipping) Yumuşatma</div>
+              <div class="setting-desc">Motor gücü tavan sınıra ulaştığında tork eğrisini soft-clip ile yumuşatarak detay kaybını önler.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Masaüstü Sabit Merkezleme Yayı (Desktop Spring)</div>
+              <div class="setting-desc">Simülatör oyunları kapalıyken veya masaüstündeyken direksiyonu 0° merkezinde tut.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Acil Durdurma (E-Stop) Güvenlik Tuşu</div>
+              <div class="setting-desc">Kontrolsüz salınım veya kazalarda motor çıkışını tek tuşla sıfırla.</div>
+            </div>
+            <select class="select-box" style="width: 170px;">
+              <option selected>Klavye: [Space] Tuşu</option>
+              <option>Klavye: [ESC] Tuşu</option>
+              <option>Donanım Pini: PB12</option>
             </select>
           </div>
         </div>
 
-        <!-- SECTION 3: SYSTEM DATA & RESET -->
+        <!-- SECTION 4: GÜVENLİK, ISI & MOTOR KORUMA -->
+        <div class="glass-panel">
+          <div class="settings-section-title">🛡️ GÜVENLİK, ISI & MOTOR KORUMA</div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Donanım Watchdog Zaman Aşımı (Watchdog Timeout)</div>
+              <div class="setting-desc">PC ile USB iletişimi koptuğu an motorun torkta takılı kalmaması için güvenlik kesici.</div>
+            </div>
+            <select class="select-box" style="width: 170px;">
+              <option selected>200 ms (Önerilen)</option>
+              <option>350 ms</option>
+              <option>500 ms</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">BTS7960 Akım & Termal Güvenlik Limiti</div>
+              <div class="setting-desc">Sürücü mosfetlerinin aşırı ısınmasını önleyen yazılımsal akım sınırlayıcı.</div>
+            </div>
+            <select class="select-box" style="width: 170px;">
+              <option>85% (Maksimum Güvenli)</option>
+              <option selected>95% (Dengeli Güç)</option>
+              <option>100% (Tam Güç Direct Drive)</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Otomatik Uyku & Güç Tasarrufu Modu</div>
+              <div class="setting-desc">5 dakika boyunca direksiyon hareketi algılanmadığında motor sürücü PWM çıkışını kapat.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Ani Tork Sıçrama Engelleyici (Slew-Rate Limiter)</div>
+              <div class="setting-desc">Kaldırımlara veya bariyerlere çarpış anında bilek incinmelerini önleyen ani darbe filtresi.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SECTION 5: GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME -->
+        <div class="glass-panel">
+          <div class="settings-section-title">🎨 GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME</div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Arayüz Vurgu Rengi (Accent Theme)</div>
+              <div class="setting-desc">Velocity Hub neon aydınlatma ve gösterge vurgu teması.</div>
+            </div>
+            <select class="select-box" style="width: 180px;" id="themeAccentSelect" onchange="changeAccentColor(this.value)">
+              <option value="#00b4d8" selected>Velocity Neon Cyan</option>
+              <option value="#e63946">Formula Racing Red</option>
+              <option value="#2ecc71">GT3 Acid Green</option>
+              <option value="#ff9f1c">Moza Racing Orange</option>
+              <option value="#9d4edd">Midnight Purple</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Cam Bulanıklığı & Blur Efektleri (Glassmorphism)</div>
+              <div class="setting-desc">GPU donanım ivmeli arka plan buzlu cam efektleri.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Direksiyon Canlı Açı Yenileme Hızı</div>
+              <div class="setting-desc">Kokpit ekranındaki direksiyon simidinin dönme animasyon akıcılığı.</div>
+            </div>
+            <select class="select-box" style="width: 180px;">
+              <option selected>60 FPS (Akıcı)</option>
+              <option>120 FPS / Ekran Hz</option>
+              <option>Doğrudan Donanım Hz</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Sesli Bildirimler</div>
+              <div class="setting-desc">USB donanım bağlandığında ve firmware güncellendiğinde ses tonu çal.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SECTION 6: SİSTEM & BAŞLANGIÇ -->
+        <div class="glass-panel">
+          <div class="settings-section-title">⚙️ SİSTEM & BAŞLANGIÇ TERCİHLERİ</div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Windows Açılışında Otomatik Başlat</div>
+              <div class="setting-desc">Bilgisayar her açıldığında Velocity Control Hub arka planda hazır beklesin.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Kapatılınca Sistem Tepsisine (Tray) Küçült</div>
+              <div class="setting-desc">Çarpı (X) tuşuna basıldığında programı tamamen kapatmak yerine saatin yanına al.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-title">Telemetri & Teşhis Günlükleri (Log Kaydı)</div>
+              <div class="setting-desc">Olası FFB sorunlarını analiz etmek için yerel log dosyası oluştur.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SECTION 7: VERİ & CİHAZ YÖNETİMİ -->
         <div class="glass-panel">
           <div class="settings-section-title">🗑️ VERİ & CİHAZ YÖNETİMİ</div>
           
@@ -1312,6 +1543,57 @@
               <div class="setting-desc">Tarayıcıda kayıtlı tüm özel DIY donanımları, cihaz kodlarını ve özel FFB eğrilerini temizler.</div>
             </div>
             <button class="action-btn btn-ghost" style="color: var(--red); border-color: var(--red); flex: 0 0 160px;" onclick="resetAllData()">TÜM VERİLERİ SIFIRLA</button>
+          </div>
+        </div>
+
+        <!-- SECTION 8: HAKKINDA (ABOUT VELOCITY CONTROL HUB) -->
+        <div class="glass-panel" style="border: 1px solid rgba(0, 180, 216, 0.35); background: linear-gradient(180deg, rgba(19, 21, 25, 0.95), rgba(10, 11, 13, 0.98));">
+          <div class="settings-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>ℹ️ HAKKINDA — VELOCITY CONTROL HUB</span>
+            <span style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:3px 8px; border-radius:6px; font-weight:800;">OFFICIAL RELEASE</span>
+          </div>
+
+          <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div style="width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg, #00b4d8, #0077b6); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: #fff; box-shadow: 0 8px 24px rgba(0,180,216,0.35); flex-shrink: 0;">
+              V
+            </div>
+            <div>
+              <div style="font-size: 18px; font-weight: 900; letter-spacing: 0.5px; color: #fff; margin-bottom: 4px;">Velocity Control Hub</div>
+              <div style="font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">Pro Force Feedback Direct Drive Ecosystem</div>
+              <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Açık kaynaklı simülasyon donanımları, Direct Drive direksiyonlar, yük hücresi pedallar ve buton kutuları için profesyonel ekosistem.</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
+            <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.6.0 (Production Stable)</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">MOTOR ALTYAPISI</div>
+              <div style="color: #00d2ff; font-weight: 800;">OpenFFBoard Firmware Engine v3.1</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">GELİŞTİRİCİ</div>
+              <div style="color: #fff; font-weight: 800;">Mert Ahmet (mertahmet41)</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">LİSANS & AÇIK KAYNAK</div>
+              <div style="color: #2ecc71; font-weight: 800;">GPL-3.0 License</div>
+            </div>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; margin-bottom: 20px; font-size: 11px; line-height: 1.6; color: #a4abb8;">
+            <div style="font-weight: 800; color: #fff; margin-bottom: 6px;">🔌 DESTEKLENEN DONANIMLAR & ENKODERLER:</div>
+            • <b>Mikrodenetleyici:</b> STM32F411CEU6 BlackPill (100MHz), STM32F401CCU6 (84MHz)<br>
+            • <b>Motor Sürücüleri:</b> BTS7960 43A Dual H-Bridge, SimpleFOC, Odrive, IBT-2 PWM<br>
+            • <b>Açı Enkoderleri:</b> AS5600 Manyetik (I2C/PWM), TLE5012B (SPI), MT6701, Optik ABZ (2400-10000 CPR)<br>
+            • <b>Pedal & Fren:</b> HX711 24-Bit ADC Load-Cell, Hall Effect Manyetik Sensörler (A1302/SS495)
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button class="action-btn btn-primary" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub', '_blank')">🌐 GITHUB SAYFASINI AÇ</button>
+            <button class="action-btn btn-ghost" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub/releases', '_blank')">📦 SÜRÜM NOTLARI</button>
           </div>
         </div>
 
@@ -1410,7 +1692,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.5.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.6.0</div>
   </footer>
 
   <script>
@@ -1461,12 +1743,15 @@
         card.innerHTML = `
           <div class="card-status">
             <div class="card-name">${dev.name}</div>
-            <div class="status-pill">ACTIVE</div>
+            <div class="status-pill ${isConnected ? 'online' : ''}">${isConnected ? '● BAĞLI' : 'HAZIR'}</div>
           </div>
           <div class="card-img-wrap">${imgHtml}</div>
           <div class="card-footer">
             <span>KOD: ${dev.code}</span>
-            <span>AYARLA →</span>
+            <span style="display:flex; gap:6px;">
+              <button class="action-btn btn-ghost" style="padding:6px 10px; font-size:11px;" onclick="event.stopPropagation(); toggleUsbConnection();">${isConnected ? '✓ BAĞLI' : '🔌 BAĞLAN'}</button>
+              <button class="action-btn btn-primary" style="padding:6px 12px; font-size:11px;">AYARLA →</button>
+            </span>
           </div>
         `;
         grid.appendChild(card);
@@ -1570,23 +1855,31 @@
 
     function setConnectedState(status) {
       isConnected = status;
-      const btn = document.getElementById('usbConnectBtn');
       const dot = document.getElementById('footerDot');
       const text = document.getElementById('footerStatusText');
 
+      const cockpitBtn = document.getElementById('deviceConnectBtn');
+      if (cockpitBtn) {
+        if (status) {
+          cockpitBtn.innerText = "✓ BAĞLANDI (USB SERIAL)";
+          cockpitBtn.classList.add('connected');
+        } else {
+          cockpitBtn.innerText = "🔌 CİHAZA BAĞLAN (USB SERIAL)";
+          cockpitBtn.classList.remove('connected');
+        }
+      }
+
       if (status) {
-        btn.innerText = "✓ BAĞLANDI (USB)";
-        btn.classList.add('connected');
         dot.style.background = "#2ecc71";
         dot.style.boxShadow = "0 0 8px #2ecc71";
         text.innerText = "BAĞLANDI: OPENFFBOARD HARDWARE";
       } else {
-        btn.innerText = "🔌 BAĞLAN (USB SERIAL)";
-        btn.classList.remove('connected');
         dot.style.background = "var(--text-muted)";
         dot.style.boxShadow = "none";
         text.innerText = "BAĞLANTI BEKLENİYOR (USB SERIAL)";
       }
+
+      renderDevices();
     }
 
     async function sendCmd(cmdStr) {
@@ -1678,6 +1971,19 @@
         const pid = info.usbProductId ? info.usbProductId.toString(16).toUpperCase() : "DEV";
         const devCode = `${vid}:${pid}`;
 
+        // Otomatik bağlantıyı anında başlat
+        try {
+          port = detectedPort;
+          if (!port.readable) {
+            await port.open({ baudRate: 115200 });
+          }
+          writer = port.writable ? port.writable.getWriter() : null;
+          setConnectedState(true);
+          readLoop();
+        } catch (connErr) {
+          console.warn("Otomatik bağlantı denemesi:", connErr);
+        }
+
         if (currentModalTarget === 'submodule') {
           const newMod = {
             id: "submod_" + Date.now(),
@@ -1691,9 +1997,9 @@
           closeAddModal();
           showHubModal({
             icon: "🔌",
-            title: "ALT MODÜL EKLENDİ",
+            title: "ALT MODÜL BAĞLANDI",
             subtitle: "DİREKSİYON EKOSİSTEMİ",
-            content: `Alt modül direksiyon sisteminize başarıyla bağlandı.<br><br><b>Donanım Kodu:</b> ${devCode}`,
+            content: `Alt modül tanındı ve otomatik olarak bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
             confirmText: "TAMAM"
           });
         } else {
@@ -1710,9 +2016,9 @@
           closeAddModal();
           showHubModal({
             icon: "✓",
-            title: "CİHAZ OTOMATİK EKLENDİ",
-            subtitle: "USB DONANIM TANINDI",
-            content: `Yeni donanım cihaz listenize eklendi.<br><br><b>Donanım Kodu:</b> ${devCode}`,
+            title: "CİHAZ TANINDI VE BAĞLANDI",
+            subtitle: "USB DONANIM AKTİF",
+            content: `Yeni donanım başarıyla algılandı ve sisteme otomatik bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
             confirmText: "TAMAM"
           });
         }
@@ -1910,7 +2216,7 @@
       }
     }
 
-    const CURRENT_APP_VERSION = "v3.5.0";
+    const CURRENT_APP_VERSION = "v3.6.0";
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
 
     function isNewerVersion(latest, current) {
@@ -2118,12 +2424,20 @@
       }
     }
 
+    function changeAccentColor(color) {
+      document.documentElement.style.setProperty('--accent', color);
+      document.documentElement.style.setProperty('--accent-hover', color);
+      document.documentElement.style.setProperty('--accent-glow', color + '44');
+    }
+
     // Açılışta sürüm etiketlerini ve güncellemeyi doğrula
     window.addEventListener('DOMContentLoaded', () => {
       const descEl = document.getElementById('settingAppVersionDesc');
       if (descEl) descEl.innerText = `Mevcut Sürüm: ${CURRENT_APP_VERSION} (Production Channel).`;
       const footerEl = document.getElementById('footerAppVersionText');
       if (footerEl) footerEl.innerText = `VELOCITY CONTROL HUB | OPENFFBOARD ENGINE ${CURRENT_APP_VERSION}`;
+      const aboutEl = document.getElementById('aboutVersionText');
+      if (aboutEl) aboutEl.innerText = `${CURRENT_APP_VERSION} (Production Stable)`;
 
       setTimeout(() => {
         checkAppUpdates(false);
