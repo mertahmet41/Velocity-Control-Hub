@@ -105,8 +105,13 @@ class HubApi:
             except Exception:
                 pass
 
-            # Instant live refresh in UI
-            time.sleep(0.3)
+            return {"success": True, "live_html": live_html}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def reload_window(self):
+        try:
+            live_html = get_html_path()
             if self._window:
                 self._window.load_url(f'file:///{live_html.replace("\\", "/")}')
             return {"success": True}
