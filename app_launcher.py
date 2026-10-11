@@ -2,20 +2,42 @@ import os
 import sys
 import json
 import urllib.request
-import subprocess
-import tempfile
 import webbrowser
+import shutil
+import time
 import webview
 
 REPO = "mertahmet41/Velocity-Control-Hub"
 
-def is_newer_version(latest_tag, current_tag):
+def parse_version_tuple(ver_str):
     try:
-        l_parts = [int(x) for x in latest_tag.lstrip('v').split('.')]
-        c_parts = [int(x) for x in current_tag.lstrip('v').split('.')]
-        return l_parts > c_parts
+        parts = [int(x) for x in str(ver_str).lstrip('v').split('.') if x.isdigit()]
+        while len(parts) < 3:
+            parts.append(0)
+        return tuple(parts[:3])
     except Exception:
-        return latest_tag != current_tag and latest_tag != ""
+        return (0, 0, 0)
+
+def is_newer_version(latest_tag, current_tag):
+    l_tuple = parse_version_tuple(latest_tag)
+    c_tuple = parse_version_tuple(current_tag)
+    if l_tuple != (0, 0, 0) or c_tuple != (0, 0, 0):
+        return l_tuple > c_tuple
+    return latest_tag != current_tag and bool(latest_tag)
+
+def extract_version_from_html(html_path):
+    if not os.path.exists(html_path):
+        return "0.0.0"
+    try:
+        with open(html_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        import re
+        match = re.search(r'CURRENT_APP_VERSION\s*=\s*["\']v?([^"\']+)["\']', content)
+        if match:
+            return match.group(1)
+    except Exception:
+        pass
+    return "0.0.0"
 
 class HubApi:
     def __init__(self):
@@ -38,23 +60,11 @@ class HubApi:
                 body = data.get("body", "")
                 html_url = data.get("html_url", "")
                 
-                # Prioritize standalone executable for silent in-place update
-                download_url = None
+                download_url = f"https://github.com/{REPO}/releases/latest"
                 for asset in data.get("assets", []):
-                    name = asset.get("name", "").lower()
-                    if name == "velocitycontrolhub.exe":
+                    if asset.get("name", "").lower().endswith(".exe"):
                         download_url = asset.get("browser_download_url")
                         break
-                
-                # Fallback to setup exe if standalone not found
-                if not download_url:
-                    for asset in data.get("assets", []):
-                        if asset.get("name", "").lower().endswith(".exe"):
-                            download_url = asset.get("browser_download_url")
-                            break
-
-                if not download_url:
-                    download_url = html_url
                 
                 has_update = is_newer_version(latest_tag, current_version)
                 return {
@@ -73,61 +83,32 @@ class HubApi:
 
     def perform_silent_update(self, download_url):
         try:
-            current_exe = os.path.abspath(sys.executable)
-            is_frozen = getattr(sys, 'frozen', False)
-            temp_dir = tempfile.gettempdir()
-            update_exe = os.path.join(temp_dir, "VelocityControlHub_update.exe")
-
-            # 1. Download updated binary in background
+            live_html = get_html_path()
+            
+            # Download updated index.html directly from GitHub repository main branch with cache-buster
+            timestamp = int(time.time())
+            html_url = f"https://raw.githubusercontent.com/{REPO}/main/index.html?t={timestamp}"
             headers = {"User-Agent": "VelocityControlHubApp"}
-            req = urllib.request.Request(download_url, headers=headers)
-            with urllib.request.urlopen(req, timeout=120) as resp, open(update_exe, 'wb') as f:
-                while True:
-                    chunk = resp.read(64 * 1024)
-                    if not chunk:
-                        break
-                    f.write(chunk)
+            req = urllib.request.Request(html_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                new_html = resp.read()
+                with open(live_html, 'wb') as f:
+                    f.write(new_html)
 
-            # 2. In-place silent replacement and seamless restart
-            if is_frozen:
-                bat_path = os.path.join(temp_dir, "velocity_silent_restart.bat")
-                with open(bat_path, "w", encoding="utf-8") as bat:
-                    bat.write(f'''@echo off
-timeout /t 1 /nobreak > nul
-:retry
-copy /y "{update_exe}" "{current_exe}" > nul 2>&1
-if errorlevel 1 (
-    timeout /t 1 /nobreak > nul
-    goto retry
-)
-start "" "{current_exe}"
-del "{update_exe}" > nul 2>&1
-del "%~f0" > nul 2>&1
-''')
-                DETACHED_PROCESS = 0x00000008
-                CREATE_NO_WINDOW = 0x08000000
-                subprocess.Popen(
-                    ["cmd.exe", "/c", bat_path],
-                    creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
-                    close_fds=True
-                )
-            else:
-                # Script mode: update index.html directly from github
-                try:
-                    raw_html_url = f"https://raw.githubusercontent.com/{REPO}/main/index.html"
-                    req_html = urllib.request.Request(raw_html_url, headers=headers)
-                    with urllib.request.urlopen(req_html, timeout=10) as r:
-                        content = r.read()
-                        with open(os.path.join(os.path.dirname(__file__), 'index.html'), 'wb') as f:
-                            f.write(content)
-                except Exception as ex:
-                    print("Script update error:", ex)
-                subprocess.Popen([sys.executable] + sys.argv)
+            # Also update local directory index.html if accessible
+            try:
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                local_html = os.path.join(base_dir, 'index.html')
+                if os.path.exists(local_html) and not getattr(sys, 'frozen', False):
+                    with open(local_html, 'wb') as f:
+                        f.write(new_html)
+            except Exception:
+                pass
 
-            # Close current instance cleanly
+            # Instant live refresh in UI
+            time.sleep(0.3)
             if self._window:
-                self._window.destroy()
-            sys.exit(0)
+                self._window.load_url(f'file:///{live_html.replace("\\", "/")}')
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -141,14 +122,45 @@ def get_base_dir():
         return getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
     return os.path.dirname(os.path.abspath(__file__))
 
+def get_html_path():
+    app_data_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'VelocityControlHub', 'app')
+    os.makedirs(app_data_dir, exist_ok=True)
+    live_html = os.path.join(app_data_dir, 'index.html')
+    
+    bundle_dir = get_base_dir()
+    
+    # Ensure static media assets exist in the live app directory
+    for asset in ['pro_wheel.png', 'wheel.png', 'OpenFFBoard_F411CE_V3_Profiles.hex']:
+        src = os.path.join(bundle_dir, asset)
+        dst = os.path.join(app_data_dir, asset)
+        if os.path.exists(src) and (not os.path.exists(dst) or os.path.getsize(dst) == 0):
+            try:
+                shutil.copy2(src, dst)
+            except Exception:
+                pass
+
+    bundled_html = os.path.join(bundle_dir, 'index.html')
+    if not os.path.exists(live_html):
+        if os.path.exists(bundled_html):
+            shutil.copy2(bundled_html, live_html)
+    elif os.path.exists(bundled_html):
+        bundled_ver = extract_version_from_html(bundled_html)
+        live_ver = extract_version_from_html(live_html)
+        if is_newer_version(bundled_ver, live_ver):
+            try:
+                shutil.copy2(bundled_html, live_html)
+            except Exception:
+                pass
+
+    return live_html if os.path.exists(live_html) else bundled_html
+
 def main():
-    base_dir = get_base_dir()
-    index_file = os.path.join(base_dir, 'index.html')
+    live_html = get_html_path()
     
     api = HubApi()
     window = webview.create_window(
         title='Velocity Control Hub - Pro Force Feedback Ecosystem',
-        url=f'file:///{index_file.replace("\\", "/")}',
+        url=f'file:///{live_html.replace("\\", "/")}',
         width=1280,
         height=820,
         min_size=(1024, 700),
