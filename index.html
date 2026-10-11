@@ -1126,9 +1126,9 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc">Mevcut Sürüm: v3.0.0 (Production Channel).</div>
+              <div class="setting-desc">Mevcut Sürüm: v3.1.0 (Production Channel).</div>
             </div>
-            <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates()">UYGULAMAYI DENETLE</button>
+            <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
 
           <div class="setting-item">
@@ -1235,13 +1235,32 @@
     </div>
   </div>
 
+  <!-- IN-APP UPDATE NOTIFICATION TOAST / BANNER -->
+  <div id="updateBanner" style="display:none; position: fixed; bottom: 65px; right: 24px; background: rgba(18, 20, 26, 0.96); backdrop-filter: blur(20px); border: 1px solid var(--accent); border-radius: 14px; padding: 18px 22px; box-shadow: 0 12px 35px rgba(0,210,255,0.3); z-index: 9999; max-width: 380px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+      <div style="font-weight: 800; font-size: 14px; color: var(--accent); display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">🚀</span> YENİ SÜRÜM YAYINLANDI!
+      </div>
+      <span onclick="document.getElementById('updateBanner').style.display='none'" style="cursor: pointer; color: #888; font-size: 18px; font-weight: bold; line-height: 1;">&times;</span>
+    </div>
+    <div id="updateVersionText" style="font-size: 12px; color: #ccc; margin-bottom: 14px; line-height: 1.5;">
+      Velocity Control Hub için yeni bir güncelleme mevcut.
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a id="updateDownloadBtn" href="#" target="_blank" style="flex: 1; text-align: center; background: var(--accent); color: #000; font-weight: 800; font-size: 12px; padding: 10px 14px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        📥 ŞİMDİ İNDİR & KUR
+      </a>
+      <button onclick="document.getElementById('updateBanner').style.display='none'" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: #aaa; font-size: 12px; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;">Daha Sonra</button>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <div>
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div>VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.0.0</div>
+    <div>VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.1.0</div>
   </footer>
 
   <script>
@@ -1605,13 +1624,58 @@
       }
     }
 
-    function checkAppUpdates() {
-      alert("🔍 GitHub API Kontrolü:\n\n" +
-            "✓ Depo: github.com/mertahmet41/Velocity-Control-Hub\n" +
-            "✓ Uygulama Sürümü: v3.1.0 (Full OpenFFBoard FFB Suite)\n" +
-            "✓ Kurulum Sihirbazı: Velocity_Control_Hub_Setup.exe\n\n" +
-            "✅ Velocity Control Hub en güncel kararlı sürümdedir.");
+    const CURRENT_APP_VERSION = "v3.1.0";
+    const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
+
+    async function checkAppUpdates(isManual = false) {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
+        if (!res.ok) {
+          if (isManual) alert("GitHub API'ye erişilemedi veya henüz bir sürüm yok.");
+          return;
+        }
+        const release = await res.json();
+        const latestTag = release.tag_name;
+        
+        let downloadUrl = release.html_url;
+        if (release.assets && release.assets.length > 0) {
+          const setupAsset = release.assets.find(a => a.name.toLowerCase().endsWith('.exe'));
+          if (setupAsset) {
+            downloadUrl = setupAsset.browser_download_url;
+          }
+        }
+
+        // Check if there is a newer version available
+        if (latestTag && latestTag !== CURRENT_APP_VERSION) {
+          const banner = document.getElementById('updateBanner');
+          const text = document.getElementById('updateVersionText');
+          const btn = document.getElementById('updateDownloadBtn');
+          if (banner && text && btn) {
+            text.innerHTML = `Yeni <b>${latestTag}</b> sürümü yayında! (Mevcut: <b>${CURRENT_APP_VERSION}</b>)<br>En güncel Inno Setup kurulum sihirbazını hemen indirip kurabilirsiniz.`;
+            btn.href = downloadUrl;
+            banner.style.display = 'block';
+          }
+          if (isManual) {
+            if (confirm(`🚀 Yeni Sürüm Yayında!\n\nMevcut Sürüm: ${CURRENT_APP_VERSION}\nEn Yeni Sürüm: ${latestTag}\n\nKurulum sihirbazını (${latestTag}) hemen indirmek istiyor musunuz?`)) {
+              window.open(downloadUrl, '_blank');
+            }
+          }
+        } else {
+          if (isManual) {
+            alert(`✅ Velocity Control Hub En Güncel Sürümde!\n\n• Kurulu Sürüm: ${CURRENT_APP_VERSION}\n• GitHub Depo Sürümü: ${latestTag || CURRENT_APP_VERSION}\n• Kurulum Sihirbazı: Velocity_Control_Hub_Setup.exe\n• Durum: Sisteminiz %100 güncel.`);
+          }
+        }
+      } catch (err) {
+        if (isManual) alert("Güncelleme denetlenirken hata oluştu: " + err);
+      }
     }
+
+    // Uygulama her açıldığında arka planda GitHub'ı otomatik denetler
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        checkAppUpdates(false);
+      }, 2000);
+    });
 
     function resetAllData() {
       if (confirm("Kayıtlı tüm cihazları ve ayarları sıfırlamak istediğinize emin misiniz?")) {
