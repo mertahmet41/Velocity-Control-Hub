@@ -1410,7 +1410,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div>VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.4.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.4.0</div>
   </footer>
 
   <script>
@@ -2122,6 +2122,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       const descEl = document.getElementById('settingAppVersionDesc');
       if (descEl) descEl.innerText = `Mevcut Sürüm: ${CURRENT_APP_VERSION} (Production Channel).`;
+      const footerEl = document.getElementById('footerAppVersionText');
+      if (footerEl) footerEl.innerText = `VELOCITY CONTROL HUB | OPENFFBOARD ENGINE ${CURRENT_APP_VERSION}`;
 
       setTimeout(() => {
         checkAppUpdates(false);
