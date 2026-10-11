@@ -1257,7 +1257,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc">Mevcut Sürüm: v3.1.0 (Production Channel).</div>
+              <div class="setting-desc">Mevcut Sürüm: v3.3.0 (Production Channel).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1410,7 +1410,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div>VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.1.0</div>
+    <div>VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.3.0</div>
   </footer>
 
   <script>
@@ -1910,15 +1910,32 @@
       }
     }
 
-    const CURRENT_APP_VERSION = "v3.1.0";
+    const CURRENT_APP_VERSION = "v3.3.0";
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
+
+    function isNewerVersion(latest, current) {
+      if (!latest || !current) return false;
+      try {
+        const cleanL = latest.replace(/^v/, '').split('.').map(Number);
+        const cleanC = current.replace(/^v/, '').split('.').map(Number);
+        for (let i = 0; i < Math.max(cleanL.length, cleanC.length); i++) {
+          const l = cleanL[i] || 0;
+          const c = cleanC[i] || 0;
+          if (l > c) return true;
+          if (l < c) return false;
+        }
+      } catch (e) {
+        return latest !== current && latest !== "";
+      }
+      return false;
+    }
 
     async function checkAppUpdates(isManual = false) {
       if (isManual) {
         showHubModal({
           icon: "🔍",
           title: "GÜNCELLEMELER DENETLENİYOR...",
-          subtitle: "GITHUB API SENKRONİZASYONU",
+          subtitle: "GITHUB RELEASES KONTROLÜ",
           content: `<div style="text-align: center; padding: 12px 0;">
                       <div style="font-size: 13px; margin-bottom: 6px;">GitHub sunucuları taranıyor...</div>
                       <div style="color: var(--accent); font-weight: 700; font-size: 12px;">Depo: ${GITHUB_REPO}</div>
@@ -1948,14 +1965,14 @@
           if (res.ok) {
             const data = await res.json();
             const latestTag = data.tag_name || "";
-            let dlUrl = data.html_url;
+            let dlUrl = `https://github.com/${GITHUB_REPO}/releases/latest`;
             if (data.assets) {
               const exeAsset = data.assets.find(a => a.name.toLowerCase().endsWith('.exe'));
               if (exeAsset) dlUrl = exeAsset.browser_download_url;
             }
             result = {
               success: true,
-              has_update: (latestTag !== "" && latestTag !== CURRENT_APP_VERSION),
+              has_update: isNewerVersion(latestTag, CURRENT_APP_VERSION),
               latest_tag: latestTag,
               current_version: CURRENT_APP_VERSION,
               body: data.body || "",
@@ -1988,7 +2005,7 @@
       if (result.has_update) {
         showHubModal({
           icon: "🚀",
-          title: `YENİ GÜNCELLEME MEVCUT! (${result.latest_tag})`,
+          title: `YENİ SÜRÜM BULUNDU! (${result.latest_tag})`,
           subtitle: "VELOCITY CONTROL HUB ECOSYSTEM",
           content: `
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
@@ -2000,12 +2017,17 @@
               <span style="font-weight: 800; color: #00d2ff;">${result.latest_tag}</span>
             </div>
             <div style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">SÜRÜM YENİLİKLERİ:</div>
-            <div style="font-size: 12px; color: #9499a6; white-space: pre-line; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; max-height: 120px; overflow-y: auto;">${result.body || "Genel performans iyileştirmeleri ve yeni FFB algoritmaları."}</div>
+            <div style="font-size: 12px; color: #9499a6; white-space: pre-line; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; max-height: 120px; overflow-y: auto;">${result.body || "Genel performans iyileştirmeleri ve hata düzeltmeleri."}</div>
           `,
-          confirmText: "📥 ŞİMDİ GÜNCELLE & KUR",
+          confirmText: "📥 GİTHUB'DAN İNDİR",
           cancelText: "Daha Sonra",
           onConfirm: () => {
-            startUpdateDownloadAndInstall(result.download_url, result.latest_tag);
+            if (window.pywebview && window.pywebview.api && window.pywebview.api.open_external) {
+              window.pywebview.api.open_external(result.download_url);
+            } else {
+              window.open(result.download_url, '_blank');
+            }
+            closeHubModal();
           }
         });
       } else {
