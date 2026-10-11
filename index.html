@@ -919,6 +919,108 @@
       border-radius: 50%;
       margin-right: 6px;
     }
+
+    /* CASE RGB LED STYLES & LIVE ANIMATIONS */
+    .case-led-badge {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 17, 23, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      z-index: 10;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    }
+    .case-led-badge:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 14px var(--accent-glow);
+    }
+    .case-led-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffa726;
+      box-shadow: 0 0 10px #ffa726;
+      animation: ledPulseAmber 1.8s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+    .case-led-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .case-led-title {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.6px;
+    }
+    .case-led-sub {
+      font-size: 11px;
+      font-weight: 800;
+      color: #ffa726;
+      letter-spacing: 0.3px;
+    }
+
+    .led-preview-bezel {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #12141a;
+      border: 2px solid #282d38;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 3px 8px rgba(0,0,0,0.8), 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .led-preview-core {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ffa726;
+      box-shadow: 0 0 20px #ffa726, 0 0 40px #ffa726;
+      transition: all 0.2s ease;
+      position: relative;
+      z-index: 2;
+    }
+    .led-preview-glow {
+      position: absolute;
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,167,38,0.6) 0%, transparent 70%);
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+
+    @keyframes ledPulseAmber {
+      0%, 100% { opacity: 0.35; transform: scale(0.95); box-shadow: 0 0 4px #ffa726; }
+      50% { opacity: 1; transform: scale(1.05); box-shadow: 0 0 18px #ffa726, 0 0 32px #ffa726; }
+    }
+    @keyframes ledGlowCyan {
+      0%, 100% { opacity: 0.85; box-shadow: 0 0 10px #00d2ff; }
+      50% { opacity: 1; box-shadow: 0 0 24px #00d2ff, 0 0 38px #00d2ff; }
+    }
+    @keyframes ledStrobeRed {
+      0% { opacity: 0.15; transform: scale(0.92); box-shadow: none; background: #550000; }
+      50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 28px #ff1744, 0 0 55px #ff1744; background: #ff1744; }
+      100% { opacity: 0.15; transform: scale(0.92); box-shadow: none; background: #550000; }
+    }
+    @keyframes ledPulseOrange {
+      0%, 100% { opacity: 0.6; box-shadow: 0 0 10px #ff9100; }
+      50% { opacity: 1; box-shadow: 0 0 24px #ff9100; }
+    }
+    @keyframes ledSolidEstop {
+      0%, 100% { opacity: 1; box-shadow: 0 0 22px #ff1744; background: #d50000; }
+    }
   </style>
 </head>
 <body>
@@ -1001,9 +1103,16 @@
           <!-- 1. DİREKSİYON MODÜLÜ -->
           <div class="module-pane active" id="module-wheel">
             <div class="cockpit-layout">
-              <div class="glass-panel wheel-stage">
+              <div class="glass-panel wheel-stage" style="position: relative;">
                 <img src="pro_wheel.png" class="rotating-wheel" id="wheelGraphic" alt="GT3 Steering Wheel">
                 <div class="angle-readout" id="angleDisplay">+0.0°</div>
+                <div class="case-led-badge" id="caseLedStageBadge" onclick="switchSubPane('led')" title="Kasa Durum RGB LED'i (Ayarlamak için tıklayın)">
+                  <div class="case-led-dot" id="caseLedStageDot"></div>
+                  <div class="case-led-info">
+                    <span class="case-led-title">KASA RGB LED</span>
+                    <span class="case-led-sub" id="caseLedStageText">BEKLENİYOR (SARI)</span>
+                  </div>
+                </div>
               </div>
 
               <div class="glass-panel">
@@ -1011,8 +1120,9 @@
                   <button class="sub-tab-btn active" onclick="switchSubPane('axis')">EKSEN & PROFİLLER</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('ffb')">FFB EFEKTLERİ</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('safety')">MOTOR & GÜVENLİK</button>
+                  <button class="sub-tab-btn" onclick="switchSubPane('led')">KASA RGB LED</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('profile')">KİMLİK & SPOOFING</button>
-                  <button class="sub-tab-btn" onclick="switchSubPane('firmware')">FİRMWARE & GÜNCELLEME</button>
+                  <button class="sub-tab-btn" onclick="switchSubPane('firmware')">FİRMWARE & DFU</button>
                 </div>
 
                 <!-- PANE 1: AXIS & DRIVING PROFILES -->
@@ -1181,7 +1291,136 @@
                   </div>
                 </div>
 
-                <!-- PANE 4: SPOOFING & CONTROLLER PROFILES -->
+                <!-- PANE 4: KASA DURUM RGB LED & TELEMETRİ MONİTÖRÜ -->
+                <div class="sub-pane" id="pane-led">
+                  <!-- REALISTIC LIVE LED SIMULATOR & TEST BOX -->
+                  <div style="background: linear-gradient(135deg, rgba(16, 20, 28, 0.95), rgba(11, 13, 17, 0.98)); border: 1px solid rgba(0, 180, 216, 0.35); border-radius: 14px; padding: 20px; margin-bottom: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+                      <div>
+                        <div style="font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.5px;">💡 CANLI KASA LED SİMÜLATÖRÜ & DURUM MONİTÖRÜ</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Direksiyon kasasındaki fiziksel RGB LED'in (PA0, PA1, PA2) canlı durum yansıması</div>
+                      </div>
+                      <span class="control-badge" id="badgeLedStateDesc" style="background: rgba(255, 170, 0, 0.15); color: #ffa726; border: 1px solid rgba(255, 170, 0, 0.3);">SARI: BEKLENİYOR</span>
+                    </div>
+
+                    <!-- VISUAL LED BULB BEZEL -->
+                    <div style="display:flex; align-items:center; justify-content:center; gap: 24px; padding: 24px 0; background: rgba(0,0,0,0.35); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); position: relative; overflow: hidden;">
+                      <div class="led-preview-bezel">
+                        <div class="led-preview-core" id="ledPreviewCore"></div>
+                        <div class="led-preview-glow" id="ledPreviewGlow"></div>
+                      </div>
+                      <div style="max-width: 320px;">
+                        <div style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 4px;" id="ledSimStatusTitle">Bağlantı Bekleniyor (Pulsing Amber)</div>
+                        <div style="font-size: 11px; color: #8e95a5; line-height: 1.4;" id="ledSimStatusDetail">STM32 USB CDC seri portu dinleniyor. Kasa LED'i yavaş nefes alma sarı animasyonu ile kullanıcının bağlantı kurmasını bekliyor.</div>
+                      </div>
+                    </div>
+
+                    <!-- TEST & TRIGGER BUTTONS -->
+                    <div style="margin-top: 16px;">
+                      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;">🧪 DURUMLARI CANLI SİMÜLE ET / TEST ET:</div>
+                      <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('disconnected')">🟡 Bağlantı Bekleme (Nefes Alma)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('connected')">🟢 Normal Çalışma (Hazır Glow)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #ff3333; color: #ff5252;" onclick="testLedAnimation('clipping')">🔴 FFB Aşımı (%100 Kırmızı Flaş)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #f39c12; color: #f39c12;" onclick="testLedAnimation('load')">🟠 Yüksek Tork Yükü (Dinamik)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('estop')">⛔ Acil Durdurma (E-Stop)</button>
+                        <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 11px; flex: 0 0 auto;" onclick="testLedAnimation('auto')">🔄 Donanım Canlı Modu</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- CONTROL 1: GENEL KASA LED MODU -->
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">Kasa LED Çalışma Modu</span>
+                      <span class="control-badge" id="badgeLedMode">Akıllı Otomatik</span>
+                    </div>
+                    <div class="control-desc">LED'in direksiyon sistem durumlarına nasıl tepki vereceğini belirleyin.</div>
+                    <select class="select-box" style="margin-top: 8px;" id="caseLedModeSelect" onchange="setCaseLedMode(this.value)">
+                      <option value="smart" selected>⭐ Akıllı Durum Monitörü (Tüm Durumlar: Bekleme, Bağlantı, FFB Aşımı, E-Stop)</option>
+                      <option value="clipping_only">🏎️ Sadece FFB Kırpılma / Aşırı Yükte Kırmızı Alarm</option>
+                      <option value="ambient_breath">🌈 Dinamik RGB Ambient & Nefes Alma Animasyonu</option>
+                      <option value="telemetry_load">⚡ Tork Yükü Telemetrisi (Yeşil ➔ Sarı ➔ Kırmızı)</option>
+                      <option value="solid_accent">💡 Sabit Velocity Neon Aydınlatması</option>
+                      <option value="off">❌ Kapalı (LED Devre Dışı)</option>
+                    </select>
+                  </div>
+
+                  <!-- CONTROL 2: FFB AŞIMI (CLIPPING) ALARMI & HIZI -->
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">FFB Kırpılma (Clipping) Kırmızı Flaşör Eşiği</span>
+                      <span class="control-badge" id="badgeClipThreshold">%92</span>
+                    </div>
+                    <div class="control-desc">Tork bu güç sınırını aştığında kasa LED'i kırmızı yanıp sönerek motor aşırı yükünü haber verir.</div>
+                    <input type="range" min="70" max="100" value="92" id="slClipThreshold" oninput="updateVal('badgeClipThreshold', this.value, '%', 'fx.clip_threshold')">
+                  </div>
+
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">Kırmızı Alarm Flaş Hızı (Strobe Frequency)</span>
+                      <span class="control-badge" id="badgeStrobeFreq">Hızlı Flaş (10 Hz)</span>
+                    </div>
+                    <div class="control-desc">FFB clipping anındaki kırmızı ikaz flaşörünün yanıp sönme frekansı.</div>
+                    <select class="select-box" style="margin-top: 8px;" id="strobeFreqSelect" onchange="setStrobeFreq(this.value)">
+                      <option value="fast" selected>Hızlı Flaşör (10 Hz Strobe - Anlık Uyarı)</option>
+                      <option value="medium">Orta Hızda Yan-Sön (5 Hz)</option>
+                      <option value="breath">Pürüzsüz Kırmızı Nefes Alma (Smooth Alert)</option>
+                    </select>
+                  </div>
+
+                  <!-- CONTROL 3: BAĞLANTI VE DİĞER DURUMLARIN TETİKLEYİCİLERİ -->
+                  <div class="control-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <div>
+                        <div class="control-name">Bağlantı Beklerken Yavaş Sarı Nefes Alma</div>
+                        <div class="control-desc">USB bağlantısı yokken kasanın canlı olduğunu belirten yumuşak sarı/turuncu animasyon.</div>
+                      </div>
+                      <label class="switch" style="margin-left: 20px;">
+                        <input type="checkbox" checked id="ledWaitingAnimToggle" onchange="toggleLedWaiting(this.checked)">
+                        <span class="slider-toggle"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="control-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <div>
+                        <div class="control-name">Acil Durdurma (E-Stop) & Watchdog Kırmızı İkaz</div>
+                        <div class="control-desc">Motor güvenlik kesicisi devreye girdiğinde LED'i acil durum kırmızısına al.</div>
+                      </div>
+                      <label class="switch" style="margin-left: 20px;">
+                        <input type="checkbox" checked id="ledEstopAnimToggle">
+                        <span class="slider-toggle"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="control-group">
+                    <div class="control-header">
+                      <span class="control-name">Kasa LED Parlaklığı (PWM Brightness)</span>
+                      <span class="control-badge" id="badgeLedBright">%90</span>
+                    </div>
+                    <div class="control-desc">Sürücü gözünü almaması için maksimum PWM aydınlatma şiddeti.</div>
+                    <input type="range" min="10" max="100" value="90" id="slLedBright" oninput="updateVal('badgeLedBright', this.value, '%', 'sys.led_brightness')">
+                  </div>
+
+                  <!-- CONTROL 4: DONANIM PİN BİLGİSİ -->
+                  <div class="control-group" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                      <span style="font-weight: 800; color: #fff; font-size: 12px;">🔌 STM32 DONANIM PİN ATAMALARI & TIM2 PWM:</span>
+                      <span style="font-size: 11px; color: var(--accent); font-weight: 700;">84/100 MHz Donanım Zamanlayıcı</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                      • <b>Kırmızı (R):</b> Pin PA0 (Timer 2 - Kanal 1 PWM)<br>
+                      • <b>Yeşil (G):</b> Pin PA1 (Timer 2 - Kanal 2 PWM)<br>
+                      • <b>Mavi (B):</b> Pin PA2 (Timer 2 - Kanal 3 PWM)<br>
+                      • <b>Polarite Modu:</b> Ortak Katot (Varsayılan) / Ortak Anot Uyumlu
+                    </div>
+                  </div>
+                </div>
+
+                <!-- PANE 5: SPOOFING & CONTROLLER PROFILES -->
                 <div class="sub-pane" id="pane-profile">
                   <div class="control-group">
                     <span class="control-name">USB Cihaz Kimliği (Hardware Spoofing VID/PID)</span>
@@ -1194,19 +1433,9 @@
                   </div>
                 </div>
 
-                <!-- PANE 5: DİREKSİYONA ÖZEL FİRMWARE & GÜNCELLEME -->
+                <!-- PANE 6: DİREKSİYONA ÖZEL FİRMWARE & GÜNCELLEME -->
                 <div class="sub-pane" id="pane-firmware">
-                  <div class="control-group">
-                    <span class="control-name">Kasa Durum RGB LED'i (PA0, PA1, PA2)</span>
-                    <select class="select-box" style="margin-top: 8px;">
-                      <option>Nefes Alma Animasyonu (Breathing RGB)</option>
-                      <option>Clipping Monitör (Aşırı FFB Yükünde Kırmızı Alarm)</option>
-                      <option>Sabit Işık</option>
-                      <option>Kapalı</option>
-                    </select>
-                  </div>
-
-                  <div class="control-group" style="margin-top: 20px; background: #191c22; padding: 16px; border-radius: 10px; border: 1px solid var(--border);">
+                  <div class="control-group" style="background: #191c22; padding: 16px; border-radius: 10px; border: 1px solid var(--border);">
                     <div class="control-name" style="color: var(--accent);">STM32F411CEU6 Firmware Durumu</div>
                     <div class="control-desc" style="margin: 6px 0 14px 0;">Yüklü Firmware: OpenFFBoard_F411CE_V3_Profiles.hex. GitHub üzerindeki sürümle %100 eşleşti.</div>
                     <div class="btn-row" style="margin-top: 0;">
@@ -1321,7 +1550,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.7.0 (Production Channel).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.8.0 (Production Channel).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1526,7 +1755,7 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
-              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.7.0 (Production Stable)</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.8.0 (Production Stable)</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">MOTOR ALTYAPISI</div>
@@ -1651,7 +1880,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.7.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.8.0</div>
   </footer>
 
   <script>
@@ -1776,7 +2005,8 @@
       const p = document.getElementById('pane-' + paneName);
       if (p) p.classList.add('active');
 
-      event.target.classList.add('active');
+      const btn = Array.from(document.querySelectorAll('.sub-tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${paneName}'`));
+      if (btn) btn.classList.add('active');
     }
 
     function updateVal(badgeId, val, unit, cmd) {
@@ -1873,6 +2103,150 @@
       });
     }
 
+    // ==========================================
+    // KASA RGB LED SİSTEMİ & CANLI DURUM MONİTÖRÜ
+    // ==========================================
+    let currentLedMode = 'smart';
+    let currentLedState = 'disconnected';
+    let isLedManualTest = false;
+    let manualTestTimeout = null;
+    let clipFlashTimeout = null;
+    let ledWaitingEnabled = true;
+
+    function updateLedVisuals(state) {
+      currentLedState = state;
+      const core = document.getElementById('ledPreviewCore');
+      const glow = document.getElementById('ledPreviewGlow');
+      const stageDot = document.getElementById('caseLedStageDot');
+      const stageText = document.getElementById('caseLedStageText');
+      const badgeDesc = document.getElementById('badgeLedStateDesc');
+      const titleEl = document.getElementById('ledSimStatusTitle');
+      const detailEl = document.getElementById('ledSimStatusDetail');
+
+      if (!core || !glow) return;
+
+      if (state === 'disconnected') {
+        core.style.animation = 'ledPulseAmber 1.8s infinite ease-in-out';
+        core.style.background = '#ffa726';
+        glow.style.background = 'radial-gradient(circle, rgba(255,167,38,0.6) 0%, transparent 70%)';
+        if (stageDot) {
+          stageDot.style.animation = 'ledPulseAmber 1.8s infinite ease-in-out';
+          stageDot.style.background = '#ffa726';
+          stageDot.style.boxShadow = '0 0 10px #ffa726';
+        }
+        if (stageText) { stageText.innerText = 'BEKLENİYOR (SARI)'; stageText.style.color = '#ffa726'; }
+        if (badgeDesc) { badgeDesc.innerText = 'SARI: BEKLENİYOR'; badgeDesc.style.color = '#ffa726'; badgeDesc.style.borderColor = 'rgba(255,167,38,0.3)'; }
+        if (titleEl) titleEl.innerText = 'Bağlantı Bekleniyor (Pulsing Amber)';
+        if (detailEl) detailEl.innerText = 'STM32 USB CDC seri portu dinleniyor. Kasa LED\'i yumuşak sarı/turuncu nefes alma efektiyle bağlantı bekliyor.';
+      } else if (state === 'connected') {
+        core.style.animation = 'ledGlowCyan 2.5s infinite ease-in-out';
+        core.style.background = '#00d2ff';
+        glow.style.background = 'radial-gradient(circle, rgba(0,210,255,0.6) 0%, transparent 70%)';
+        if (stageDot) {
+          stageDot.style.animation = 'ledGlowCyan 2.5s infinite ease-in-out';
+          stageDot.style.background = '#00d2ff';
+          stageDot.style.boxShadow = '0 0 10px #00d2ff';
+        }
+        if (stageText) { stageText.innerText = 'HAZIR (CYAN)'; stageText.style.color = '#00d2ff'; }
+        if (badgeDesc) { badgeDesc.innerText = 'CYAN: HAZIR'; badgeDesc.style.color = '#00d2ff'; badgeDesc.style.borderColor = 'rgba(0,210,255,0.3)'; }
+        if (titleEl) titleEl.innerText = 'Sistem Hazır / Normal Çalışma (Neon Cyan)';
+        if (detailEl) detailEl.innerText = 'USB bağlantısı aktif, FFB motor sürücüsü hazır durumda. Kasa LED\'i sakin neon cyan ışığı yayıyor.';
+      } else if (state === 'clipping') {
+        core.style.animation = 'ledStrobeRed 0.15s infinite alternate';
+        core.style.background = '#ff1744';
+        glow.style.background = 'radial-gradient(circle, rgba(255,23,68,0.8) 0%, transparent 70%)';
+        if (stageDot) {
+          stageDot.style.animation = 'ledStrobeRed 0.15s infinite alternate';
+          stageDot.style.background = '#ff1744';
+          stageDot.style.boxShadow = '0 0 16px #ff1744';
+        }
+        if (stageText) { stageText.innerText = 'FFB AŞILDI! (KIRMIZI)'; stageText.style.color = '#ff1744'; }
+        if (badgeDesc) { badgeDesc.innerText = 'ALARM: FFB CLIPPING'; badgeDesc.style.color = '#ff1744'; badgeDesc.style.borderColor = 'rgba(255,23,68,0.4)'; }
+        if (titleEl) titleEl.innerText = 'FFB Clipping / Tork Aşımı (Kırmızı Flaşör Strobe)';
+        if (detailEl) detailEl.innerText = 'Direksiyona iletilen kuvvet tavan sınırını aştı! Motor doygunluğunu bildirmek için LED hızlıca kırmızı yanıp sönüyor.';
+      } else if (state === 'load') {
+        core.style.animation = 'ledPulseOrange 0.8s infinite alternate';
+        core.style.background = '#ff9100';
+        glow.style.background = 'radial-gradient(circle, rgba(255,145,0,0.6) 0%, transparent 70%)';
+        if (stageDot) {
+          stageDot.style.animation = 'ledPulseOrange 0.8s infinite alternate';
+          stageDot.style.background = '#ff9100';
+          stageDot.style.boxShadow = '0 0 10px #ff9100';
+        }
+        if (stageText) { stageText.innerText = 'YÜKSEK TORK (TURUNCU)'; stageText.style.color = '#ff9100'; }
+        if (badgeDesc) { badgeDesc.innerText = 'UYARI: YÜKSEK TORK'; badgeDesc.style.color = '#ff9100'; badgeDesc.style.borderColor = 'rgba(255,145,0,0.3)'; }
+        if (titleEl) titleEl.innerText = 'Yüksek Viraj Tork Yükü (Dinamik Turuncu)';
+        if (detailEl) detailEl.innerText = 'Yüksek FFB viraj yükü altında dinamik tork uyarısı. Tork arttıkça LED sıcak tonlara geçiş yapar.';
+      } else if (state === 'estop') {
+        core.style.animation = 'ledSolidEstop 1s infinite alternate';
+        core.style.background = '#d50000';
+        glow.style.background = 'radial-gradient(circle, rgba(213,0,0,0.7) 0%, transparent 70%)';
+        if (stageDot) {
+          stageDot.style.animation = 'ledSolidEstop 1s infinite alternate';
+          stageDot.style.background = '#d50000';
+          stageDot.style.boxShadow = '0 0 14px #d50000';
+        }
+        if (stageText) { stageText.innerText = 'E-STOP / KESİLDİ'; stageText.style.color = '#ff1744'; }
+        if (badgeDesc) { badgeDesc.innerText = 'DURDURMA: E-STOP'; badgeDesc.style.color = '#ff1744'; badgeDesc.style.borderColor = 'rgba(255,23,68,0.4)'; }
+        if (titleEl) titleEl.innerText = 'Acil Durdurma / Watchdog Kesici Aktif';
+        if (detailEl) detailEl.innerText = 'Motor tork çıkışı sıfırlandı. Donanımsal veya yazılımsal güvenlik kilidi aktif.';
+      }
+    }
+
+    function testLedAnimation(state) {
+      if (manualTestTimeout) clearTimeout(manualTestTimeout);
+      if (state === 'auto') {
+        isLedManualTest = false;
+        updateLedVisuals(isConnected ? 'connected' : 'disconnected');
+        sendCmd('sys.rgb_test=auto');
+        return;
+      }
+
+      isLedManualTest = true;
+      updateLedVisuals(state);
+      sendCmd('sys.rgb_test=' + state);
+
+      manualTestTimeout = setTimeout(() => {
+        isLedManualTest = false;
+        updateLedVisuals(isConnected ? 'connected' : 'disconnected');
+      }, 6000);
+    }
+
+    function setCaseLedMode(mode) {
+      currentLedMode = mode;
+      const b = document.getElementById('badgeLedMode');
+      const sel = document.getElementById('caseLedModeSelect');
+      if (b && sel) b.innerText = sel.options[sel.selectedIndex].text.split('(')[0].trim();
+      sendCmd('sys.rgb_mode=' + mode);
+    }
+
+    function setStrobeFreq(freq) {
+      const b = document.getElementById('badgeStrobeFreq');
+      const sel = document.getElementById('strobeFreqSelect');
+      if (b && sel) b.innerText = sel.options[sel.selectedIndex].text.split('(')[0].trim();
+      sendCmd('sys.rgb_strobe=' + freq);
+    }
+
+    function toggleLedWaiting(enabled) {
+      ledWaitingEnabled = enabled;
+      sendCmd('sys.rgb_waiting=' + (enabled ? '1' : '0'));
+      if (!isConnected) {
+        if (enabled) updateLedVisuals('disconnected');
+        else updateLedVisuals('off');
+      }
+    }
+
+    function triggerClippingFlash() {
+      if (isLedManualTest) return;
+      updateLedVisuals('clipping');
+      if (clipFlashTimeout) clearTimeout(clipFlashTimeout);
+      clipFlashTimeout = setTimeout(() => {
+        if (!isLedManualTest) {
+          updateLedVisuals(isConnected ? 'connected' : 'disconnected');
+        }
+      }, 450);
+    }
+
     // USB WEB SERIAL
     async function toggleUsbConnection() {
       if (!navigator.serial) {
@@ -1926,6 +2300,10 @@
         text.innerText = "BAĞLANTI BEKLENİYOR (USB SERIAL)";
       }
 
+      if (!isLedManualTest) {
+        updateLedVisuals(status ? 'connected' : 'disconnected');
+      }
+
       renderDevices();
     }
 
@@ -1954,6 +2332,18 @@
               let deg = (raw / 32767.0) * 450.0;
               setWheelAngle(deg);
             }
+            if (text.includes("axis.curtorque:")) {
+              let tq = Math.abs(parseInt(text.split(":")[1]) || 0);
+              let clipThreshold = parseInt(document.getElementById('slClipThreshold')?.value || '92');
+              let tqPct = (tq / 32767.0) * 100.0;
+              if (currentLedMode === 'smart' || currentLedMode === 'clipping_only') {
+                if (tqPct >= clipThreshold) {
+                  triggerClippingFlash();
+                } else if (currentLedMode === 'smart' && tqPct >= 65 && !isLedManualTest && currentLedState !== 'clipping') {
+                  updateLedVisuals('load');
+                }
+              }
+            }
           }
         } catch (e) {
           break;
@@ -1973,6 +2363,7 @@
 
     // Static Wheel at 0.0 degrees - Only rotates when real hardware signals arrive!
     setWheelAngle(0.0);
+    updateLedVisuals('disconnected');
 
     // MODAL DIALOGS (SHARED FOR DEVICE AND SUBMODULE)
     function openAddModal(targetType) {
@@ -2266,7 +2657,7 @@
       }
     }
 
-    const CURRENT_APP_VERSION = "v3.7.0";
+    const CURRENT_APP_VERSION = "v3.8.0";
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
 
     function isNewerVersion(latest, current) {
