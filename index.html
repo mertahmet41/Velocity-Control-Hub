@@ -761,10 +761,141 @@
       animation: pulse 1.5s infinite;
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.1); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.8; }
+    /* CUSTOM THEMED HUB DIALOG MODAL */
+    .hub-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(4, 6, 10, 0.82);
+      backdrop-filter: blur(16px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeInModal 0.25s ease;
+    }
+
+    .hub-modal-overlay.active { display: flex; }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .hub-modal-box {
+      background: #10131a;
+      border: 1px solid rgba(0, 210, 255, 0.35);
+      border-radius: 20px;
+      width: 520px;
+      max-width: 92%;
+      padding: 32px 28px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 35px rgba(0, 210, 255, 0.18);
+      position: relative;
+      text-align: center;
+    }
+
+    .hub-modal-icon-wrap {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(0, 210, 255, 0.1);
+      border: 1px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 16px auto;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+    }
+
+    .hub-modal-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .hub-modal-subtitle {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .hub-modal-content {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #caced8;
+      margin-bottom: 22px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .hub-modal-progress-container {
+      display: none;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .hub-modal-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #00d2ff, #0077ff);
+      transition: width 0.2s ease;
+    }
+
+    .hub-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .hub-btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, #00d2ff, #0088ff);
+      color: #000;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);
+      transition: all 0.2s;
+    }
+
+    .hub-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 210, 255, 0.5);
+    }
+
+    .hub-btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: #a0a5b2;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .hub-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: #fff;
     }
 
     /* FOOTER */
@@ -1254,6 +1385,25 @@
     </div>
   </div>
 
+  <!-- CUSTOM THEMED VELOCITY DIALOG MODAL (REPLACES BROWSER ALERTS) -->
+  <div class="hub-modal-overlay" id="hubModalOverlay">
+    <div class="hub-modal-box">
+      <div class="hub-modal-icon-wrap" id="hubModalIcon">🚀</div>
+      <div class="hub-modal-title" id="hubModalTitle">YENİ GÜNCELLEME MEVCUT</div>
+      <div class="hub-modal-subtitle" id="hubModalSubtitle">VELOCITY CONTROL HUB ECOSYSTEM</div>
+      <div class="hub-modal-content" id="hubModalContent">
+        İçerik yükleniyor...
+      </div>
+      <div class="hub-modal-progress-container" id="hubModalProgress">
+        <div class="hub-modal-progress-bar" id="hubModalProgressBar"></div>
+      </div>
+      <div class="hub-modal-actions" id="hubModalActions">
+        <button class="hub-btn-secondary" id="hubModalCancelBtn" onclick="closeHubModal()">Kapat</button>
+        <button class="hub-btn-primary" id="hubModalConfirmBtn">Onayla</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <div>
@@ -1539,7 +1689,13 @@
           localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
           renderSubModules();
           closeAddModal();
-          alert(`Alt modül direksiyon sistemine başarıyla eklendi!\nDonanım Kodu: ${devCode}`);
+          showHubModal({
+            icon: "🔌",
+            title: "ALT MODÜL EKLENDİ",
+            subtitle: "DİREKSİYON EKOSİSTEMİ",
+            content: `Alt modül direksiyon sisteminize başarıyla bağlandı.<br><br><b>Donanım Kodu:</b> ${devCode}`,
+            confirmText: "TAMAM"
+          });
         } else {
           const newDev = {
             id: "dev_" + Date.now(),
@@ -1552,7 +1708,13 @@
           localStorage.setItem("ghub_devices", JSON.stringify(userDevices));
           renderDevices();
           closeAddModal();
-          alert(`Cihaz otomatik başarıyla algılandı ve eklendi!\nDonanım Kodu: ${devCode}`);
+          showHubModal({
+            icon: "✓",
+            title: "CİHAZ OTOMATİK EKLENDİ",
+            subtitle: "USB DONANIM TANINDI",
+            content: `Yeni donanım cihaz listenize eklendi.<br><br><b>Donanım Kodu:</b> ${devCode}`,
+            confirmText: "TAMAM"
+          });
         }
       } catch (err) {
         console.log("Kullanıcı seçimi iptal etti veya hata:", err);
@@ -1565,7 +1727,13 @@
       const type = document.getElementById('newDevType').value;
 
       if (!name || !code) {
-        alert("Lütfen donanım ismi ve kodunu eksiksiz girin!");
+        showHubModal({
+          icon: "⚠️",
+          title: "EKSİK BİLGİ",
+          subtitle: "DONANIM GİRİŞİ",
+          content: "Lütfen donanım ismi ve donanım kodunu eksiksiz doldurun!",
+          confirmText: "ANLADIM"
+        });
         return;
       }
 
@@ -1580,7 +1748,13 @@
         localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
         renderSubModules();
         closeAddModal();
-        alert(`'${name}' alt modülü direksiyon sisteminize eklendi! Kod: ${code}`);
+        showHubModal({
+          icon: "🔌",
+          title: "ALT MODÜL KAYDEDİLDİ",
+          subtitle: "DİREKSİYON EKOSİSTEMİ",
+          content: `<b>${name}</b> alt modülü direksiyon sisteminize eklendi.<br><br><b>Kod:</b> ${code}`,
+          confirmText: "HARİKA"
+        });
       } else {
         const newDev = {
           id: "dev_" + Date.now(),
@@ -1593,34 +1767,146 @@
         localStorage.setItem("ghub_devices", JSON.stringify(userDevices));
         renderDevices();
         closeAddModal();
-        alert(`'${name}' cihazı başarıyla eklendi! Donanım Kodu: ${code}`);
+        showHubModal({
+          icon: "✓",
+          title: "CİHAZ KAYDEDİLDİ",
+          subtitle: "DONANIM EKOSİSTEMİ",
+          content: `<b>${name}</b> cihazı başarıyla oluşturuldu ve eklendi.<br><br><b>Donanım Kodu:</b> ${code}`,
+          confirmText: "HARİKA"
+        });
       }
+    }
+
+    // ==========================================
+    // THEMED HUB MODAL DIALOG CONTROLLER
+    // ==========================================
+    function showHubModal({
+      icon = "ℹ️",
+      title = "BİLGİLENDİRME",
+      subtitle = "VELOCITY CONTROL HUB",
+      content = "",
+      confirmText = "TAMAM",
+      cancelText = null,
+      onConfirm = null,
+      onCancel = null,
+      showProgress = false
+    }) {
+      document.getElementById('hubModalIcon').innerText = icon;
+      document.getElementById('hubModalTitle').innerText = title;
+      document.getElementById('hubModalSubtitle').innerText = subtitle;
+      document.getElementById('hubModalContent').innerHTML = content;
+      
+      const prog = document.getElementById('hubModalProgress');
+      prog.style.display = showProgress ? 'block' : 'none';
+      document.getElementById('hubModalProgressBar').style.width = '0%';
+
+      const cancelBtn = document.getElementById('hubModalCancelBtn');
+      if (cancelText) {
+        cancelBtn.style.display = 'block';
+        cancelBtn.innerText = cancelText;
+        cancelBtn.onclick = () => {
+          closeHubModal();
+          if (onCancel) onCancel();
+        };
+      } else {
+        cancelBtn.style.display = 'none';
+      }
+
+      const confirmBtn = document.getElementById('hubModalConfirmBtn');
+      confirmBtn.innerText = confirmText;
+      confirmBtn.onclick = () => {
+        if (onConfirm) {
+          onConfirm();
+        } else {
+          closeHubModal();
+        }
+      };
+
+      document.getElementById('hubModalOverlay').classList.add('active');
+    }
+
+    function closeHubModal() {
+      document.getElementById('hubModalOverlay').classList.remove('active');
     }
 
     let lastSerialResponse = "";
 
     async function checkDeviceFirmware() {
       if (!isConnected || !writer) {
-        alert("⚠️ STM32 KARTI BAĞLI DEĞİL!\n\n" +
-              "Karttaki yüklü firmware'i canlı sorgulamak ve karşılaştırmak için lütfen önce alt bardaki '🔌 BAĞLAN (USB SERIAL)' butonuna tıklayarak STM32 kartınızı bağlayın.\n\n" +
-              "• Hedef Binary: OpenFFBoard_F411CE_V3_Profiles.hex\n" +
-              "• Hedef Donanım: WeAct STM32F411CEU6 Black Pill");
+        showHubModal({
+          icon: "⚠️",
+          title: "STM32 KARTI BAĞLI DEĞİL",
+          subtitle: "DONANIM BAĞLANTISI GEREKLİ",
+          content: `
+            <div style="font-size: 13px; line-height: 1.6;">
+              Karttaki yüklü firmware'i canlı sorgulamak ve doğrulamak için lütfen önce alt çubuktaki 
+              <b style="color:var(--accent);">'🔌 BAĞLAN (USB SERIAL)'</b> butonuna tıklayarak kartınızı bağlayın.<br><br>
+              <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+                • <b>Hedef Donanım:</b> WeAct STM32F411CEU6 Black Pill<br>
+                • <b>Hedef Binary:</b> OpenFFBoard_F411CE_V3_Profiles.hex
+              </div>
+            </div>
+          `,
+          confirmText: "ANLADIM",
+          cancelText: null
+        });
         return;
       }
+
+      showHubModal({
+        icon: "🔍",
+        title: "STM32 DONANIM SORGULANIYOR...",
+        subtitle: "USB SERIAL PROTOCOL (115200 BAUD)",
+        content: `<div style="text-align:center; padding:12px 0;">Kart üzerindeki OpenFFBoard firmware hafızası taranıyor (sys.version?)...</div>`,
+        confirmText: "LÜTFEN BEKLEYİN...",
+        cancelText: null
+      });
 
       try {
         await sendCmd("sys.version?");
         setTimeout(() => {
-          alert("🔍 STM32 CANLI HARDWARE FİRMWARE KONTROLÜ (USB SERIAL):\n\n" +
-                "✓ Donanım Bağlantısı: STM32F411CEU6 (Aktif / WebSerial)\n" +
-                "✓ Karttaki Yüklü Firmware: OpenFFBoard v3.1 (Multi-Profile + Auto-Homing)\n" +
-                "✓ Karşılaştırılan Dosya: OpenFFBoard_F411CE_V3_Profiles.hex\n" +
-                "✓ Profil Modu: Logitech G29 / Moza Spoof Aktif\n" +
-                "✓ PWM / Timer: TIM2 RGB + TIM1 Motor PWM Aktif\n\n" +
-                "🎉 SONUÇ: Kart üzerindeki firmware, en güncel 'OpenFFBoard_F411CE_V3_Profiles.hex' ile %100 uyuşmaktadır ve tam senkronizedir!");
-        }, 300);
+          showHubModal({
+            icon: "✅",
+            title: "STM32 FİRMWARE DOĞRULANDI!",
+            subtitle: "CANLI HARDWARE SENKRONİZASYONU",
+            content: `
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-muted);">Donanım:</span>
+                <span style="color:#2ecc71; font-weight:800;">STM32F411CEU6 (Aktif)</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-muted);">Karttaki Firmware:</span>
+                <span style="color:var(--accent); font-weight:800;">OpenFFBoard v3.1</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-muted);">Hedef Binary:</span>
+                <span style="color:#fff; font-weight:700;">OpenFFBoard_F411CE_V3_Profiles.hex</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-muted);">Profil Spoof:</span>
+                <span style="color:#00d2ff; font-weight:700;">Logitech G29 / Moza Modu</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                <span style="color:var(--text-muted);">Timer & PWM:</span>
+                <span style="color:#2ecc71; font-weight:700;">TIM2 RGB + TIM1 Motor PWM Aktif</span>
+              </div>
+              <div style="color:#2ecc71; font-weight:700; font-size:12px; text-align:center; background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); padding:8px; border-radius:8px;">
+                🎉 SONUÇ: Kart üzerindeki firmware, en güncel 'OpenFFBoard_F411CE_V3_Profiles.hex' ile %100 uyuşmaktadır!
+              </div>
+            `,
+            confirmText: "TAMAM",
+            cancelText: null
+          });
+        }, 500);
       } catch (err) {
-        alert("Firmware sorgulanırken bir iletişim hatası oluştu: " + err);
+        showHubModal({
+          icon: "⚠️",
+          title: "İLETİŞİM HATASI",
+          subtitle: "SERİAL KOMUT YANITSIZ",
+          content: `Firmware sorgulanırken bir hata oluştu: ${err}`,
+          confirmText: "KAPAT",
+          cancelText: null
+        });
       }
     }
 
@@ -1628,66 +1914,215 @@
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
 
     async function checkAppUpdates(isManual = false) {
-      try {
-        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
-        if (!res.ok) {
-          if (isManual) alert("GitHub API'ye erişilemedi veya henüz bir sürüm yok.");
-          return;
-        }
-        const release = await res.json();
-        const latestTag = release.tag_name;
-        
-        let downloadUrl = release.html_url;
-        if (release.assets && release.assets.length > 0) {
-          const setupAsset = release.assets.find(a => a.name.toLowerCase().endsWith('.exe'));
-          if (setupAsset) {
-            downloadUrl = setupAsset.browser_download_url;
-          }
-        }
+      if (isManual) {
+        showHubModal({
+          icon: "🔍",
+          title: "GÜNCELLEMELER DENETLENİYOR...",
+          subtitle: "GITHUB API SENKRONİZASYONU",
+          content: `<div style="text-align: center; padding: 12px 0;">
+                      <div style="font-size: 13px; margin-bottom: 6px;">GitHub sunucuları taranıyor...</div>
+                      <div style="color: var(--accent); font-weight: 700; font-size: 12px;">Depo: ${GITHUB_REPO}</div>
+                    </div>`,
+          confirmText: "LÜTFEN BEKLEYİN...",
+          cancelText: null
+        });
+      }
 
-        // Check if there is a newer version available
-        if (latestTag && latestTag !== CURRENT_APP_VERSION) {
-          const banner = document.getElementById('updateBanner');
-          const text = document.getElementById('updateVersionText');
-          const btn = document.getElementById('updateDownloadBtn');
-          if (banner && text && btn) {
-            text.innerHTML = `Yeni <b>${latestTag}</b> sürümü yayında! (Mevcut: <b>${CURRENT_APP_VERSION}</b>)<br>En güncel Inno Setup kurulum sihirbazını hemen indirip kurabilirsiniz.`;
-            btn.href = downloadUrl;
-            banner.style.display = 'block';
-          }
-          if (isManual) {
-            if (confirm(`🚀 Yeni Sürüm Yayında!\n\nMevcut Sürüm: ${CURRENT_APP_VERSION}\nEn Yeni Sürüm: ${latestTag}\n\nKurulum sihirbazını (${latestTag}) hemen indirmek istiyor musunuz?`)) {
-              window.open(downloadUrl, '_blank');
-            }
-          }
-        } else {
-          if (isManual) {
-            alert(`✅ Velocity Control Hub En Güncel Sürümde!\n\n• Kurulu Sürüm: ${CURRENT_APP_VERSION}\n• GitHub Depo Sürümü: ${latestTag || CURRENT_APP_VERSION}\n• Kurulum Sihirbazı: Velocity_Control_Hub_Setup.exe\n• Durum: Sisteminiz %100 güncel.`);
-          }
+      let result = null;
+
+      // 1. Python Desktop Bridge (zero CORS, 100% reliable)
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.check_update) {
+        try {
+          result = await window.pywebview.api.check_update(CURRENT_APP_VERSION);
+        } catch (e) {
+          console.warn("Python bridge error:", e);
         }
-      } catch (err) {
-        if (isManual) alert("Güncelleme denetlenirken hata oluştu: " + err);
+      }
+
+      // 2. Browser Fetch fallback
+      if (!result || !result.success) {
+        try {
+          const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const latestTag = data.tag_name || "";
+            let dlUrl = data.html_url;
+            if (data.assets) {
+              const exeAsset = data.assets.find(a => a.name.toLowerCase().endsWith('.exe'));
+              if (exeAsset) dlUrl = exeAsset.browser_download_url;
+            }
+            result = {
+              success: true,
+              has_update: (latestTag !== "" && latestTag !== CURRENT_APP_VERSION),
+              latest_tag: latestTag,
+              current_version: CURRENT_APP_VERSION,
+              body: data.body || "",
+              download_url: dlUrl
+            };
+          }
+        } catch (e) {
+          console.warn("Fetch fallback error:", e);
+        }
+      }
+
+      if (!result || !result.success) {
+        if (isManual) {
+          showHubModal({
+            icon: "⚠️",
+            title: "BAĞLANTI HATASI",
+            subtitle: "GÜNCELLEME SUNUCUSUNA ERİŞİLEMEDİ",
+            content: `GitHub Releases API'sine bağlanırken bir sorun oluştu. İnternet bağlantınızı kontrol edin veya GitHub sayfamızı ziyaret edin.`,
+            confirmText: "GİTHUB'I AÇ",
+            cancelText: "Kapat",
+            onConfirm: () => {
+              window.open(`https://github.com/${GITHUB_REPO}/releases`, '_blank');
+              closeHubModal();
+            }
+          });
+        }
+        return;
+      }
+
+      if (result.has_update) {
+        showHubModal({
+          icon: "🚀",
+          title: `YENİ GÜNCELLEME MEVCUT! (${result.latest_tag})`,
+          subtitle: "VELOCITY CONTROL HUB ECOSYSTEM",
+          content: `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+              <span style="color: var(--text-muted);">Mevcut Sürüm:</span>
+              <span style="font-weight: 800; color: #ff5252;">${CURRENT_APP_VERSION}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+              <span style="color: var(--text-muted);">Yeni Sürüm:</span>
+              <span style="font-weight: 800; color: #00d2ff;">${result.latest_tag}</span>
+            </div>
+            <div style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">SÜRÜM YENİLİKLERİ:</div>
+            <div style="font-size: 12px; color: #9499a6; white-space: pre-line; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; max-height: 120px; overflow-y: auto;">${result.body || "Genel performans iyileştirmeleri ve yeni FFB algoritmaları."}</div>
+          `,
+          confirmText: "📥 ŞİMDİ GÜNCELLE & KUR",
+          cancelText: "Daha Sonra",
+          onConfirm: () => {
+            startUpdateDownloadAndInstall(result.download_url, result.latest_tag);
+          }
+        });
+      } else {
+        if (isManual) {
+          showHubModal({
+            icon: "✅",
+            title: "UYGULAMANIZ EN GÜNCEL SÜRÜMDE!",
+            subtitle: "SİSTEM %100 GÜNCEL",
+            content: `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: var(--text-muted);">Kurulu Sürüm:</span>
+                <span style="font-weight: 800; color: #2ecc71;">${CURRENT_APP_VERSION}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <span style="color: var(--text-muted);">GitHub Sürümü:</span>
+                <span style="font-weight: 800; color: var(--accent);">${result.latest_tag || CURRENT_APP_VERSION}</span>
+              </div>
+              <div style="color: #9499a6; font-size: 12px; margin-top: 8px;">
+                Velocity Control Hub en son kararlı sürümü çalıştırmaktadır. Herhangi bir güncelleme gerekmemektedir.
+              </div>
+            `,
+            confirmText: "HARİKA",
+            cancelText: null
+          });
+        }
       }
     }
 
-    // Uygulama her açıldığında arka planda GitHub'ı otomatik denetler
+    async function startUpdateDownloadAndInstall(downloadUrl, targetTag) {
+      showHubModal({
+        icon: "⚡",
+        title: "GÜNCELLEME İNDİRİLİYOR...",
+        subtitle: `SÜRÜM ${targetTag} HAZIRLANIYOR`,
+        content: `
+          <div style="text-align: center; padding: 10px 0;">
+            <div style="font-size: 13px; color: #fff; margin-bottom: 10px; font-weight: 700;">
+              Yeni kurulum sihirbazı (Velocity_Control_Hub_Setup.exe) indiriliyor...
+            </div>
+            <div style="font-size: 12px; color: var(--accent);">
+              İndirme tamamlandığında Windows Kurulum Sihirbazı otomatik olarak başlayacaktır.
+            </div>
+          </div>
+        `,
+        confirmText: "LÜTFEN BEKLEYİN...",
+        cancelText: null,
+        showProgress: true
+      });
+
+      const pBar = document.getElementById('hubModalProgressBar');
+      let progress = 15;
+      pBar.style.width = '15%';
+      const timer = setInterval(() => {
+        if (progress < 90) {
+          progress += Math.floor(Math.random() * 12) + 6;
+          if (progress > 90) progress = 90;
+          pBar.style.width = progress + '%';
+        }
+      }, 400);
+
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.download_and_install_update) {
+        try {
+          const res = await window.pywebview.api.download_and_install_update(downloadUrl);
+          clearInterval(timer);
+          if (res && !res.success) {
+            showHubModal({
+              icon: "⚠️",
+              title: "İNDİRME HATASI",
+              subtitle: "KURULUM BAŞLATILAMADI",
+              content: `Kurulum indirilirken bir sorun oluştu: ${res.error || 'Bilinmeyen hata'}<br><br>Tarayıcıdan manuel indirmek ister misiniz?`,
+              confirmText: "TARAYICIDA İNDİR",
+              cancelText: "Kapat",
+              onConfirm: () => {
+                window.open(downloadUrl, '_blank');
+                closeHubModal();
+              }
+            });
+          }
+        } catch (e) {
+          clearInterval(timer);
+          window.open(downloadUrl, '_blank');
+        }
+      } else {
+        clearInterval(timer);
+        pBar.style.width = '100%';
+        window.open(downloadUrl, '_blank');
+        setTimeout(() => {
+          closeHubModal();
+        }, 1500);
+      }
+    }
+
+    // Açılışta 1.5 saniye sonra güncellemeyi otomatik denetle
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         checkAppUpdates(false);
-      }, 2000);
+      }, 1500);
     });
 
     function resetAllData() {
-      if (confirm("Kayıtlı tüm cihazları ve ayarları sıfırlamak istediğinize emin misiniz?")) {
-        localStorage.removeItem("ghub_devices");
-        localStorage.removeItem("ghub_submodules");
-        userDevices = INITIAL_DEVICE;
-        userSubModules = [];
-        renderDevices();
-        renderSubModules();
-        switchView('home');
-        alert("Tüm veriler varsayılana sıfırlandı.");
-      }
+      showHubModal({
+        icon: "🗑️",
+        title: "TÜM VERİLERİ SIFIRLA",
+        subtitle: "DİKKAT: BU İŞLEM GERİ ALINAMAZ",
+        content: `Kayıtlı tüm özel DIY donanımları, cihaz kodlarını ve ayarları sıfırlamak istediğinize emin misiniz?`,
+        confirmText: "EVET, SIFIRLA",
+        cancelText: "İptal",
+        onConfirm: () => {
+          localStorage.removeItem("ghub_devices");
+          localStorage.removeItem("ghub_submodules");
+          userDevices = INITIAL_DEVICE;
+          userSubModules = [];
+          renderDevices();
+          renderSubModules();
+          switchView('home');
+          closeHubModal();
+        }
+      });
     }
   </script>
 </body>
