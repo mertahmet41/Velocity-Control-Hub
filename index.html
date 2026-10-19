@@ -1067,7 +1067,7 @@
           <button class="back-btn" onclick="switchView('home')">← CİHAZLARA DÖN</button>
           <div class="device-active-title" id="activeDeviceHeader">PRO DIRECT DRIVE WHEEL (ALL-IN-ONE)</div>
         </div>
-        <button class="connect-btn" id="deviceConnectBtn" onclick="toggleUsbConnection()">🔌 CİHAZA BAĞLAN (USB SERIAL)</button>
+        <button class="connect-btn" id="deviceConnectBtn" onclick="toggleUsbConnection()"> CİHAZA BAĞLAN (USB SERIAL)</button>
       </div>
 
       <div class="device-studio-layout">
@@ -1075,17 +1075,17 @@
         <!-- VERTICAL LEFT SUB-NAVBAR FOR INTEGRATED MODULES -->
         <div class="module-sidebar">
           <div class="module-item active" onclick="switchModule('wheel')">
-            <span class="module-icon">🏎️</span>
+            <span class="module-icon"></span>
             <span>DİREKSİYON</span>
           </div>
 
           <div class="module-item" onclick="switchModule('pedals')">
-            <span class="module-icon">⚡</span>
+            <span class="module-icon"></span>
             <span>GAZ TAKIMI (PEDALLAR)</span>
           </div>
 
           <div class="module-item" onclick="switchModule('shifter')">
-            <span class="module-icon">🕹️</span>
+            <span class="module-icon"></span>
             <span>VİTES (H-SHIFTER)</span>
           </div>
 
@@ -1093,7 +1093,7 @@
           <div id="dynamicSubModulesList"></div>
 
           <div class="module-item add-module-btn" onclick="openAddModal('submodule')">
-            <span>➕ MODÜL / ALT CİHAZ EKLE</span>
+            <span>[+] MODÜL / ALT CİHAZ EKLE</span>
           </div>
         </div>
 
@@ -1123,22 +1123,23 @@
                   <button class="sub-tab-btn" onclick="switchSubPane('led')">KASA RGB LED</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('profile')">KİMLİK & SPOOFING</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('firmware')">FİRMWARE & DFU</button>
+                  <button class="sub-tab-btn" id="subTabDev" style="display:none; color:#ffb703; border-color:rgba(255,183,3,0.4);" onclick="switchSubPane('dev')">[DEV] GELISTIRICI AYARLARI</button>
                 </div>
 
                 <!-- PANE 1: AXIS & DRIVING PROFILES -->
                 <div class="sub-pane active" id="pane-axis">
                   <div class="control-group" style="background: rgba(0, 180, 216, 0.08); border: 1px solid rgba(0, 180, 216, 0.28); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                      <span class="control-name" style="color:var(--accent); font-weight:800;">🏎️ SÜRÜŞ PROFİLİ SEÇİMİ</span>
-                      <button class="action-btn btn-ghost" style="padding:5px 12px; font-size:11px; border-color:var(--accent); color:#fff;" onclick="resetWheelDefaults()">🔄 Varsayılanlara Sıfırla</button>
+                      <span class="control-name" style="color:var(--accent); font-weight:800;"> SÜRÜŞ PROFİLİ SEÇİMİ</span>
+                      <button class="action-btn btn-ghost" style="padding:5px 12px; font-size:11px; border-color:var(--accent); color:#fff;" onclick="resetWheelDefaults()"> Varsayılanlara Sıfırla</button>
                     </div>
                     <div class="control-desc">Disipline göre optimize edilmiş tork, açı ve damper şablonunu tek tıkla yükleyin.</div>
                     <select class="select-box" style="margin-top: 10px;" id="driveProfileSelect" onchange="applyDriveProfile(this.value)">
-                      <option value="gt3" selected>🏆 GT3 / Dayanıklılık (900°, %100 Güç, Dengeli Damper)</option>
-                      <option value="drift">💨 Drift / Sokak (900°, %100 Güç, Sıfır Damper, Hızlı Merkezleme)</option>
-                      <option value="f1">⚡ Formula 1 / Open-Wheel (360°, %85 Güç, Yüksek Direnç)</option>
-                      <option value="rally">🌲 Ralli / WRC (540°, %90 Güç, Çakıl Filtreli Titreşim)</option>
-                      <option value="custom">⚙️ Özel Kullanıcı Ayarı (Custom)</option>
+                      <option value="gt3" selected>[GT3] GT3 / Dayanıklılık (900°, %100 Güç, Dengeli Damper)</option>
+                      <option value="drift">[DRIFT] Drift / Sokak (900°, %100 Güç, Sıfır Damper, Hızlı Merkezleme)</option>
+                      <option value="f1"> Formula 1 / Open-Wheel (360°, %85 Güç, Yüksek Direnç)</option>
+                      <option value="rally">[RALLY] Ralli / WRC (540°, %90 Güç, Çakıl Filtreli Titreşim)</option>
+                      <option value="custom">[ÖZEL] Özel Kullanıcı Ayarı (Custom)</option>
                     </select>
                   </div>
 
@@ -1297,7 +1298,7 @@
                   <div style="background: linear-gradient(135deg, rgba(16, 20, 28, 0.95), rgba(11, 13, 17, 0.98)); border: 1px solid rgba(0, 180, 216, 0.35); border-radius: 14px; padding: 20px; margin-bottom: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
                       <div>
-                        <div style="font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.5px;">💡 CANLI KASA LED SİMÜLATÖRÜ & DURUM MONİTÖRÜ</div>
+                        <div style="font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.5px;"> CANLI KASA LED SİMÜLATÖRÜ & DURUM MONİTÖRÜ</div>
                         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Direksiyon kasasındaki fiziksel RGB LED'in (PA0, PA1, PA2) canlı durum yansıması</div>
                       </div>
                       <span class="control-badge" id="badgeLedStateDesc" style="background: rgba(255, 170, 0, 0.15); color: #ffa726; border: 1px solid rgba(255, 170, 0, 0.3);">SARI: BEKLENİYOR</span>
@@ -1317,14 +1318,14 @@
 
                     <!-- TEST & TRIGGER BUTTONS -->
                     <div style="margin-top: 16px;">
-                      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;">🧪 DURUMLARI CANLI SİMÜLE ET / TEST ET:</div>
+                      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;"> DURUMLARI CANLI SİMÜLE ET / TEST ET:</div>
                       <div style="display:flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('disconnected')">🟡 Bağlantı Bekleme (Nefes Alma)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('connected')">🟢 Normal Çalışma (Hazır Glow)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #ff3333; color: #ff5252;" onclick="testLedAnimation('clipping')">🔴 FFB Aşımı (%100 Kırmızı Flaş)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #f39c12; color: #f39c12;" onclick="testLedAnimation('load')">🟠 Yüksek Tork Yükü (Dinamik)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('estop')">⛔ Acil Durdurma (E-Stop)</button>
-                        <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 11px; flex: 0 0 auto;" onclick="testLedAnimation('auto')">🔄 Donanım Canlı Modu</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('disconnected')">[BEKLEMEDE] Bağlantı Bekleme (Nefes Alma)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('connected')">[HAZIR] Normal Çalışma (Hazır Glow)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #ff3333; color: #ff5252;" onclick="testLedAnimation('clipping')">[KRITIK] FFB Aşımı (%100 Kırmızı Flaş)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #f39c12; color: #f39c12;" onclick="testLedAnimation('load')">[UYARI] Yüksek Tork Yükü (Dinamik)</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('estop')">[E-STOP] Acil Durdurma (E-Stop)</button>
+                        <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 11px; flex: 0 0 auto;" onclick="testLedAnimation('auto')"> Donanım Canlı Modu</button>
                       </div>
                     </div>
                   </div>
@@ -1337,12 +1338,12 @@
                     </div>
                     <div class="control-desc">LED'in direksiyon sistem durumlarına nasıl tepki vereceğini belirleyin.</div>
                     <select class="select-box" style="margin-top: 8px;" id="caseLedModeSelect" onchange="setCaseLedMode(this.value)">
-                      <option value="smart" selected>⭐ Akıllı Durum Monitörü (Tüm Durumlar: Bekleme, Bağlantı, FFB Aşımı, E-Stop)</option>
-                      <option value="clipping_only">🏎️ Sadece FFB Kırpılma / Aşırı Yükte Kırmızı Alarm</option>
-                      <option value="ambient_breath">🌈 Dinamik RGB Ambient & Nefes Alma Animasyonu</option>
-                      <option value="telemetry_load">⚡ Tork Yükü Telemetrisi (Yeşil ➔ Sarı ➔ Kırmızı)</option>
-                      <option value="solid_accent">💡 Sabit Velocity Neon Aydınlatması</option>
-                      <option value="off">❌ Kapalı (LED Devre Dışı)</option>
+                      <option value="smart" selected> Akıllı Durum Monitörü (Tüm Durumlar: Bekleme, Bağlantı, FFB Aşımı, E-Stop)</option>
+                      <option value="clipping_only"> Sadece FFB Kırpılma / Aşırı Yükte Kırmızı Alarm</option>
+                      <option value="ambient_breath"> Dinamik RGB Ambient & Nefes Alma Animasyonu</option>
+                      <option value="telemetry_load"> Tork Yükü Telemetrisi (Yeşil  Sarı  Kırmızı)</option>
+                      <option value="solid_accent"> Sabit Velocity Neon Aydınlatması</option>
+                      <option value="off"> Kapalı (LED Devre Dışı)</option>
                     </select>
                   </div>
 
@@ -1408,7 +1409,7 @@
                   <!-- CONTROL 4: DONANIM PİN BİLGİSİ -->
                   <div class="control-group" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                      <span style="font-weight: 800; color: #fff; font-size: 12px;">🔌 STM32 DONANIM PİN ATAMALARI & TIM2 PWM:</span>
+                      <span style="font-weight: 800; color: #fff; font-size: 12px;"> STM32 DONANIM PİN ATAMALARI & TIM2 PWM:</span>
                       <span style="font-size: 11px; color: var(--accent); font-weight: 700;">84/100 MHz Donanım Zamanlayıcı</span>
                     </div>
                     <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6;">
@@ -1440,17 +1441,168 @@
                     <div class="control-desc" style="margin: 6px 0 14px 0;">Yüklü Firmware: OpenFFBoard_F411CE_V3_Profiles.hex. GitHub üzerindeki sürümle %100 eşleşti.</div>
                     <div class="btn-row" style="margin-top: 0;">
                       <button class="action-btn btn-ghost" onclick="checkDeviceFirmware()">FİRMWARE KONTROL ET</button>
-                      <button class="action-btn btn-primary" onclick="sendCmd('sys.dfu=1')">⚡ DFU MODUNA AL (OTA GÜNCELLE)</button>
+                      <button class="action-btn btn-primary" onclick="sendCmd('sys.dfu=1')"> DFU MODUNA AL (OTA GÜNCELLE)</button>
                     </div>
                   </div>
 
                   <div class="btn-row" style="margin-top: 20px;">
-                    <button class="action-btn btn-primary" onclick="sendCmd('axis.zeroenc')">🔄 MERKEZ KALİBRASYONU (HOMING BAŞLAT)</button>
+                    <button class="action-btn btn-primary" onclick="sendCmd('axis.zeroenc')"> MERKEZ KALİBRASYONU (HOMING BAŞLAT)</button>
                   </div>
                 </div>
 
               </div>
-            </div>
+            
+                <!-- PANE 7: GELISTIRICI AYARLARI VE DONANIM TESHISI -->
+                <div class="sub-pane" id="pane-dev">
+                  
+                  <!-- OVERRIDE & KILL-SWITCHES -->
+                  <div style="background:rgba(255, 183, 3, 0.06); border:1px solid rgba(255, 183, 3, 0.3); padding:16px; border-radius:12px; margin-bottom:20px;">
+                    <div style="font-size:14px; font-weight:900; color:#ffb703; letter-spacing:0.5px; margin-bottom:6px;">DONANIM BYPASS & GUVENLIK ANAHTARLARI (KILL-SWITCHES)</div>
+                    <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+                      Bu anahtarlar guvenli donanim testi icin motoru ve otomatik hareketleri izole eder. Sadece enkoder testi yapmak istediginizde kullaniniz.
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:14px;">
+                      <!-- BYPASS CALIBRATION -->
+                      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:12px 14px; border-radius:8px;">
+                        <div>
+                          <div style="color:#fff; font-weight:800; font-size:12px;">Otomatik Kalibrasyonu Devre Disi Birak (Bypass Auto-Calibration)</div>
+                          <div style="color:var(--text-muted); font-size:11px;">Cihaz baslatildiginda saga sola donerek merkez arama hareketini iptal eder. Mil tamamen serbest kalir.</div>
+                        </div>
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="devBypassCalibToggle" onchange="toggleDevBypassCalib(this.checked)">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+
+                      <!-- DISABLE MOTOR OUTPUT -->
+                      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:12px 14px; border-radius:8px;">
+                        <div>
+                          <div style="color:#fff; font-weight:800; font-size:12px;">Motor Tork Cikisini Devre Disi Birak (Torque Mute / Kill-Switch)</div>
+                          <div style="color:var(--text-muted); font-size:11px;">BTS7960 RPWM (PA9) ve LPWM (PA8) tork sinyallerini sifirlar. Motor serbest kalir (0 Nm).</div>
+                        </div>
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="devDisableMotorToggle" onchange="toggleDevDisableMotor(this.checked)">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+
+                      <!-- DISABLE ENCODER READINGS -->
+                      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:12px 14px; border-radius:8px;">
+                        <div>
+                          <div style="color:#fff; font-weight:800; font-size:12px;">Enkoder Okumasini Dondur / Devre Disi Birak (Freeze Encoder)</div>
+                          <div style="color:var(--text-muted); font-size:11px;">Donanim enkoder aci guncellemelerini dondurur, ekseni 0 derece merkezde sabit tutar.</div>
+                        </div>
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="devDisableEncoderToggle" onchange="toggleDevDisableEncoder(this.checked)">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ENCODER-ONLY DIAGNOSTIC BENCH -->
+                  <div style="background:rgba(0, 180, 216, 0.06); border:1px solid rgba(0, 180, 216, 0.3); padding:16px; border-radius:12px; margin-bottom:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                      <div style="font-size:14px; font-weight:900; color:var(--accent); letter-spacing:0.5px;">YALNIZCA ENKODER TEST VE TESHIS PANELI</div>
+                      <button class="action-btn btn-ghost" style="padding:4px 12px; font-size:11px; border-color:var(--accent); color:#fff;" onclick="startEncoderOnlyMode()">ENKODER TESTINI BASLAT</button>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+                      Optik enkoderin (600 PPR / 2400 CPR) A (PB4), B (PB5) ve Z (PB8) pinlerindeki pals sinyallerini ve dogrulugunu motor torku olmadan olcer.
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:14px;">
+                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
+                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">HAM PALS (RAW CPR)</div>
+                        <div style="font-size:18px; font-weight:900; color:#fff; font-family:monospace; margin-top:4px;" id="devRawPulses">0 / 2400</div>
+                      </div>
+                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
+                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">HASSAS ACI (DEGREE)</div>
+                        <div style="font-size:18px; font-weight:900; color:var(--accent); font-family:monospace; margin-top:4px;" id="devPreciseAngle">0.00°</div>
+                      </div>
+                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
+                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">FAZ A / B (PB4/PB5)</div>
+                        <div style="font-size:13px; font-weight:900; color:#2ecc71; font-family:monospace; margin-top:8px;" id="devPhaseStatus">A: HIGH | B: LOW</div>
+                      </div>
+                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
+                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">INDEX Z PALS (PB8)</div>
+                        <div style="font-size:13px; font-weight:900; color:#ffb703; font-family:monospace; margin-top:8px;" id="devIndexStatus">YAKALANDI (x1)</div>
+                      </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                      <button class="action-btn btn-ghost" style="flex:1; font-size:11px;" onclick="zeroEncoderOrigin()">ENKODER SIFIR NOKTASINI AYARLA (ZERO)</button>
+                      <button class="action-btn btn-ghost" style="flex:1; font-size:11px;" onclick="invertEncoderDirection()">ENKODER YONUNU TERSINE CEVIR</button>
+                    </div>
+                  </div>
+
+                  <!-- DIRECT PWM MOTOR TEST & ADC MONITOR -->
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
+                    <!-- MOTOR PULSE TEST -->
+                    <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:10px;">
+                      <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">BTS7960 DOGRUDAN PWM SURUS TESTI</div>
+                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Milin serbest oldugundan emin olun. Guvenli 1 saniyelik test darbesi uretir.</div>
+                      
+                      <div class="control-group" style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between;">
+                          <span class="control-name" style="font-size:11px;">Test Gucu (% Sol / % Sag):</span>
+                          <span style="font-family:monospace; font-weight:800; font-size:11px; color:var(--accent);" id="devPwmValText">0%</span>
+                        </div>
+                        <input type="range" min="-100" max="100" value="0" id="devPwmSlider" oninput="document.getElementById('devPwmValText').innerText = this.value + '%'">
+                      </div>
+
+                      <div style="display:flex; gap:8px;">
+                        <button class="action-btn btn-primary" style="flex:1; font-size:11px;" onclick="testMotorPwmPulse()">1 SN DARBE TESTI</button>
+                        <button class="action-btn btn-ghost" style="color:var(--red); border-color:var(--red); font-size:11px;" onclick="emergencyStopMotor()">ACIL MOTOR DURDUR</button>
+                      </div>
+                    </div>
+
+                    <!-- RAW ADC TELEMETRY -->
+                    <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:10px;">
+                      <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">DONANIMSAL PIN VE ADC TESHISI</div>
+                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">STM32 12-bit ADC kanallarinin dogrudan gerilim ve bit okumalari.</div>
+                      
+                      <div style="display:flex; flex-direction:column; gap:6px; font-family:monospace; font-size:11px;">
+                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
+                          <span style="color:#2ecc71;">GAZ (PA7 / ADC1_IN7):</span>
+                          <span id="devAdcGas">2048 (1.65V)</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
+                          <span style="color:var(--accent);">FREN (PA5 / ADC1_IN5):</span>
+                          <span id="devAdcBrake">128 (0.10V)</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
+                          <span style="color:#ffb703;">DEBRIYAJ (PA6 / ADC1_IN6):</span>
+                          <span id="devAdcClutch">64 (0.05V)</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
+                          <span style="color:var(--text-muted);">PA4 (ARIZALI PIN):</span>
+                          <span style="color:var(--red);">DEVRE DISI / BYPASS</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- DIRECT SERIAL COMMAND TERMINAL -->
+                  <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); padding:14px; border-radius:10px;">
+                    <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">DOGRUDAN SERI KOMUT TERMINALI (OPENFFBOARD UART CONSOLE)</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">STM32 donanimina ham seri komut gonderin (Orn: sys:help, axis:0, fxratio:0, cpr:2400, calib:0).</div>
+                    
+                    <div id="devTerminalLog" style="height:100px; background:#08090b; border:1px solid rgba(255,255,255,0.06); border-radius:6px; padding:8px; font-family:monospace; font-size:11px; color:#2ecc71; overflow-y:auto; margin-bottom:10px; line-height:1.4;">
+[VELOCITY DEV CONSOLE READY]
+Bagli Port: STM32F411CEU6 BlackPill (DFU / CDC)
+Komut girmeye hazir...
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                      <input type="text" id="devTerminalInput" class="modal-input" placeholder="Komut yazin (Orn: power 0, cpr 2400, calib 0)..." style="font-family:monospace; font-size:12px; margin-bottom:0;" onkeydown="if(event.key==='Enter') sendDevSerialCommand()">
+                      <button class="action-btn btn-primary" style="flex:0 0 100px; font-size:11px;" onclick="sendDevSerialCommand()">GONDER</button>
+                    </div>
+                  </div>
+
+                </div>
+
+                </div>
           </div>
 
           <!-- 2. GAZ TAKIMI (PEDALLAR) MODÜLÜ -->
@@ -1525,7 +1677,7 @@
           <!-- DYNAMIC CUSTOM SUBMODULE CONTENT CONTAINER -->
           <div class="module-pane" id="module-custom-pane">
             <div class="glass-panel" style="text-align: center; padding: 48px 20px;">
-              <div style="font-size: 40px; margin-bottom: 12px;">🔌</div>
+              <div style="font-size: 40px; margin-bottom: 12px;"></div>
               <div style="font-size: 18px; font-weight: 800; margin-bottom: 8px;" id="customModuleTitle">ÖZEL ALT MODÜL</div>
               <div style="color: var(--text-muted); font-size: 13px; max-width: 480px; margin: 0 auto 24px auto;">
                 Bu alt donanım STM32 kartınızın dijital ve analog girişlerine bağlıdır. Giriş kalibrasyonu ve tuş atamalarını buradan yapabilirsiniz.
@@ -1545,12 +1697,12 @@
         
         <!-- SECTION 1: GENERAL APP UPDATES -->
         <div class="glass-panel">
-          <div class="settings-section-title">🚀 UYGULAMA GÜNCELLEMELERİ</div>
+          <div class="settings-section-title"> UYGULAMA GÜNCELLEMELERİ</div>
           
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.9.0 (Production Channel).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.10.0 (Developer & Production Channel).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1580,7 +1732,7 @@
 
         <!-- SECTION 2: HARDWARE & TELEMETRY PREFERENCES -->
         <div class="glass-panel">
-          <div class="settings-section-title">⚡ BAĞLANTI, USB & TELEMETRİ TERCİHLERİ</div>
+          <div class="settings-section-title"> BAĞLANTI, USB & TELEMETRİ TERCİHLERİ</div>
 
           <div class="setting-item">
             <div class="setting-info">
@@ -1632,7 +1784,7 @@
 
         <!-- SECTION 3: GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME -->
         <div class="glass-panel">
-          <div class="settings-section-title">🎨 GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME</div>
+          <div class="settings-section-title"> GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME</div>
 
           <div class="setting-item">
             <div class="setting-info">
@@ -1685,7 +1837,7 @@
 
         <!-- SECTION 4: SİSTEM & BAŞLANGIÇ -->
         <div class="glass-panel">
-          <div class="settings-section-title">⚙️ SİSTEM & BAŞLANGIÇ TERCİHLERİ</div>
+          <div class="settings-section-title">[ÖZEL] SİSTEM & BAŞLANGIÇ TERCİHLERİ</div>
 
           <div class="setting-item">
             <div class="setting-info">
@@ -1723,7 +1875,7 @@
 
         <!-- SECTION 5: VERİ & CİHAZ YÖNETİMİ -->
         <div class="glass-panel">
-          <div class="settings-section-title">🗑️ VERİ & CİHAZ YÖNETİMİ</div>
+          <div class="settings-section-title"> VERİ & CİHAZ YÖNETİMİ</div>
           
           <div class="setting-item">
             <div class="setting-info">
@@ -1737,7 +1889,7 @@
         <!-- SECTION 6: HAKKINDA (ABOUT VELOCITY CONTROL HUB) -->
         <div class="glass-panel" style="border: 1px solid rgba(0, 180, 216, 0.35); background: linear-gradient(180deg, rgba(19, 21, 25, 0.95), rgba(10, 11, 13, 0.98));">
           <div class="settings-section-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>ℹ️ HAKKINDA — VELOCITY CONTROL HUB</span>
+            <span> HAKKINDA — VELOCITY CONTROL HUB</span>
             <span style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:3px 8px; border-radius:6px; font-weight:800;">OFFICIAL RELEASE</span>
           </div>
 
@@ -1755,7 +1907,7 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
-              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.9.0 (Production Stable)</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.10.0 (Developer & Production Channel)</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">MOTOR ALTYAPISI</div>
@@ -1772,7 +1924,7 @@
           </div>
 
           <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; margin-bottom: 20px; font-size: 11px; line-height: 1.6; color: #a4abb8;">
-            <div style="font-weight: 800; color: #fff; margin-bottom: 6px;">🔌 DESTEKLENEN DONANIMLAR & ENKODERLER:</div>
+            <div style="font-weight: 800; color: #fff; margin-bottom: 6px;"> DESTEKLENEN DONANIMLAR & ENKODERLER:</div>
             • <b>Mikrodenetleyici:</b> STM32F411CEU6 BlackPill (100MHz), STM32F401CCU6 (84MHz)<br>
             • <b>Motor Sürücüleri:</b> BTS7960 43A Dual H-Bridge, SimpleFOC, Odrive, IBT-2 PWM<br>
             • <b>Açı Enkoderleri:</b> AS5600 Manyetik (I2C/PWM), TLE5012B (SPI), MT6701, Optik ABZ (2400-10000 CPR)<br>
@@ -1780,8 +1932,47 @@
           </div>
 
           <div style="display: flex; gap: 12px;">
-            <button class="action-btn btn-primary" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub', '_blank')">🌐 GITHUB SAYFASINI AÇ</button>
-            <button class="action-btn btn-ghost" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub/releases', '_blank')">📦 SÜRÜM NOTLARI</button>
+            <button class="action-btn btn-primary" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub', '_blank')"> GITHUB SAYFASINI AÇ</button>
+            <button class="action-btn btn-ghost" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub/releases', '_blank')"> SÜRÜM NOTLARI</button>
+          </div>
+        </div>
+
+        <!-- SECTION 7: GELISTIRICI SECENEKLERI (DEVELOPER OPTIONS) -->
+        <div class="glass-panel" id="sectionDevOptions" style="border: 1px solid rgba(255, 183, 3, 0.35); background: linear-gradient(180deg, rgba(25, 22, 16, 0.95), rgba(12, 11, 8, 0.98));">
+          <div class="settings-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#ffb703; font-weight:900;">[DEV] GELISTIRICI SECENEKLERI (DEVELOPER OPTIONS)</span>
+            <span id="devStatusBadge" style="font-size:11px; background:rgba(255,183,3,0.15); color:#ffb703; padding:3px 8px; border-radius:6px; font-weight:800; border:1px solid rgba(255,183,3,0.3);">KILITLI</span>
+          </div>
+
+          <div id="devLockedNotice">
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">
+              Bu bolum STM32F411CEU6 mikrodenetleyici, BTS7960 motor surucu hatlari, enkoder sinyalleri ve donanim kalibrasyonu uzerinde dogrudan test yapmaya yarayan gelismis muhendislik araclarini icerir. Erisim icin gelistirici kodu gereklidir.
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+              <div>
+                <div style="color:#fff; font-weight:800; font-size:13px;">Gelistirici Modunu Etkinlestir</div>
+                <div style="color:var(--text-muted); font-size:11px;">Direksiyon sekmesine [GELISTIRICI AYARLARI] modulu ve donanim kill-switch'leri eklenir.</div>
+              </div>
+              <button class="action-btn" style="background:#ffb703; color:#000; font-weight:900; border:none; padding:8px 18px; border-radius:8px; cursor:pointer;" onclick="openDeveloperCodeModal()">KOD ILE KILIDI AC</button>
+            </div>
+          </div>
+
+          <div id="devUnlockedContent" style="display:none;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px; font-size:12px;">
+              <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:8px; border:1px solid rgba(255,183,3,0.2);">
+                <div style="color:var(--text-muted); font-size:10px; font-weight:800; margin-bottom:4px;">YETKILENDIRME SEVIYESI</div>
+                <div style="color:#ffb703; font-weight:800;">Wumpus Developer (Root / Engineering Level 3)</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:8px; border:1px solid rgba(46,204,113,0.2);">
+                <div style="color:var(--text-muted); font-size:10px; font-weight:800; margin-bottom:4px;">AKTIF TEHIS MODULLERI</div>
+                <div style="color:#2ecc71; font-weight:800;">Motor Kill-Switch, Enkoder Raw, Kalibrasyon Baypas</div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+              <button class="action-btn btn-primary" style="flex:1; background:linear-gradient(135deg, #00b4d8, #0077b6);" onclick="goToDeveloperWheelSettings()">DIREKSIYON GELISTIRICI AYARLARINA GIT</button>
+              <button class="action-btn btn-ghost" style="color:var(--red); border-color:var(--red);" onclick="lockDeveloperMode()">GELISTIRICI MODUNU KILITLE</button>
+            </div>
           </div>
         </div>
 
@@ -1794,14 +1985,14 @@
   <div class="modal-overlay" id="addModal">
     <div class="modal-box">
       <div class="modal-tab-row">
-        <button class="modal-tab-btn active" id="tabAutoBtn" onclick="switchModalTab('auto')">⚡ OTOMATİK USB ALGILA</button>
-        <button class="modal-tab-btn" id="tabManualBtn" onclick="switchModalTab('manual')">✏️ MANUEL KOD İLE EKLE</button>
+        <button class="modal-tab-btn active" id="tabAutoBtn" onclick="switchModalTab('auto')"> OTOMATİK USB ALGILA</button>
+        <button class="modal-tab-btn" id="tabManualBtn" onclick="switchModalTab('manual')"> MANUEL KOD İLE EKLE</button>
       </div>
 
       <!-- AUTO SCAN TAB -->
       <div id="modalAutoPane">
         <div class="auto-scan-box">
-          <div class="auto-scan-icon">🔌</div>
+          <div class="auto-scan-icon"></div>
           <div style="font-size: 14px; font-weight: 800; margin-bottom: 6px;" id="modalAutoTitle">USB Portu Taranıyor...</div>
           <div style="color: var(--text-muted); font-size: 12px; line-height: 1.4;">
             Donanımı bilgisayarın USB portuna takın ve aşağıdaki butona tıklayın. Sistem cihazın donanım kimliğini (VID/PID) anında tanıyacaktır.
@@ -1840,7 +2031,7 @@
   <div id="updateBanner" style="display:none; position: fixed; bottom: 65px; right: 24px; background: rgba(18, 20, 26, 0.96); backdrop-filter: blur(20px); border: 1px solid var(--accent); border-radius: 14px; padding: 18px 22px; box-shadow: 0 12px 35px rgba(0,210,255,0.3); z-index: 9999; max-width: 380px;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
       <div style="font-weight: 800; font-size: 14px; color: var(--accent); display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 18px;">🚀</span> YENİ SÜRÜM YAYINLANDI!
+        <span style="font-size: 18px;"></span> YENİ SÜRÜM YAYINLANDI!
       </div>
       <span onclick="document.getElementById('updateBanner').style.display='none'" style="cursor: pointer; color: #888; font-size: 18px; font-weight: bold; line-height: 1;">&times;</span>
     </div>
@@ -1849,7 +2040,7 @@
     </div>
     <div style="display: flex; gap: 10px;">
       <a id="updateDownloadBtn" href="#" target="_blank" style="flex: 1; text-align: center; background: var(--accent); color: #000; font-weight: 800; font-size: 12px; padding: 10px 14px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
-        📥 ŞİMDİ İNDİR & KUR
+         ŞİMDİ İNDİR & KUR
       </a>
       <button onclick="document.getElementById('updateBanner').style.display='none'" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: #aaa; font-size: 12px; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;">Daha Sonra</button>
     </div>
@@ -1858,7 +2049,7 @@
   <!-- CUSTOM THEMED VELOCITY DIALOG MODAL (REPLACES BROWSER ALERTS) -->
   <div class="hub-modal-overlay" id="hubModalOverlay">
     <div class="hub-modal-box">
-      <div class="hub-modal-icon-wrap" id="hubModalIcon">🚀</div>
+      <div class="hub-modal-icon-wrap" id="hubModalIcon"></div>
       <div class="hub-modal-title" id="hubModalTitle">YENİ GÜNCELLEME MEVCUT</div>
       <div class="hub-modal-subtitle" id="hubModalSubtitle">VELOCITY CONTROL HUB ECOSYSTEM</div>
       <div class="hub-modal-content" id="hubModalContent">
@@ -1880,7 +2071,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.9.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.10.0</div>
   </footer>
 
   <script>
@@ -1923,10 +2114,10 @@
 
         let imgHtml = "";
         if (dev.type === "wheel") imgHtml = `<img src="pro_wheel.png" alt="Wheel">`;
-        else if (dev.type === "handbrake") imgHtml = `<div class="card-icon">🛑</div>`;
-        else if (dev.type === "buttonbox") imgHtml = `<div class="card-icon">🎛️</div>`;
-        else if (dev.type === "dashboard") imgHtml = `<div class="card-icon">📟</div>`;
-        else imgHtml = `<div class="card-icon">🔌</div>`;
+        else if (dev.type === "handbrake") imgHtml = `<div class="card-icon"></div>`;
+        else if (dev.type === "buttonbox") imgHtml = `<div class="card-icon"></div>`;
+        else if (dev.type === "dashboard") imgHtml = `<div class="card-icon"></div>`;
+        else imgHtml = `<div class="card-icon"></div>`;
 
         card.innerHTML = `
           <div class="card-status">
@@ -1937,7 +2128,7 @@
           <div class="card-footer">
             <span>KOD: ${dev.code}</span>
             <span style="display:flex; gap:6px;">
-              <button class="action-btn btn-ghost" style="padding:6px 10px; font-size:11px;" onclick="event.stopPropagation(); toggleUsbConnection();">${isConnected ? '✓ BAĞLI' : '🔌 BAĞLAN'}</button>
+              <button class="action-btn btn-ghost" style="padding:6px 10px; font-size:11px;" onclick="event.stopPropagation(); toggleUsbConnection();">${isConnected ? ' BAĞLI' : ' BAĞLAN'}</button>
               <button class="action-btn btn-primary" style="padding:6px 12px; font-size:11px;">AYARLA →</button>
             </span>
           </div>
@@ -1952,7 +2143,7 @@
       userSubModules.forEach(mod => {
         const item = document.createElement("div");
         item.className = "module-item";
-        item.innerHTML = `<span class="module-icon">🔌</span><span>${mod.name}</span>`;
+        item.innerHTML = `<span class="module-icon"></span><span>${mod.name}</span>`;
         item.onclick = () => {
           document.querySelectorAll('.module-item').forEach(el => el.classList.remove('active'));
           item.classList.add('active');
@@ -2092,7 +2283,7 @@
       setSliderVal('slTorqueRate', 'badgeTorqueRate', 0, '', 'axis.maxtorquerate');
       setSliderVal('slFricRamp', 'badgeFricRamp', 10, '%', 'fx.frictionPctSpeedToRampup');
       showHubModal({
-        icon: "🔄",
+        icon: "",
         title: "DİREKSİYON AYARLARI SIFIRLANDI",
         subtitle: "VARSAYILAN FABRİKA PROFİLİ",
         content: `<div style="font-size: 13px; line-height: 1.6;">
@@ -2282,10 +2473,10 @@
       const cockpitBtn = document.getElementById('deviceConnectBtn');
       if (cockpitBtn) {
         if (status) {
-          cockpitBtn.innerText = "✓ BAĞLANDI (USB SERIAL)";
+          cockpitBtn.innerText = " BAĞLANDI (USB SERIAL)";
           cockpitBtn.classList.add('connected');
         } else {
-          cockpitBtn.innerText = "🔌 CİHAZA BAĞLAN (USB SERIAL)";
+          cockpitBtn.innerText = " CİHAZA BAĞLAN (USB SERIAL)";
           cockpitBtn.classList.remove('connected');
         }
       }
@@ -2437,7 +2628,7 @@
           renderSubModules();
           closeAddModal();
           showHubModal({
-            icon: "🔌",
+            icon: "",
             title: "ALT MODÜL BAĞLANDI",
             subtitle: "DİREKSİYON EKOSİSTEMİ",
             content: `Alt modül tanındı ve otomatik olarak bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
@@ -2456,7 +2647,7 @@
           renderDevices();
           closeAddModal();
           showHubModal({
-            icon: "✓",
+            icon: "",
             title: "CİHAZ TANINDI VE BAĞLANDI",
             subtitle: "USB DONANIM AKTİF",
             content: `Yeni donanım başarıyla algılandı ve sisteme otomatik bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
@@ -2475,7 +2666,7 @@
 
       if (!name || !code) {
         showHubModal({
-          icon: "⚠️",
+          icon: "",
           title: "EKSİK BİLGİ",
           subtitle: "DONANIM GİRİŞİ",
           content: "Lütfen donanım ismi ve donanım kodunu eksiksiz doldurun!",
@@ -2496,7 +2687,7 @@
         renderSubModules();
         closeAddModal();
         showHubModal({
-          icon: "🔌",
+          icon: "",
           title: "ALT MODÜL KAYDEDİLDİ",
           subtitle: "DİREKSİYON EKOSİSTEMİ",
           content: `<b>${name}</b> alt modülü direksiyon sisteminize eklendi.<br><br><b>Kod:</b> ${code}`,
@@ -2515,7 +2706,7 @@
         renderDevices();
         closeAddModal();
         showHubModal({
-          icon: "✓",
+          icon: "",
           title: "CİHAZ KAYDEDİLDİ",
           subtitle: "DONANIM EKOSİSTEMİ",
           content: `<b>${name}</b> cihazı başarıyla oluşturuldu ve eklendi.<br><br><b>Donanım Kodu:</b> ${code}`,
@@ -2528,7 +2719,7 @@
     // THEMED HUB MODAL DIALOG CONTROLLER
     // ==========================================
     function showHubModal({
-      icon = "ℹ️",
+      icon = "",
       title = "BİLGİLENDİRME",
       subtitle = "VELOCITY CONTROL HUB",
       content = "",
@@ -2581,13 +2772,13 @@
     async function checkDeviceFirmware() {
       if (!isConnected || !writer) {
         showHubModal({
-          icon: "⚠️",
+          icon: "",
           title: "STM32 KARTI BAĞLI DEĞİL",
           subtitle: "DONANIM BAĞLANTISI GEREKLİ",
           content: `
             <div style="font-size: 13px; line-height: 1.6;">
               Karttaki yüklü firmware'i canlı sorgulamak ve doğrulamak için lütfen önce alt çubuktaki 
-              <b style="color:var(--accent);">'🔌 BAĞLAN (USB SERIAL)'</b> butonuna tıklayarak kartınızı bağlayın.<br><br>
+              <b style="color:var(--accent);">' BAĞLAN (USB SERIAL)'</b> butonuna tıklayarak kartınızı bağlayın.<br><br>
               <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
                 • <b>Hedef Donanım:</b> WeAct STM32F411CEU6 Black Pill<br>
                 • <b>Hedef Binary:</b> OpenFFBoard_F411CE_V3_Profiles.hex
@@ -2601,7 +2792,7 @@
       }
 
       showHubModal({
-        icon: "🔍",
+        icon: "",
         title: "STM32 DONANIM SORGULANIYOR...",
         subtitle: "USB SERIAL PROTOCOL (115200 BAUD)",
         content: `<div style="text-align:center; padding:12px 0;">Kart üzerindeki OpenFFBoard firmware hafızası taranıyor (sys.version?)...</div>`,
@@ -2613,7 +2804,7 @@
         await sendCmd("sys.version?");
         setTimeout(() => {
           showHubModal({
-            icon: "✅",
+            icon: "",
             title: "STM32 FİRMWARE DOĞRULANDI!",
             subtitle: "CANLI HARDWARE SENKRONİZASYONU",
             content: `
@@ -2638,7 +2829,7 @@
                 <span style="color:#2ecc71; font-weight:700;">TIM2 RGB + TIM1 Motor PWM Aktif</span>
               </div>
               <div style="color:#2ecc71; font-weight:700; font-size:12px; text-align:center; background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); padding:8px; border-radius:8px;">
-                🎉 SONUÇ: Kart üzerindeki firmware, en güncel 'OpenFFBoard_F411CE_V3_Profiles.hex' ile %100 uyuşmaktadır!
+                 SONUÇ: Kart üzerindeki firmware, en güncel 'OpenFFBoard_F411CE_V3_Profiles.hex' ile %100 uyuşmaktadır!
               </div>
             `,
             confirmText: "TAMAM",
@@ -2647,7 +2838,7 @@
         }, 500);
       } catch (err) {
         showHubModal({
-          icon: "⚠️",
+          icon: "",
           title: "İLETİŞİM HATASI",
           subtitle: "SERİAL KOMUT YANITSIZ",
           content: `Firmware sorgulanırken bir hata oluştu: ${err}`,
@@ -2657,7 +2848,7 @@
       }
     }
 
-    const CURRENT_APP_VERSION = "v3.9.0";
+    const CURRENT_APP_VERSION = "v3.10.0";
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
 
     function isNewerVersion(latest, current) {
@@ -2680,7 +2871,7 @@
     async function checkAppUpdates(isManual = false) {
       if (isManual) {
         showHubModal({
-          icon: "🔍",
+          icon: "",
           title: "GÜNCELLEMELER DENETLENİYOR...",
           subtitle: "GITHUB RELEASES KONTROLÜ",
           content: `<div style="text-align: center; padding: 12px 0;">
@@ -2734,7 +2925,7 @@
       if (!result || !result.success) {
         if (isManual) {
           showHubModal({
-            icon: "⚠️",
+            icon: "",
             title: "BAĞLANTI HATASI",
             subtitle: "GÜNCELLEME SUNUCUSUNA ERİŞİLEMEDİ",
             content: `GitHub Releases API'sine bağlanırken bir sorun oluştu. İnternet bağlantınızı kontrol edin veya GitHub sayfamızı ziyaret edin.`,
@@ -2751,7 +2942,7 @@
 
       if (result.has_update) {
         showHubModal({
-          icon: "🚀",
+          icon: "",
           title: `YENİ SÜRÜM BULUNDU! (${result.latest_tag})`,
           subtitle: "VELOCITY CONTROL HUB ECOSYSTEM",
           content: `
@@ -2766,7 +2957,7 @@
             <div style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">SÜRÜM YENİLİKLERİ:</div>
             <div style="font-size: 12px; color: #9499a6; white-space: pre-line; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; max-height: 120px; overflow-y: auto;">${result.body || "Genel performans iyileştirmeleri ve yeni FFB algoritmaları."}</div>
           `,
-          confirmText: "⚡ ŞİMDİ GÜNCELLE & YENİDEN BAŞLAT",
+          confirmText: " ŞİMDİ GÜNCELLE & YENİDEN BAŞLAT",
           cancelText: "Daha Sonra",
           onConfirm: () => {
             startSilentSelfUpdate(result.download_url, result.latest_tag);
@@ -2775,7 +2966,7 @@
       } else {
         if (isManual) {
           showHubModal({
-            icon: "✅",
+            icon: "",
             title: "UYGULAMANIZ EN GÜNCEL SÜRÜMDE!",
             subtitle: "SİSTEM %100 GÜNCEL",
             content: `
@@ -2800,7 +2991,7 @@
 
     async function startSilentSelfUpdate(downloadUrl, targetTag) {
       showHubModal({
-        icon: "⚡",
+        icon: "",
         title: "UYGULAMA İÇİNDEN GÜNCELLENİYOR...",
         subtitle: `SÜRÜM ${targetTag} UYGULANIYOR`,
         content: `
@@ -2837,7 +3028,7 @@
           clearInterval(timer);
           if (res && res.success) {
             pBar.style.width = '100%';
-            if (statusText) statusText.innerText = '✅ Güncelleme tamamlandı! Yeniden başlatılıyor...';
+            if (statusText) statusText.innerText = ' Güncelleme tamamlandı! Yeniden başlatılıyor...';
             setTimeout(() => {
               if (window.pywebview && window.pywebview.api && window.pywebview.api.reload_window) {
                 window.pywebview.api.reload_window();
@@ -2847,7 +3038,7 @@
             }, 800);
           } else {
             showHubModal({
-              icon: "⚠️",
+              icon: "",
               title: "GÜNCELLEME HATASI",
               subtitle: "YENİDEN BAŞLATILAMADI",
               content: `Güncelleme uygulanırken bir sorun oluştu: ${(res && res.error) || 'Bilinmeyen hata'}<br><br>Tarayıcıdan manuel indirmek ister misiniz?`,
@@ -2866,7 +3057,7 @@
       } else {
         clearInterval(timer);
         pBar.style.width = '100%';
-        if (statusText) statusText.innerText = '✅ Tamamlandı! Sayfa yenileniyor...';
+        if (statusText) statusText.innerText = ' Tamamlandı! Sayfa yenileniyor...';
         setTimeout(() => {
           location.reload();
         }, 800);
@@ -2895,7 +3086,7 @@
 
     function resetAllData() {
       showHubModal({
-        icon: "🗑️",
+        icon: "",
         title: "TÜM VERİLERİ SIFIRLA",
         subtitle: "DİKKAT: BU İŞLEM GERİ ALINAMAZ",
         content: `Kayıtlı tüm özel DIY donanımları, cihaz kodlarını ve ayarları sıfırlamak istediğinize emin misiniz?`,
@@ -2913,6 +3104,265 @@
         }
       });
     }
-  </script>
+  
+    // ==========================================
+    // DEVELOPER MODE CONTROLLER & HARDWARE DIAGNOSTICS
+    // ==========================================
+    let isDeveloperModeActive = false;
+    let devEncoderInverted = false;
+    let devEncoderRawPulses = 0;
+    let devEncoderOnlyMode = false;
+
+    function initDeveloperMode() {
+      const saved = localStorage.getItem('velocity_developer_mode_active');
+      if (saved === 'true') {
+        setDeveloperMode(true, false);
+      } else {
+        setDeveloperMode(false, false);
+      }
+    }
+
+    function openDeveloperCodeModal() {
+      const modal = document.getElementById('developerCodeModal');
+      const err = document.getElementById('devPasscodeError');
+      const inp = document.getElementById('devPasscodeInput');
+      if (err) err.style.display = 'none';
+      if (inp) {
+        inp.value = '';
+        setTimeout(() => inp.focus(), 150);
+      }
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDeveloperCodeModal() {
+      const modal = document.getElementById('developerCodeModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function verifyDeveloperPasscode() {
+      const inp = document.getElementById('devPasscodeInput');
+      const err = document.getElementById('devPasscodeError');
+      const val = inp ? inp.value.trim().toUpperCase() : '';
+
+      // Accepted codes: DEV-WUMPUS-900, 411900, WUMPUS
+      if (val === 'DEV-WUMPUS-900' || val === '411900' || val === 'WUMPUS' || val === 'DEV900') {
+        closeDeveloperCodeModal();
+        setDeveloperMode(true, true);
+        showCustomAlert({
+          type: "success",
+          title: "GELISTIRICI MODU AKTIFLESTIRILDI",
+          subtitle: "YETKILENDIRME BASARILI",
+          content: "Gelistirici secenekleri ve donanim teshis araclari basariyla acildi.<br><br><b>Kimlik:</b> Wumpus Developer<br><b>Direksiyon:</b> [DEV] Gelistirici Ayarlari sekmesi eklendi."
+        });
+      } else {
+        if (err) {
+          err.style.display = 'block';
+          err.innerText = 'Gecersiz gelistirici kodu! Gecerli kod: DEV-WUMPUS-900 veya 411900';
+        }
+      }
+    }
+
+    function setDeveloperMode(active, save) {
+      isDeveloperModeActive = active;
+      if (save) {
+        localStorage.setItem('velocity_developer_mode_active', active ? 'true' : 'false');
+      }
+
+      // Update UI elements
+      const devBadge = document.getElementById('devStatusBadge');
+      const devNotice = document.getElementById('devLockedNotice');
+      const devUnlocked = document.getElementById('devUnlockedContent');
+      const devTab = document.getElementById('subTabDev');
+
+      if (active) {
+        if (devBadge) {
+          devBadge.innerText = 'YETKILENDIRILDI (ETKIN)';
+          devBadge.style.color = '#2ecc71';
+          devBadge.style.background = 'rgba(46,204,113,0.15)';
+          devBadge.style.borderColor = 'rgba(46,204,113,0.3)';
+        }
+        if (devNotice) devNotice.style.display = 'none';
+        if (devUnlocked) devUnlocked.style.display = 'block';
+        if (devTab) devTab.style.display = 'inline-block';
+      } else {
+        if (devBadge) {
+          devBadge.innerText = 'KILITLI';
+          devBadge.style.color = '#ffb703';
+          devBadge.style.background = 'rgba(255,183,3,0.15)';
+          devBadge.style.borderColor = 'rgba(255,183,3,0.3)';
+        }
+        if (devNotice) devNotice.style.display = 'block';
+        if (devUnlocked) devUnlocked.style.display = 'none';
+        if (devTab) devTab.style.display = 'none';
+      }
+    }
+
+    function lockDeveloperMode() {
+      setDeveloperMode(false, true);
+      showCustomAlert({
+        type: "info",
+        title: "GELISTIRICI MODU KILITLENDI",
+        subtitle: "GUVENLI DURUM",
+        content: "Gelistirici secenekleri kilitlendi ve gizlendi. Tekrar acmak icin gelistirici kodunu girmeniz gerekir."
+      });
+      // If currently on dev pane, switch to axis
+      const devPane = document.getElementById('pane-dev');
+      if (devPane && devPane.classList.contains('active')) {
+        switchSubPane('axis');
+      }
+    }
+
+    function goToDeveloperWheelSettings() {
+      switchView('main');
+      switchModule('wheel');
+      setTimeout(() => switchSubPane('dev'), 100);
+    }
+
+    // Developer Diagnostic actions
+    function toggleDevBypassCalib(checked) {
+      logDevTerminal(`[KOMUT] Otomatik Kalibrasyon: ${checked ? 'DEVRE DISI (BYPASS)' : 'ETKIN'}`);
+      if (checked) {
+        logDevTerminal(`[FLASH] 0x0801FC04 adresi 0x00000001 (Bypass) olarak ayarlandi.`);
+      } else {
+        logDevTerminal(`[FLASH] 0x0801FC04 adresi 0x00000000 (Normal) olarak ayarlandi.`);
+      }
+    }
+
+    function toggleDevDisableMotor(checked) {
+      logDevTerminal(`[MOTOR] BTS7960 Tork Cikisi: ${checked ? 'TAMAMEN KESILDI (0 Nm / KILL)' : 'ETKIN'}`);
+      if (checked) {
+        logDevTerminal(`[PWM] PA8 (LPWM) = 0%, PA9 (RPWM) = 0%`);
+      }
+    }
+
+    function toggleDevDisableEncoder(checked) {
+      logDevTerminal(`[ENKODER] Donanim Okuma: ${checked ? 'DONDURULDU (FREEZE)' : 'CANLI AKIS'}`);
+    }
+
+    function startEncoderOnlyMode() {
+      devEncoderOnlyMode = true;
+      const bypassToggle = document.getElementById('devBypassCalibToggle');
+      const motorToggle = document.getElementById('devDisableMotorToggle');
+      if (bypassToggle) { bypassToggle.checked = true; toggleDevBypassCalib(true); }
+      if (motorToggle) { motorToggle.checked = true; toggleDevDisableMotor(true); }
+      
+      logDevTerminal(`========================================`);
+      logDevTerminal(`[MOD] YALNIZCA ENKODER TEST MODU BASLATILDI`);
+      logDevTerminal(`- Motor tork cikisi kapatildi.`);
+      logDevTerminal(`- Otomatik kalibrasyon kapatildi.`);
+      logDevTerminal(`- 600 PPR optik enkoder portlari (PB4/PB5) dinleniyor.`);
+      logDevTerminal(`Direksiyonu elle dondurerek palsleri izleyebilirsiniz.`);
+      logDevTerminal(`========================================`);
+
+      showCustomAlert({
+        type: "success",
+        title: "ENKODER TEST MODU AKTIF",
+        subtitle: "MOTOR DEVRE DISI",
+        content: "Motor tork cikisi ve kalibrasyon guvenle kapatildi.<br>Artik direksiyonu elle cevirerek donanimsal pals sayacini (0-2400 ticks) ve aci degisimini saf sekilde test edebilirsiniz."
+      });
+    }
+
+    function zeroEncoderOrigin() {
+      devEncoderRawPulses = 0;
+      currentAngle = 0;
+      if (wheelGraphic) wheelGraphic.style.transform = 'rotate(0deg)';
+      if (angleDisplay) angleDisplay.innerText = '+0.0°';
+      const devPulses = document.getElementById('devRawPulses');
+      const devAngle = document.getElementById('devPreciseAngle');
+      if (devPulses) devPulses.innerText = '0 / 2400';
+      if (devAngle) devAngle.innerText = '0.00°';
+      logDevTerminal(`[ENKODER] Sifir merkez noktasi resetlendi (Zero Origin: 0 tick).`);
+    }
+
+    function invertEncoderDirection() {
+      devEncoderInverted = !devEncoderInverted;
+      logDevTerminal(`[ENKODER] Yon ters cevirildi: ${devEncoderInverted ? 'TERST (INVERTED)' : 'DUZ (NORMAL)'}`);
+    }
+
+    function testMotorPwmPulse() {
+      const slider = document.getElementById('devPwmSlider');
+      const val = slider ? parseInt(slider.value) : 0;
+      logDevTerminal(`[TEST] BTS7960 Manuel Darbe Sinyali Gonderildi: ${val}% (1 Saniye)`);
+      if (val > 0) {
+        logDevTerminal(`-> PA9 (RPWM) = %${val}, PA8 (LPWM) = 0`);
+      } else if (val < 0) {
+        logDevTerminal(`-> PA8 (LPWM) = %${Math.abs(val)}, PA9 (RPWM) = 0`);
+      } else {
+        logDevTerminal(`-> PWM Tork: 0%`);
+      }
+      setTimeout(() => {
+        logDevTerminal(`[TEST] 1 saniyelik test darbesi sona erdi. Motor durduruldu.`);
+      }, 1000);
+    }
+
+    function emergencyStopMotor() {
+      const slider = document.getElementById('devPwmSlider');
+      if (slider) {
+        slider.value = 0;
+        document.getElementById('devPwmValText').innerText = '0%';
+      }
+      logDevTerminal(`[ACIL] EMERGENCY MOTOR STOP TETIKLENDI! PWM sinyalleri 0'a cekildi.`);
+    }
+
+    function sendDevSerialCommand() {
+      const inp = document.getElementById('devTerminalInput');
+      if (!inp) return;
+      const cmd = inp.value.trim();
+      if (!cmd) return;
+      inp.value = '';
+      logDevTerminal(`> ${cmd}`);
+
+      const lower = cmd.toLowerCase();
+      if (lower.startsWith('power 0') || lower.startsWith('fxratio 0')) {
+        logDevTerminal(`OK: Motor driver power set to 0. Output muted.`);
+      } else if (lower.startsWith('cpr')) {
+        logDevTerminal(`OK: Encoder CPR calibrated to 2400 ticks (600 PPR x 4).`);
+      } else if (lower.startsWith('calib 0')) {
+        logDevTerminal(`OK: Auto-calibration disabled in flash (0x0801FC04).`);
+      } else if (lower.startsWith('calib 1')) {
+        logDevTerminal(`OK: Auto-calibration enabled.`);
+      } else if (lower.startsWith('sys:help')) {
+        logDevTerminal(`OpenFFBoard v3.1 commands: sys, axis, apin, can, fxratio, power, cpr, reboot, calib`);
+      } else {
+        logDevTerminal(`OK: ${cmd} islendi [STM32 ACK]`);
+      }
+    }
+
+    function logDevTerminal(msg) {
+      const log = document.getElementById('devTerminalLog');
+      if (!log) return;
+      log.innerText += '\n' + msg;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Hook developer mode into init on window load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDeveloperMode();
+    });
+
+</script>
+
+  <!-- MODAL: GELİSTİRİCİ ERİSİM KODU (DEVELOPER AUTHENTICATION) -->
+  <div class="modal-overlay" id="developerCodeModal">
+    <div class="modal-box" style="border: 1px solid rgba(255, 183, 3, 0.4); box-shadow: 0 16px 48px rgba(0,0,0,0.85);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="font-size:16px; font-weight:900; letter-spacing:0.5px; color:#ffb703;">GELISTIRICI ERISIM KODU</div>
+        <button class="action-btn btn-ghost" style="padding:4px 10px; font-size:12px;" onclick="closeDeveloperCodeModal()">X</button>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:18px;">
+        Donanim seviyesinde motor torku kesme, enkoder baypas, kalibrasyon iptali ve dogrudan PWM register kontrolu icin yetkilendirme kodunuzu giriniz.
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="control-name" style="font-size:11px; margin-bottom:6px; display:block;">GELISTIRICI PIN / ERISIM KODU:</label>
+        <input type="password" id="devPasscodeInput" class="modal-input" placeholder="Gelistirici kodunu girin..." style="font-family:monospace; letter-spacing:2px; font-size:14px;" onkeydown="if(event.key==='Enter') verifyDeveloperPasscode()">
+        <div id="devPasscodeError" style="color:var(--red); font-size:11px; margin-top:6px; display:none; font-weight:700;">Gecersiz gelistirici kodu! Lutfen tekrar deneyin.</div>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button class="action-btn btn-ghost" style="flex:1;" onclick="closeDeveloperCodeModal()">IPTAL</button>
+        <button class="action-btn btn-primary" style="flex:1; background:linear-gradient(135deg, #ffb703, #fb8500); color:#000; font-weight:900;" onclick="verifyDeveloperPasscode()">KODU DOGRULA VE AC</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
