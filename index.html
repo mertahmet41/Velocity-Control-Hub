@@ -2581,8 +2581,7 @@ Komut girmeye hazir...
       if (writer && isConnected) {
         try {
           const enc = new TextEncoder();
-          await writer.write(enc.encode(cmdStr + "
-"));
+          await writer.write(enc.encode(cmdStr + String.fromCharCode(10)));
         } catch (e) {
           console.error(e);
         }
@@ -2599,8 +2598,7 @@ Komut girmeye hazir...
             const { value, done } = await reader.read();
             if (done) break;
             buffer += dec.decode(value, { stream: true });
-            let lines = buffer.split(/[
-]+/);
+            let lines = buffer.split(String.fromCharCode(10));
             buffer = lines.pop();
 
             for (let line of lines) {
