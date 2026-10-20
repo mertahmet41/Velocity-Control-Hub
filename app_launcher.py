@@ -6,6 +6,14 @@ import webbrowser
 import shutil
 import time
 import webview
+import threading
+import hashlib
+try:
+    import serial
+    import serial.tools.list_ports
+    SERIAL_OK = True
+except Exception:
+    SERIAL_OK = False
 
 REPO = "mertahmet41/Velocity-Control-Hub"
 
@@ -42,6 +50,10 @@ def extract_version_from_html(html_path):
 class HubApi:
     def __init__(self):
         self._window = None
+        self._ser = None
+        self._rx = bytearray()
+        self._alive = False
+        self._lock = threading.Lock()
 
     def set_window(self, window):
         self._window = window
@@ -118,6 +130,103 @@ class HubApi:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+
+    # ------------------------------------------------------------------
+    # Native serial bridge (WebView2 has no usable Web Serial chooser)
+    # ------------------------------------------------------------------
+    KNOWN_IDS = [(0x1209, 0xFFB0), (0x046D, 0xC24F), (0x346E, 0x0002), (0x0483, None)]
+
+    def _is_known(self, vid, pid):
+        for v, p in self.KNOWN_IDS:
+            if vid == v and (p is None or pid == p):
+                return True
+        return False
+
+    def list_devices(self):
+        """Return COM ports; only OpenFFBoard / G29 / Moza / STM32 are flagged as match."""
+        if not SERIAL_OK:
+            return {"success": False, "error": "pyserial yuklu degil", "devices": []}
+        out = []
+        try:
+            for p in serial.tools.list_ports.comports():
+                out.append({
+                    "port": p.device,
+                    "vid": p.vid or 0,
+                    "pid": p.pid or 0,
+                    "desc": p.description or "",
+                    "match": bool(p.vid) and self._is_known(p.vid, p.pid),
+                })
+        except Exception as e:
+            return {"success": False, "error": str(e), "devices": []}
+        return {"success": True, "devices": out}
+
+    def serial_open(self, port_name):
+        self.serial_close()
+        try:
+            ser = serial.Serial(port_name, 115200, timeout=0.05, write_timeout=1)
+            try:
+                ser.dtr = True
+                ser.rts = True
+            except Exception:
+                pass
+            self._ser = ser
+            self._rx = bytearray()
+            self._alive = True
+            t = threading.Thread(target=self._reader, args=(ser,), daemon=True)
+            t.start()
+            return {"success": True}
+        except Exception as e:
+            self._ser = None
+            return {"success": False, "error": str(e)}
+
+    def _reader(self, ser):
+        while self._alive and self._ser is ser:
+            try:
+                data = ser.read(256)
+                if data:
+                    with self._lock:
+                        self._rx.extend(data)
+                        if len(self._rx) > 65536:
+                            del self._rx[:len(self._rx) - 65536]
+            except Exception:
+                self._alive = False
+                break
+
+    def serial_read(self):
+        if self._ser is None or not self._alive:
+            return {"success": False, "connected": False, "data": ""}
+        with self._lock:
+            data = bytes(self._rx)
+            self._rx.clear()
+        return {"success": True, "connected": True, "data": data.decode("utf-8", errors="ignore")}
+
+    def serial_write(self, text):
+        if self._ser is None or not self._alive:
+            return {"success": False, "error": "bagli degil"}
+        try:
+            self._ser.write(str(text).encode("utf-8"))
+            return {"success": True}
+        except Exception as e:
+            self._alive = False
+            return {"success": False, "error": str(e)}
+
+    def serial_close(self):
+        self._alive = False
+        ser = self._ser
+        self._ser = None
+        if ser is not None:
+            try:
+                ser.close()
+            except Exception:
+                pass
+        return {"success": True}
+
+    def get_firmware_path(self):
+        try:
+            return os.path.join(os.path.dirname(get_html_path()), 'OpenFFBoard_F411CE_V3_Profiles.hex')
+        except Exception:
+            return ""
+
     def open_external(self, url):
         webbrowser.open(url)
         return {"success": True}
@@ -134,11 +243,18 @@ def get_html_path():
     
     bundle_dir = get_base_dir()
     
-    # Ensure static media assets exist in the live app directory
+    def _digest(path):
+        try:
+            with open(path, 'rb') as fh:
+                return hashlib.md5(fh.read()).hexdigest()
+        except Exception:
+            return None
+
+    # Always keep static assets and firmware identical to the bundled (newest) copies
     for asset in ['pro_wheel.png', 'wheel.png', 'OpenFFBoard_F411CE_V3_Profiles.hex']:
         src = os.path.join(bundle_dir, asset)
         dst = os.path.join(app_data_dir, asset)
-        if os.path.exists(src) and (not os.path.exists(dst) or os.path.getsize(dst) == 0):
+        if os.path.exists(src) and _digest(src) != _digest(dst):
             try:
                 shutil.copy2(src, dst)
             except Exception:
@@ -151,7 +267,8 @@ def get_html_path():
     elif os.path.exists(bundled_html):
         bundled_ver = extract_version_from_html(bundled_html)
         live_ver = extract_version_from_html(live_html)
-        if is_newer_version(bundled_ver, live_ver):
+        # Replace the cached copy unless the cached copy is a strictly newer release
+        if not is_newer_version(live_ver, bundled_ver) and _digest(bundled_html) != _digest(live_html):
             try:
                 shutil.copy2(bundled_html, live_html)
             except Exception:

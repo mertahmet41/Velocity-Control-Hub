@@ -2,8 +2,8 @@
 [Setup]
 AppId={{9F47C9D2-113B-441A-9721-3DA6D12E08A9}
 AppName=Velocity Control Hub
-AppVersion=3.11.0
-AppVerName=Velocity Control Hub 3.11.0
+AppVersion=3.12.0
+AppVerName=Velocity Control Hub 3.12.0
 AppPublisher=Wumpus
 AppPublisherURL=https://github.com/mertahmet41/Velocity-Control-Hub
 AppSupportURL=https://github.com/mertahmet41/Velocity-Control-Hub
@@ -41,3 +41,4 @@ Name: "{autodesktop}\Velocity Control Hub"; Filename: "{app}\VelocityControlHub.
 
 [Run]
 Filename: "{app}\VelocityControlHub.exe"; Description: "{cm:LaunchProgram,Velocity Control Hub}"; Flags: nowait postinstall skipifsilent
+

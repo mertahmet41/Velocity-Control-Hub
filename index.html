@@ -2071,7 +2071,7 @@ Komut girmeye hazir...
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.10.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.12.0</div>
   </footer>
 
   <script>
@@ -2172,8 +2172,8 @@ Komut girmeye hazir...
       if (target) target.classList.add('active');
 
       const tabs = document.querySelectorAll('.nav-item');
-      if (viewName === 'home') tabs[0].classList.add('active');
-      if (viewName === 'settings') tabs[1].classList.add('active');
+      if (viewName === 'home') tabs[0]?.classList.add('active');
+      if (viewName === 'settings') tabs[1]?.classList.add('active');
     }
 
     function switchModule(moduleName) {
@@ -2438,7 +2438,9 @@ Komut girmeye hazir...
       }, 450);
     }
 
-    // USB WEB SERIAL FILTER & AUTO-CONNECT
+    // ==========================================================
+    // USB SERIAL TRANSPORT (native Python bridge first, Web Serial fallback)
+    // ==========================================================
     const serialFilters = [
       { usbVendorId: 0x1209, usbProductId: 0xFFB0 }, // OpenFFBoard Native
       { usbVendorId: 0x046D, usbProductId: 0xC24F }, // Logitech G29 Spoofed
@@ -2448,104 +2450,254 @@ Komut girmeye hazir...
     ];
 
     let pollInterval = null;
+    let bridgeReadTimer = null;
+    let bridgeMode = false;
+    let connectBusy = false;
+    let rxBuffer = "";
+    let wheelRangeDeg = 900;
+    const replyCache = {};
+
+    function bridgeApi() {
+      return (window.pywebview && window.pywebview.api && window.pywebview.api.serial_open) ? window.pywebview.api : null;
+    }
+
+    function hex4(n) { return ("0000" + (n || 0).toString(16).toUpperCase()).slice(-4); }
 
     function startPolling() {
-      if (pollInterval) clearInterval(pollInterval);
+      stopPolling();
       setTimeout(() => {
         sendCmd("sys.profile?");
-        sendCmd("axis.0.power?");
-        sendCmd("axis.0.degrees?");
+        sendCmd("axis.degrees?");
+        sendCmd("axis.power?");
         sendCmd("localenc.cpr?");
-      }, 350);
-
+      }, 400);
       pollInterval = setInterval(() => {
-        if (isConnected && writer) {
-          sendCmd("axis.0.curpos?");
-          sendCmd("axis.0.curtorque?");
+        if (isConnected) {
+          sendCmd("axis.curpos?");
+          sendCmd("axis.curtorque?");
         }
-      }, 30);
+      }, 50);
     }
 
     function stopPolling() {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        pollInterval = null;
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    }
+
+    function handleRxText(text) {
+      rxBuffer += text;
+      const parts = rxBuffer.split(String.fromCharCode(10));
+      rxBuffer = parts.pop();
+      if (rxBuffer.length > 4096) rxBuffer = "";
+      for (let raw of parts) {
+        const line = raw.trim();
+        if (!line) continue;
+        lastSerialResponse = line;
+
+        // Reply format: [cmd?|value]
+        const mm = line.match(/^\[([^|\]]+)\|([^\]]*)\]?$/);
+        if (mm) {
+          const key = mm[1].replace(/[?=].*$/, "").toLowerCase();
+          replyCache[key] = mm[2];
+        }
+
+        if (line.includes("curpos")) {
+          const m = line.match(/curpos[^|:]*[|:]\s*(-?[0-9]+)/);
+          if (m) {
+            const rawPos = parseInt(m[1]);
+            if (!isNaN(rawPos)) setWheelAngle((rawPos / 32767.0) * (wheelRangeDeg / 2.0));
+          }
+        } else if (line.includes("curtorque")) {
+          const m = line.match(/curtorque[^|:]*[|:]\s*(-?[0-9]+)/);
+          if (m) {
+            const tq = Math.abs(parseInt(m[1]) || 0);
+            const clipThreshold = parseInt(document.getElementById('slClipThreshold')?.value || '92');
+            const tqPct = (tq / 32767.0) * 100.0;
+            if (currentLedMode === 'smart' || currentLedMode === 'clipping_only') {
+              if (tqPct >= clipThreshold) {
+                triggerClippingFlash();
+              } else if (currentLedMode === 'smart' && tqPct >= 65 && !isLedManualTest && currentLedState !== 'clipping') {
+                updateLedVisuals('load');
+              }
+            }
+          }
+        } else if (line.includes("degrees")) {
+          const m = line.match(/degrees[^|:]*[|:]\s*([0-9]+)/);
+          if (m && parseInt(m[1]) > 0) wheelRangeDeg = parseInt(m[1]);
+        } else if (line.includes("profile")) {
+          const m = line.match(/profile[^|:]*[|:]\s*([0-9]+)/);
+          if (m) {
+            const sel = document.getElementById('spoofSelect');
+            const idx = parseInt(m[1]);
+            if (sel && idx < sel.options.length && sel.selectedIndex !== idx) sel.selectedIndex = idx;
+          }
+        }
       }
     }
 
-    async function tryAutoConnect() {
-      if (!navigator.serial || isConnected) return false;
+    // Send a command and wait for its [cmd|value] reply
+    function queryCmd(cmd, timeoutMs) {
+      const key = cmd.replace(/[?=].*$/, "").toLowerCase();
+      delete replyCache[key];
+      sendCmd(cmd);
+      return new Promise(resolve => {
+        const t0 = Date.now();
+        const iv = setInterval(() => {
+          if (key in replyCache) { clearInterval(iv); resolve(replyCache[key]); }
+          else if (Date.now() - t0 > (timeoutMs || 1500)) { clearInterval(iv); resolve(null); }
+        }, 40);
+      });
+    }
+
+    async function bridgeReadTick() {
+      const api = bridgeApi();
+      if (!api || !isConnected || !bridgeMode) return;
       try {
-        const ports = await navigator.serial.getPorts();
-        for (const p of ports) {
-          const info = p.getInfo();
-          const match = serialFilters.some(f =>
-            f.usbVendorId === info.usbVendorId && (!f.usbProductId || f.usbProductId === info.usbProductId)
-          );
-          if (match) {
-            port = p;
-            await port.open({ baudRate: 115200 });
-            writer = port.writable.getWriter();
-            setConnectedState(true);
-            startPolling();
-            readLoop();
-            return true;
-          }
+        const r = await api.serial_read();
+        if (!r || r.connected === false) {
+          await disconnectDevice(true);
+          return;
         }
-      } catch (e) {
-        console.warn("Auto-connect:", e);
+        if (r.data) handleRxText(r.data);
+      } catch (e) { /* ignore */ }
+    }
+
+    // Returns {vid, pid, label} on success, null otherwise
+    async function connectDevice() {
+      if (isConnected) return { vid: "----", pid: "----", label: "BAĞLI" };
+      if (connectBusy) return null;
+      connectBusy = true;
+      try {
+        const api = bridgeApi();
+        if (api) {
+          const res = await api.list_devices();
+          const list = ((res && res.devices) || []).filter(d => d.match);
+          if (list.length === 0) return null;
+          const dev = list[0];
+          const o = await api.serial_open(dev.port);
+          if (!o || !o.success) {
+            console.warn("Port acilamadi:", o && o.error);
+            return null;
+          }
+          bridgeMode = true;
+          rxBuffer = "";
+          setConnectedState(true);
+          startPolling();
+          if (bridgeReadTimer) clearInterval(bridgeReadTimer);
+          bridgeReadTimer = setInterval(bridgeReadTick, 30);
+          return { vid: hex4(dev.vid), pid: hex4(dev.pid), label: dev.desc || dev.port };
+        }
+        if (navigator.serial) {
+          const p = await navigator.serial.requestPort({ filters: serialFilters });
+          await webSerialOpen(p);
+          const info = p.getInfo();
+          return { vid: hex4(info.usbVendorId), pid: hex4(info.usbProductId), label: "USB SERIAL" };
+        }
+        return null;
+      } catch (err) {
+        console.warn("Baglanti hatasi:", err);
+        return null;
+      } finally {
+        connectBusy = false;
+      }
+    }
+
+    async function webSerialOpen(p) {
+      port = p;
+      await port.open({ baudRate: 115200 });
+      writer = port.writable.getWriter();
+      bridgeMode = false;
+      rxBuffer = "";
+      setConnectedState(true);
+      startPolling();
+      webSerialReadLoop();
+    }
+
+    async function webSerialReadLoop() {
+      const dec = new TextDecoder();
+      while (port && port.readable && isConnected && !bridgeMode) {
+        reader = port.readable.getReader();
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            handleRxText(dec.decode(value, { stream: true }));
+          }
+        } catch (e) {
+          break;
+        } finally {
+          try { reader.releaseLock(); } catch (e) {}
+        }
+      }
+      if (isConnected && !bridgeMode) setConnectedState(false);
+    }
+
+    async function disconnectDevice(lost) {
+      stopPolling();
+      if (bridgeReadTimer) { clearInterval(bridgeReadTimer); bridgeReadTimer = null; }
+      try {
+        const api = bridgeApi();
+        if (bridgeMode && api) await api.serial_close();
+        if (!bridgeMode) {
+          if (reader) await reader.cancel();
+          if (writer) { try { writer.releaseLock(); } catch (e) {} writer = null; }
+          if (port) await port.close();
+        }
+      } catch (e) {}
+      port = null;
+      bridgeMode = false;
+      setConnectedState(false);
+    }
+
+    async function tryAutoConnect() {
+      if (isConnected || connectBusy) return false;
+      if (bridgeApi()) return !!(await connectDevice());
+      if (navigator.serial) {
+        try {
+          const ports = await navigator.serial.getPorts();
+          for (const p of ports) {
+            const info = p.getInfo();
+            const match = serialFilters.some(f => f.usbVendorId === info.usbVendorId && (!f.usbProductId || f.usbProductId === info.usbProductId));
+            if (match) { await webSerialOpen(p); return true; }
+          }
+        } catch (e) { console.warn("Auto-connect:", e); }
       }
       return false;
     }
 
+    // Plug and play: scan for the wheel every 2 seconds while disconnected
+    setInterval(() => { if (!isConnected && !connectBusy && !userDisconnected) tryAutoConnect(); }, 2000);
+    let userDisconnected = false;
+
     if (navigator.serial) {
-      navigator.serial.addEventListener('connect', () => {
-        setTimeout(tryAutoConnect, 600);
-      });
+      navigator.serial.addEventListener('connect', () => { setTimeout(tryAutoConnect, 600); });
       navigator.serial.addEventListener('disconnect', (e) => {
-        if (port === e.target) {
-          setConnectedState(false);
-        }
-      });
-      window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(tryAutoConnect, 800);
+        if (port && port === e.target) disconnectDevice(true);
       });
     }
 
-    // USB WEB SERIAL
     async function toggleUsbConnection() {
-      if (!navigator.serial) {
-        alert("WebSerial bu ortamda dogrudan port dinlemeye hazir.");
-        return;
-      }
-
       if (isConnected) {
-        try {
-          stopPolling();
-          if (reader) await reader.cancel();
-          if (port) await port.close();
-        } catch(e){}
-        setConnectedState(false);
+        userDisconnected = true;
+        await disconnectDevice(false);
         return;
       }
-
-      try {
-        port = await navigator.serial.requestPort({ filters: serialFilters });
-        await port.open({ baudRate: 115200 });
-        writer = port.writable.getWriter();
-        setConnectedState(true);
-        startPolling();
-        readLoop();
-      } catch (err) {
-        console.error("USB Baglanti hatasi:", err);
+      userDisconnected = false;
+      const info = await connectDevice();
+      if (!info) {
+        showHubModal({
+          icon: "",
+          title: "CİHAZ BULUNAMADI",
+          subtitle: "USB BAĞLANTISI",
+          content: "Direksiyon (STM32) USB portunda bulunamadı. Kartın USB kablosunun takılı olduğundan ve yeni firmware'in yüklendiğinden emin olun. Cihaz takıldığında uygulama otomatik bağlanır.",
+          confirmText: "TAMAM",
+          cancelText: null
+        });
       }
     }
 
     function setConnectedState(status) {
       isConnected = status;
-      if (!status) {
-        stopPolling();
-      }
+      if (!status) { stopPolling(); }
       const dot = document.getElementById('footerDot');
       const text = document.getElementById('footerStatusText');
 
@@ -2578,80 +2730,20 @@ Komut girmeye hazir...
     }
 
     async function sendCmd(cmdStr) {
-      if (writer && isConnected) {
-        try {
-          const enc = new TextEncoder();
-          await writer.write(enc.encode(cmdStr + String.fromCharCode(10)));
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-
-    async function readLoop() {
-      const dec = new TextDecoder();
-      let buffer = "";
-      while (port.readable && isConnected) {
-        reader = port.readable.getReader();
-        try {
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            buffer += dec.decode(value, { stream: true });
-            let lines = buffer.split(String.fromCharCode(10));
-            buffer = lines.pop();
-
-            for (let line of lines) {
-              line = line.trim();
-              if (!line) continue;
-
-              // Parse curpos: [axis.0.curpos?|1234] or axis.curpos:1234
-              if (line.includes("curpos")) {
-                let m = line.match(/curpos[^|:]*[|:]([-0-9]+)/);
-                if (m) {
-                  let raw = parseInt(m[1]);
-                  if (!isNaN(raw)) {
-                    let deg = (raw / 32767.0) * 450.0;
-                    setWheelAngle(deg);
-                  }
-                }
-              }
-
-              // Parse curtorque: [axis.0.curtorque?|500]
-              if (line.includes("curtorque")) {
-                let m = line.match(/curtorque[^|:]*[|:]([-0-9]+)/);
-                if (m) {
-                  let tq = Math.abs(parseInt(m[1]) || 0);
-                  let clipThreshold = parseInt(document.getElementById('slClipThreshold')?.value || '92');
-                  let tqPct = (tq / 32767.0) * 100.0;
-                  if (currentLedMode === 'smart' || currentLedMode === 'clipping_only') {
-                    if (tqPct >= clipThreshold) {
-                      triggerClippingFlash();
-                    } else if (currentLedMode === 'smart' && tqPct >= 65 && !isLedManualTest && currentLedState !== 'clipping') {
-                      updateLedVisuals('load');
-                    }
-                  }
-                }
-              }
-
-              // Parse profile: [sys.profile?|1]
-              if (line.includes("profile")) {
-                let m = line.match(/profile[^|:]*[|:]([0-9]+)/);
-                if (m) {
-                  let pIdx = parseInt(m[1]);
-                  const spoofSelect = document.getElementById('spoofSelect');
-                  if (spoofSelect && spoofSelect.selectedIndex !== pIdx) {
-                    spoofSelect.selectedIndex = pIdx;
-                  }
-                }
-              }
-            }
+      if (!isConnected) return;
+      const data = cmdStr + String.fromCharCode(10);
+      try {
+        if (bridgeMode) {
+          const api = bridgeApi();
+          if (api) {
+            const r = await api.serial_write(data);
+            if (r && r.success === false) { disconnectDevice(true); }
           }
-        } catch (e) {
-          break;
-        } finally {
-          reader.releaseLock();
+        } else if (writer) {
+          await writer.write(new TextEncoder().encode(data));
         }
+      } catch (e) {
+        console.error(e);
       }
     }
 
@@ -2703,70 +2795,48 @@ Komut girmeye hazir...
     }
 
     async function autoDetectUsbDevice() {
-      if (!navigator.serial) {
-        alert("WebSerial üzerinden donanım taranıyor.");
+      userDisconnected = false;
+      const info = await connectDevice();
+      if (!info) {
+        showHubModal({
+          icon: "",
+          title: "CİHAZ BULUNAMADI",
+          subtitle: "USB TARAMA SONUCU",
+          content: "USB üzerinde OpenFFBoard / G29 / STM32 aygıtı bulunamadı. Klavye, fare gibi diğer aygıtlar bilinçli olarak yok sayılır. Kartın USB kablosunu kontrol edin; takılınca uygulama otomatik bağlanır.",
+          confirmText: "TAMAM",
+          cancelText: null
+        });
         return;
       }
-      try {
-        const detectedPort = await navigator.serial.requestPort({ filters: serialFilters });
-        const info = detectedPort.getInfo();
-        const vid = info.usbVendorId ? info.usbVendorId.toString(16).toUpperCase() : "USB";
-        const pid = info.usbProductId ? info.usbProductId.toString(16).toUpperCase() : "DEV";
-        const devCode = `${vid}:${pid}`;
+      const devCode = `${info.vid}:${info.pid}`;
 
-        // Otomatik bağlantıyı anında başlat
-        try {
-          port = detectedPort;
-          if (!port.readable) {
-            await port.open({ baudRate: 115200 });
-          }
-          writer = port.writable ? port.writable.getWriter() : null;
-          setConnectedState(true);
-          readLoop();
-        } catch (connErr) {
-          console.warn("Otomatik bağlantı denemesi:", connErr);
-        }
-
-        if (currentModalTarget === 'submodule') {
-          const newMod = {
-            id: "submod_" + Date.now(),
-            name: `DIY MODÜL (${devCode})`,
-            code: devCode,
-            type: "custom"
-          };
-          userSubModules.push(newMod);
+      if (currentModalTarget === 'submodule') {
+        if (!userSubModules.some(m => m.code === devCode)) {
+          userSubModules.push({ id: "submod_" + Date.now(), name: `DIY MODÜL (${devCode})`, code: devCode, type: "custom" });
           localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
           renderSubModules();
-          closeAddModal();
-          showHubModal({
-            icon: "",
-            title: "ALT MODÜL BAĞLANDI",
-            subtitle: "DİREKSİYON EKOSİSTEMİ",
-            content: `Alt modül tanındı ve otomatik olarak bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
-            confirmText: "TAMAM"
-          });
-        } else {
-          const newDev = {
-            id: "dev_" + Date.now(),
-            name: `YENİ DONANIM (${devCode})`,
-            code: devCode,
-            type: "custom",
-            status: "online"
-          };
-          userDevices.push(newDev);
-          localStorage.setItem("ghub_devices", JSON.stringify(userDevices));
-          renderDevices();
-          closeAddModal();
-          showHubModal({
-            icon: "",
-            title: "CİHAZ TANINDI VE BAĞLANDI",
-            subtitle: "USB DONANIM AKTİF",
-            content: `Yeni donanım başarıyla algılandı ve sisteme otomatik bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
-            confirmText: "TAMAM"
-          });
         }
-      } catch (err) {
-        console.log("Kullanıcı seçimi iptal etti veya hata:", err);
+        closeAddModal();
+        showHubModal({
+          icon: "", title: "ALT MODÜL BAĞLANDI", subtitle: "DİREKSİYON EKOSİSTEMİ",
+          content: `Alt modül tanındı ve otomatik olarak bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
+          confirmText: "TAMAM"
+        });
+      } else {
+        const exists = userDevices.some(d => (d.code || "").toUpperCase() === devCode);
+        if (!exists) {
+          userDevices.push({ id: "dev_" + Date.now(), name: `YENİ DONANIM (${devCode})`, code: devCode, type: "custom", status: "online" });
+          localStorage.setItem("ghub_devices", JSON.stringify(userDevices));
+        }
+        renderDevices();
+        closeAddModal();
+        showHubModal({
+          icon: "", title: "CİHAZ TANINDI VE BAĞLANDI", subtitle: "USB DONANIM AKTİF",
+          content: exists
+            ? `Cihaz zaten listede, bağlantı kuruldu.<br><br><b>Donanım Kodu:</b> ${devCode}`
+            : `Yeni donanım başarıyla algılandı ve sisteme otomatik bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
+          confirmText: "TAMAM"
+        });
       }
     }
 
@@ -2878,226 +2948,46 @@ Komut girmeye hazir...
       document.getElementById('hubModalOverlay').classList.remove('active');
     }
 
+    const CURRENT_APP_VERSION = "v3.12.0";
     let lastSerialResponse = "";
 
     async function checkDeviceFirmware() {
-      if (!isConnected || !writer) {
+      if (!isConnected) {
         showHubModal({
-          icon: "",
-          title: "STM32 KARTI BAĞLI DEĞİL",
-          subtitle: "DONANIM BAĞLANTISI GEREKLİ",
-          content: `
-            <div style="font-size: 13px; line-height: 1.6;">
-              Karttaki yüklü firmware'i canlı sorgulamak ve doğrulamak için lütfen önce alt çubuktaki 
-              <b style="color:var(--accent);">' BAĞLAN (USB SERIAL)'</b> butonuna tıklayarak kartınızı bağlayın.<br><br>
-              <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
-                • <b>Hedef Donanım:</b> WeAct STM32F411CEU6 Black Pill<br>
-                • <b>Hedef Binary:</b> OpenFFBoard_F411CE_V3_Profiles.hex
-              </div>
-            </div>
-          `,
-          confirmText: "ANLADIM",
-          cancelText: null
+          icon: "", title: "STM32 KARTI BAĞLI DEĞİL", subtitle: "DONANIM BAĞLANTISI GEREKLİ",
+          content: "Karttaki firmware'i sorgulamak için önce <b>CİHAZA BAĞLAN (USB SERIAL)</b> butonuyla kartı bağlayın.",
+          confirmText: "ANLADIM", cancelText: null
         });
         return;
       }
-
       showHubModal({
-        icon: "",
-        title: "STM32 DONANIM SORGULANIYOR...",
-        subtitle: "USB SERIAL PROTOCOL (115200 BAUD)",
-        content: `<div style="text-align:center; padding:12px 0;">Kart üzerindeki OpenFFBoard firmware hafızası taranıyor (sys.version?)...</div>`,
-        confirmText: "LÜTFEN BEKLEYİN...",
-        cancelText: null
+        icon: "", title: "STM32 DONANIM SORGULANIYOR...", subtitle: "USB SERIAL PROTOCOL (115200 BAUD)",
+        content: "<div style='text-align:center; padding:12px 0;'>Kart yanıtı bekleniyor (sys.swver?, sys.hwtype?)...</div>",
+        confirmText: "LÜTFEN BEKLEYİN...", cancelText: null
       });
-
-      try {
-        await sendCmd("sys.version?");
-        setTimeout(() => {
-          showHubModal({
-            icon: "",
-            title: "STM32 FİRMWARE DOĞRULANDI!",
-            subtitle: "CANLI HARDWARE SENKRONİZASYONU",
-            content: `
-              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="color:var(--text-muted);">Donanım:</span>
-                <span style="color:#2ecc71; font-weight:800;">STM32F411CEU6 (Aktif)</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="color:var(--text-muted);">Karttaki Firmware:</span>
-                <span style="color:var(--accent); font-weight:800;">OpenFFBoard v3.1</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="color:var(--text-muted);">Hedef Binary:</span>
-                <span style="color:#fff; font-weight:700;">OpenFFBoard_F411CE_V3_Profiles.hex</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="color:var(--text-muted);">Profil Spoof:</span>
-                <span style="color:#00d2ff; font-weight:700;">Logitech G29 / Moza Modu</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                <span style="color:var(--text-muted);">Timer & PWM:</span>
-                <span style="color:#2ecc71; font-weight:700;">TIM2 RGB + TIM1 Motor PWM Aktif</span>
-              </div>
-              <div style="color:#2ecc71; font-weight:700; font-size:12px; text-align:center; background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); padding:8px; border-radius:8px;">
-                 SONUÇ: Kart üzerindeki firmware, en güncel 'OpenFFBoard_F411CE_V3_Profiles.hex' ile %100 uyuşmaktadır!
-              </div>
-            `,
-            confirmText: "TAMAM",
-            cancelText: null
-          });
-        }, 500);
-      } catch (err) {
+      const sw = await queryCmd("sys.swver?", 2000);
+      const hw = await queryCmd("sys.hwtype?", 2000);
+      const prof = await queryCmd("sys.profile?", 1500);
+      const main = await queryCmd("sys.main?", 1500);
+      if (sw === null && hw === null) {
         showHubModal({
-          icon: "",
-          title: "İLETİŞİM HATASI",
-          subtitle: "SERİAL KOMUT YANITSIZ",
-          content: `Firmware sorgulanırken bir hata oluştu: ${err}`,
-          confirmText: "KAPAT",
-          cancelText: null
+          icon: "", title: "YANIT ALINAMADI", subtitle: "SERİAL KOMUT YANITSIZ",
+          content: "Kart seri porta bağlı ama komutlara yanıt vermiyor. Yeni firmware'i (.hex) yüklediğinizden emin olun.",
+          confirmText: "KAPAT", cancelText: null
         });
-      }
-    }
-
-    const CURRENT_APP_VERSION = "v3.11.0";
-    const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
-
-    function isNewerVersion(latest, current) {
-      if (!latest || !current) return false;
-      try {
-        const cleanL = latest.replace(/^v/, '').split('.').map(Number);
-        const cleanC = current.replace(/^v/, '').split('.').map(Number);
-        for (let i = 0; i < Math.max(cleanL.length, cleanC.length); i++) {
-          const l = cleanL[i] || 0;
-          const c = cleanC[i] || 0;
-          if (l > c) return true;
-          if (l < c) return false;
-        }
-      } catch (e) {
-        return latest !== current && latest !== "";
-      }
-      return false;
-    }
-
-    async function checkAppUpdates(isManual = false) {
-      if (isManual) {
-        showHubModal({
-          icon: "",
-          title: "GÜNCELLEMELER DENETLENİYOR...",
-          subtitle: "GITHUB RELEASES KONTROLÜ",
-          content: `<div style="text-align: center; padding: 12px 0;">
-                      <div style="font-size: 13px; margin-bottom: 6px;">GitHub sunucuları taranıyor...</div>
-                      <div style="color: var(--accent); font-weight: 700; font-size: 12px;">Depo: ${GITHUB_REPO}</div>
-                    </div>`,
-          confirmText: "LÜTFEN BEKLEYİN...",
-          cancelText: null
-        });
-      }
-
-      let result = null;
-
-      // 1. Python Desktop Bridge (zero CORS, 100% reliable)
-      if (window.pywebview && window.pywebview.api && window.pywebview.api.check_update) {
-        try {
-          result = await window.pywebview.api.check_update(CURRENT_APP_VERSION);
-        } catch (e) {
-          console.warn("Python bridge error:", e);
-        }
-      }
-
-      // 2. Browser Fetch fallback
-      if (!result || !result.success) {
-        try {
-          const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
-            headers: { 'Accept': 'application/vnd.github.v3+json' }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const latestTag = data.tag_name || "";
-            let dlUrl = `https://github.com/${GITHUB_REPO}/releases/latest`;
-            if (data.assets) {
-              const exeAsset = data.assets.find(a => a.name.toLowerCase().endsWith('.exe'));
-              if (exeAsset) dlUrl = exeAsset.browser_download_url;
-            }
-            result = {
-              success: true,
-              has_update: isNewerVersion(latestTag, CURRENT_APP_VERSION),
-              latest_tag: latestTag,
-              current_version: CURRENT_APP_VERSION,
-              body: data.body || "",
-              download_url: dlUrl
-            };
-          }
-        } catch (e) {
-          console.warn("Fetch fallback error:", e);
-        }
-      }
-
-      if (!result || !result.success) {
-        if (isManual) {
-          showHubModal({
-            icon: "",
-            title: "BAĞLANTI HATASI",
-            subtitle: "GÜNCELLEME SUNUCUSUNA ERİŞİLEMEDİ",
-            content: `GitHub Releases API'sine bağlanırken bir sorun oluştu. İnternet bağlantınızı kontrol edin veya GitHub sayfamızı ziyaret edin.`,
-            confirmText: "GİTHUB'I AÇ",
-            cancelText: "Kapat",
-            onConfirm: () => {
-              window.open(`https://github.com/${GITHUB_REPO}/releases`, '_blank');
-              closeHubModal();
-            }
-          });
-        }
         return;
       }
-
-      if (result.has_update) {
-        showHubModal({
-          icon: "",
-          title: `YENİ SÜRÜM BULUNDU! (${result.latest_tag})`,
-          subtitle: "VELOCITY CONTROL HUB ECOSYSTEM",
-          content: `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-              <span style="color: var(--text-muted);">Mevcut Kurulu Sürüm:</span>
-              <span style="font-weight: 800; color: #ff5252;">${CURRENT_APP_VERSION}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-              <span style="color: var(--text-muted);">Yeni Yayınlanan Sürüm:</span>
-              <span style="font-weight: 800; color: #00d2ff;">${result.latest_tag}</span>
-            </div>
-            <div style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">SÜRÜM YENİLİKLERİ:</div>
-            <div style="font-size: 12px; color: #9499a6; white-space: pre-line; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; max-height: 120px; overflow-y: auto;">${result.body || "Genel performans iyileştirmeleri ve yeni FFB algoritmaları."}</div>
-          `,
-          confirmText: " ŞİMDİ GÜNCELLE & YENİDEN BAŞLAT",
-          cancelText: "Daha Sonra",
-          onConfirm: () => {
-            startSilentSelfUpdate(result.download_url, result.latest_tag);
-          }
-        });
-      } else {
-        if (isManual) {
-          showHubModal({
-            icon: "",
-            title: "UYGULAMANIZ EN GÜNCEL SÜRÜMDE!",
-            subtitle: "SİSTEM %100 GÜNCEL",
-            content: `
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span style="color: var(--text-muted);">Kurulu Sürüm:</span>
-                <span style="font-weight: 800; color: #2ecc71;">${CURRENT_APP_VERSION}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                <span style="color: var(--text-muted);">GitHub Sürümü:</span>
-                <span style="font-weight: 800; color: var(--accent);">${result.latest_tag || CURRENT_APP_VERSION}</span>
-              </div>
-              <div style="color: #9499a6; font-size: 12px; margin-top: 8px;">
-                Velocity Control Hub en son kararlı sürümü çalıştırmaktadır.
-              </div>
-            `,
-            confirmText: "HARİKA",
-            cancelText: null
-          });
-        }
-      }
+      const profNames = ["OpenFFBoard Native", "Logitech G29", "Moza R5"];
+      const row = (k, v, c) => `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-muted);">${k}:</span><span style="color:${c}; font-weight:800;">${v}</span></div>`;
+      showHubModal({
+        icon: "", title: "STM32 FİRMWARE YANITI ALINDI", subtitle: "CANLI HARDWARE SENKRONİZASYONU",
+        content:
+          row("Donanım", hw || "-", "#2ecc71") +
+          row("Firmware sürümü", sw || "-", "var(--accent)") +
+          row("Ana sınıf (1 = FFB Wheel)", main || "-", "#fff") +
+          row("Kimlik profili", profNames[parseInt(prof)] || (prof || "-"), "#00d2ff"),
+        confirmText: "TAMAM", cancelText: null
+      });
     }
 
     async function startSilentSelfUpdate(downloadUrl, targetTag) {
