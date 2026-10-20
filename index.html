@@ -2438,15 +2438,90 @@ Komut girmeye hazir...
       }, 450);
     }
 
+    // USB WEB SERIAL FILTER & AUTO-CONNECT
+    const serialFilters = [
+      { usbVendorId: 0x1209, usbProductId: 0xFFB0 }, // OpenFFBoard Native
+      { usbVendorId: 0x046D, usbProductId: 0xC24F }, // Logitech G29 Spoofed
+      { usbVendorId: 0x0483, usbProductId: 0x5740 }, // STM32 Virtual COM Port
+      { usbVendorId: 0x346E, usbProductId: 0x0002 }, // Moza R5 Spoofed
+      { usbVendorId: 0x0483 }                         // STMicroelectronics devices
+    ];
+
+    let pollInterval = null;
+
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      setTimeout(() => {
+        sendCmd("sys.profile?");
+        sendCmd("axis.0.power?");
+        sendCmd("axis.0.degrees?");
+        sendCmd("localenc.cpr?");
+      }, 350);
+
+      pollInterval = setInterval(() => {
+        if (isConnected && writer) {
+          sendCmd("axis.0.curpos?");
+          sendCmd("axis.0.curtorque?");
+        }
+      }, 30);
+    }
+
+    function stopPolling() {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    }
+
+    async function tryAutoConnect() {
+      if (!navigator.serial || isConnected) return false;
+      try {
+        const ports = await navigator.serial.getPorts();
+        for (const p of ports) {
+          const info = p.getInfo();
+          const match = serialFilters.some(f =>
+            f.usbVendorId === info.usbVendorId && (!f.usbProductId || f.usbProductId === info.usbProductId)
+          );
+          if (match) {
+            port = p;
+            await port.open({ baudRate: 115200 });
+            writer = port.writable.getWriter();
+            setConnectedState(true);
+            startPolling();
+            readLoop();
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn("Auto-connect:", e);
+      }
+      return false;
+    }
+
+    if (navigator.serial) {
+      navigator.serial.addEventListener('connect', () => {
+        setTimeout(tryAutoConnect, 600);
+      });
+      navigator.serial.addEventListener('disconnect', (e) => {
+        if (port === e.target) {
+          setConnectedState(false);
+        }
+      });
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(tryAutoConnect, 800);
+      });
+    }
+
     // USB WEB SERIAL
     async function toggleUsbConnection() {
       if (!navigator.serial) {
-        alert("WebSerial bu ortamda doğrudan port dinlemeye hazır.");
+        alert("WebSerial bu ortamda dogrudan port dinlemeye hazir.");
         return;
       }
 
       if (isConnected) {
         try {
+          stopPolling();
           if (reader) await reader.cancel();
           if (port) await port.close();
         } catch(e){}
@@ -2455,18 +2530,22 @@ Komut girmeye hazir...
       }
 
       try {
-        port = await navigator.serial.requestPort();
+        port = await navigator.serial.requestPort({ filters: serialFilters });
         await port.open({ baudRate: 115200 });
         writer = port.writable.getWriter();
         setConnectedState(true);
+        startPolling();
         readLoop();
       } catch (err) {
-        console.error("USB Bağlantı hatası:", err);
+        console.error("USB Baglanti hatasi:", err);
       }
     }
 
     function setConnectedState(status) {
       isConnected = status;
+      if (!status) {
+        stopPolling();
+      }
       const dot = document.getElementById('footerDot');
       const text = document.getElementById('footerStatusText');
 
@@ -2502,7 +2581,8 @@ Komut girmeye hazir...
       if (writer && isConnected) {
         try {
           const enc = new TextEncoder();
-          await writer.write(enc.encode(cmdStr + "\n"));
+          await writer.write(enc.encode(cmdStr + "
+"));
         } catch (e) {
           console.error(e);
         }
@@ -2511,27 +2591,60 @@ Komut girmeye hazir...
 
     async function readLoop() {
       const dec = new TextDecoder();
+      let buffer = "";
       while (port.readable && isConnected) {
         reader = port.readable.getReader();
         try {
           while (true) {
             const { value, done } = await reader.read();
             if (done) break;
-            const text = dec.decode(value);
-            if (text.includes("axis.curpos:")) {
-              let raw = parseInt(text.split(":")[1]);
-              let deg = (raw / 32767.0) * 450.0;
-              setWheelAngle(deg);
-            }
-            if (text.includes("axis.curtorque:")) {
-              let tq = Math.abs(parseInt(text.split(":")[1]) || 0);
-              let clipThreshold = parseInt(document.getElementById('slClipThreshold')?.value || '92');
-              let tqPct = (tq / 32767.0) * 100.0;
-              if (currentLedMode === 'smart' || currentLedMode === 'clipping_only') {
-                if (tqPct >= clipThreshold) {
-                  triggerClippingFlash();
-                } else if (currentLedMode === 'smart' && tqPct >= 65 && !isLedManualTest && currentLedState !== 'clipping') {
-                  updateLedVisuals('load');
+            buffer += dec.decode(value, { stream: true });
+            let lines = buffer.split(/[
+]+/);
+            buffer = lines.pop();
+
+            for (let line of lines) {
+              line = line.trim();
+              if (!line) continue;
+
+              // Parse curpos: [axis.0.curpos?|1234] or axis.curpos:1234
+              if (line.includes("curpos")) {
+                let m = line.match(/curpos[^|:]*[|:]([-0-9]+)/);
+                if (m) {
+                  let raw = parseInt(m[1]);
+                  if (!isNaN(raw)) {
+                    let deg = (raw / 32767.0) * 450.0;
+                    setWheelAngle(deg);
+                  }
+                }
+              }
+
+              // Parse curtorque: [axis.0.curtorque?|500]
+              if (line.includes("curtorque")) {
+                let m = line.match(/curtorque[^|:]*[|:]([-0-9]+)/);
+                if (m) {
+                  let tq = Math.abs(parseInt(m[1]) || 0);
+                  let clipThreshold = parseInt(document.getElementById('slClipThreshold')?.value || '92');
+                  let tqPct = (tq / 32767.0) * 100.0;
+                  if (currentLedMode === 'smart' || currentLedMode === 'clipping_only') {
+                    if (tqPct >= clipThreshold) {
+                      triggerClippingFlash();
+                    } else if (currentLedMode === 'smart' && tqPct >= 65 && !isLedManualTest && currentLedState !== 'clipping') {
+                      updateLedVisuals('load');
+                    }
+                  }
+                }
+              }
+
+              // Parse profile: [sys.profile?|1]
+              if (line.includes("profile")) {
+                let m = line.match(/profile[^|:]*[|:]([0-9]+)/);
+                if (m) {
+                  let pIdx = parseInt(m[1]);
+                  const spoofSelect = document.getElementById('spoofSelect');
+                  if (spoofSelect && spoofSelect.selectedIndex !== pIdx) {
+                    spoofSelect.selectedIndex = pIdx;
+                  }
                 }
               }
             }
@@ -2597,7 +2710,7 @@ Komut girmeye hazir...
         return;
       }
       try {
-        const detectedPort = await navigator.serial.requestPort();
+        const detectedPort = await navigator.serial.requestPort({ filters: serialFilters });
         const info = detectedPort.getInfo();
         const vid = info.usbVendorId ? info.usbVendorId.toString(16).toUpperCase() : "USB";
         const pid = info.usbProductId ? info.usbProductId.toString(16).toUpperCase() : "DEV";
@@ -2848,7 +2961,7 @@ Komut girmeye hazir...
       }
     }
 
-    const CURRENT_APP_VERSION = "v3.10.0";
+    const CURRENT_APP_VERSION = "v3.11.0";
     const GITHUB_REPO = "mertahmet41/Velocity-Control-Hub";
 
     function isNewerVersion(latest, current) {
