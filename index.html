@@ -2071,7 +2071,7 @@ Komut girmeye hazir...
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.12.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.13.0</div>
   </footer>
 
   <script>
@@ -2113,7 +2113,16 @@ Komut girmeye hazir...
         };
 
         let imgHtml = "";
-        if (dev.type === "wheel") imgHtml = `<img src="pro_wheel.png" alt="Wheel">`;
+        let telemetryStrip = "";
+        if (dev.type === "wheel") {
+          imgHtml = `<img src="pro_wheel.png" alt="Wheel" class="card-wheel-img" style="transition: transform 0.05s linear; transform: rotate(${(window.currentAngle || 0).toFixed(1)}deg);">`;
+          telemetryStrip = `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; margin-bottom:10px; background:rgba(0,180,216,0.08); border:1px solid rgba(0,180,216,0.25); border-radius:8px; font-family:monospace; font-size:11px;">
+              <span style="color:var(--text-muted); font-weight:700;">CANLI AÇI: <b class="card-live-angle" style="color:var(--accent);">${((window.currentAngle || 0) >= 0 ? '+' : '') + (window.currentAngle || 0).toFixed(1)}°</b></span>
+              <span style="color:var(--text-muted); font-weight:700;">PALS: <b class="card-live-pulses" style="color:#fff;">${window.devEncoderRawPulses || 0}</b></span>
+            </div>
+          `;
+        }
         else if (dev.type === "handbrake") imgHtml = `<div class="card-icon"></div>`;
         else if (dev.type === "buttonbox") imgHtml = `<div class="card-icon"></div>`;
         else if (dev.type === "dashboard") imgHtml = `<div class="card-icon"></div>`;
@@ -2125,6 +2134,7 @@ Komut girmeye hazir...
             <div class="status-pill ${isConnected ? 'online' : ''}">${isConnected ? '● BAĞLI' : 'HAZIR'}</div>
           </div>
           <div class="card-img-wrap">${imgHtml}</div>
+          ${telemetryStrip}
           <div class="card-footer">
             <span>KOD: ${dev.code}</span>
             <span style="display:flex; gap:6px;">
@@ -2455,6 +2465,10 @@ Komut girmeye hazir...
     let connectBusy = false;
     let rxBuffer = "";
     let wheelRangeDeg = 900;
+    let encoderCpr = 2400;
+    let devFreezeEncoder = false;
+    window.currentAngle = 0.0;
+    window.devEncoderRawPulses = 0;
     const replyCache = {};
 
     function bridgeApi() {
@@ -2466,17 +2480,13 @@ Komut girmeye hazir...
     function startPolling() {
       stopPolling();
       setTimeout(() => {
-        sendCmd("sys.profile?");
-        sendCmd("axis.degrees?");
-        sendCmd("axis.power?");
-        sendCmd("localenc.cpr?");
-      }, 400);
+        sendCmd("sys.profile?;axis.degrees?;axis.power?;localenc.cpr?;localenc.pins?");
+      }, 300);
       pollInterval = setInterval(() => {
         if (isConnected) {
-          sendCmd("axis.curpos?");
-          sendCmd("axis.curtorque?");
+          sendCmd("axis.pos?;axis.curpos?;axis.curtorque?;localenc.pins?");
         }
-      }, 50);
+      }, 65);
     }
 
     function stopPolling() {
@@ -2500,11 +2510,24 @@ Komut girmeye hazir...
           replyCache[key] = mm[2];
         }
 
-        if (line.includes("curpos")) {
+        if (/\[(axis\.0\.pos|axis\.pos)\?\|/.test(line)) {
+          const m = line.match(/pos\?\|\s*(-?[0-9]+)/);
+          if (m && !devFreezeEncoder) {
+            const rawTicks = parseInt(m[1]);
+            if (!isNaN(rawTicks)) {
+              window.devEncoderRawPulses = rawTicks;
+              const deg = (rawTicks / (encoderCpr || 2400)) * 360.0;
+              setWheelAngle(deg, rawTicks);
+            }
+          }
+        } else if (line.includes("curpos")) {
           const m = line.match(/curpos[^|:]*[|:]\s*(-?[0-9]+)/);
-          if (m) {
+          if (m && !devFreezeEncoder) {
             const rawPos = parseInt(m[1]);
-            if (!isNaN(rawPos)) setWheelAngle((rawPos / 32767.0) * (wheelRangeDeg / 2.0));
+            if (!isNaN(rawPos)) {
+              const deg = (rawPos / 32767.0) * (wheelRangeDeg / 2.0);
+              setWheelAngle(deg, window.devEncoderRawPulses);
+            }
           }
         } else if (line.includes("curtorque")) {
           const m = line.match(/curtorque[^|:]*[|:]\s*(-?[0-9]+)/);
@@ -2519,6 +2542,21 @@ Komut girmeye hazir...
                 updateLedVisuals('load');
               }
             }
+          }
+        } else if (line.includes("cpr")) {
+          const m = line.match(/cpr[^|:]*[|:]\s*([0-9]+)/);
+          if (m && parseInt(m[1]) > 0) encoderCpr = parseInt(m[1]);
+        } else if (line.includes("pins")) {
+          const m = line.match(/pins[^|:]*[|:]\s*([0-9]+)/);
+          if (m) {
+            const p = parseInt(m[1]);
+            const aHigh = (p & 1) !== 0;
+            const bHigh = (p & 2) !== 0;
+            const zHigh = (p & 4) !== 0;
+            const phEl = document.getElementById('devPhaseStatus');
+            if (phEl) phEl.innerText = `A: ${aHigh ? 'HIGH(1)' : 'LOW(0)'} | B: ${bHigh ? 'HIGH(1)' : 'LOW(0)'}`;
+            const idxEl = document.getElementById('devIndexStatus');
+            if (idxEl) idxEl.innerText = `Z (PB8): ${zHigh ? 'HIGH(1)' : 'LOW(0)'}`;
           }
         } else if (line.includes("degrees")) {
           const m = line.match(/degrees[^|:]*[|:]\s*([0-9]+)/);
@@ -2747,12 +2785,30 @@ Komut girmeye hazir...
       }
     }
 
-    function setWheelAngle(deg) {
-      // 900 derece fiziksel kilit: -450° ile +450° aralığına sınırla
-      if (deg > 450) deg = 450;
-      if (deg < -450) deg = -450;
-      document.getElementById('wheelGraphic').style.transform = `rotate(${deg}deg)`;
-      document.getElementById('angleDisplay').innerText = (deg >= 0 ? '+' : '') + deg.toFixed(1) + '°';
+    function setWheelAngle(deg, rawTicks) {
+      window.currentAngle = deg;
+      if (typeof rawTicks === 'number' && !isNaN(rawTicks)) {
+        window.devEncoderRawPulses = rawTicks;
+      }
+      const wg = document.getElementById('wheelGraphic');
+      if (wg) wg.style.transform = `rotate(${deg}deg)`;
+      const ad = document.getElementById('angleDisplay');
+      if (ad) ad.innerText = (deg >= 0 ? '+' : '') + deg.toFixed(1) + '°';
+
+      const devPulses = document.getElementById('devRawPulses');
+      if (devPulses) devPulses.innerText = `${window.devEncoderRawPulses || 0} / ${encoderCpr || 2400}`;
+      const devAngle = document.getElementById('devPreciseAngle');
+      if (devAngle) devAngle.innerText = (deg >= 0 ? '+' : '') + deg.toFixed(2) + '°';
+
+      document.querySelectorAll('.card-wheel-img').forEach(el => {
+        el.style.transform = `rotate(${deg}deg)`;
+      });
+      document.querySelectorAll('.card-live-angle').forEach(el => {
+        el.innerText = (deg >= 0 ? '+' : '') + deg.toFixed(1) + '°';
+      });
+      document.querySelectorAll('.card-live-pulses').forEach(el => {
+        el.innerText = String(window.devEncoderRawPulses || 0);
+      });
     }
 
     // Static Wheel at 0.0 degrees - Only rotates when real hardware signals arrive!
@@ -2948,7 +3004,7 @@ Komut girmeye hazir...
       document.getElementById('hubModalOverlay').classList.remove('active');
     }
 
-    const CURRENT_APP_VERSION = "v3.12.0";
+    const CURRENT_APP_VERSION = "v3.13.0";
     let lastSerialResponse = "";
 
     async function checkDeviceFirmware() {
@@ -3230,6 +3286,7 @@ Komut girmeye hazir...
     }
 
     function toggleDevDisableMotor(checked) {
+      sendCmd(checked ? "axis.power=0" : "axis.power=10000");
       logDevTerminal(`[MOTOR] BTS7960 Tork Cikisi: ${checked ? 'TAMAMEN KESILDI (0 Nm / KILL)' : 'ETKIN'}`);
       if (checked) {
         logDevTerminal(`[PWM] PA8 (LPWM) = 0%, PA9 (RPWM) = 0%`);
@@ -3237,19 +3294,22 @@ Komut girmeye hazir...
     }
 
     function toggleDevDisableEncoder(checked) {
+      devFreezeEncoder = !!checked;
       logDevTerminal(`[ENKODER] Donanim Okuma: ${checked ? 'DONDURULDU (FREEZE)' : 'CANLI AKIS'}`);
     }
 
     function startEncoderOnlyMode() {
       devEncoderOnlyMode = true;
+      devFreezeEncoder = false;
       const bypassToggle = document.getElementById('devBypassCalibToggle');
       const motorToggle = document.getElementById('devDisableMotorToggle');
       if (bypassToggle) { bypassToggle.checked = true; toggleDevBypassCalib(true); }
       if (motorToggle) { motorToggle.checked = true; toggleDevDisableMotor(true); }
+      sendCmd("axis.power=0;axis.zeroenc;axis.pos?;localenc.pins?");
       
       logDevTerminal(`========================================`);
       logDevTerminal(`[MOD] YALNIZCA ENKODER TEST MODU BASLATILDI`);
-      logDevTerminal(`- Motor tork cikisi kapatildi.`);
+      logDevTerminal(`- Motor tork cikisi kapatildi (axis.power=0).`);
       logDevTerminal(`- Otomatik kalibrasyon kapatildi.`);
       logDevTerminal(`- 600 PPR optik enkoder portlari (PB4/PB5) dinleniyor.`);
       logDevTerminal(`Direksiyonu elle dondurerek palsleri izleyebilirsiniz.`);
@@ -3264,20 +3324,17 @@ Komut girmeye hazir...
     }
 
     function zeroEncoderOrigin() {
-      devEncoderRawPulses = 0;
-      currentAngle = 0;
-      if (wheelGraphic) wheelGraphic.style.transform = 'rotate(0deg)';
-      if (angleDisplay) angleDisplay.innerText = '+0.0°';
-      const devPulses = document.getElementById('devRawPulses');
-      const devAngle = document.getElementById('devPreciseAngle');
-      if (devPulses) devPulses.innerText = '0 / 2400';
-      if (devAngle) devAngle.innerText = '0.00°';
-      logDevTerminal(`[ENKODER] Sifir merkez noktasi resetlendi (Zero Origin: 0 tick).`);
+      sendCmd("axis.zeroenc");
+      window.devEncoderRawPulses = 0;
+      window.currentAngle = 0;
+      setWheelAngle(0, 0);
+      logDevTerminal(`[ENKODER] Sifir merkez noktasi resetlendi (axis.zeroenc -> 0 tick).`);
     }
 
     function invertEncoderDirection() {
       devEncoderInverted = !devEncoderInverted;
-      logDevTerminal(`[ENKODER] Yon ters cevirildi: ${devEncoderInverted ? 'TERST (INVERTED)' : 'DUZ (NORMAL)'}`);
+      sendCmd("axis.invert=" + (devEncoderInverted ? 1 : 0));
+      logDevTerminal(`[ENKODER] Yon ters cevirildi: ${devEncoderInverted ? 'TERS (INVERTED)' : 'DUZ (NORMAL)'}`);
     }
 
     function testMotorPwmPulse() {
@@ -3297,6 +3354,7 @@ Komut girmeye hazir...
     }
 
     function emergencyStopMotor() {
+      sendCmd("axis.power=0");
       const slider = document.getElementById('devPwmSlider');
       if (slider) {
         slider.value = 0;
@@ -3305,7 +3363,7 @@ Komut girmeye hazir...
       logDevTerminal(`[ACIL] EMERGENCY MOTOR STOP TETIKLENDI! PWM sinyalleri 0'a cekildi.`);
     }
 
-    function sendDevSerialCommand() {
+    async function sendDevSerialCommand() {
       const inp = document.getElementById('devTerminalInput');
       if (!inp) return;
       const cmd = inp.value.trim();
@@ -3313,8 +3371,16 @@ Komut girmeye hazir...
       inp.value = '';
       logDevTerminal(`> ${cmd}`);
 
+      if (isConnected) {
+        const reply = await queryCmd(cmd, 800);
+        if (reply !== null) {
+          logDevTerminal(`[STM32] ${reply}`);
+          return;
+        }
+      }
       const lower = cmd.toLowerCase();
       if (lower.startsWith('power 0') || lower.startsWith('fxratio 0')) {
+        sendCmd("axis.power=0");
         logDevTerminal(`OK: Motor driver power set to 0. Output muted.`);
       } else if (lower.startsWith('cpr')) {
         logDevTerminal(`OK: Encoder CPR calibrated to 2400 ticks (600 PPR x 4).`);
@@ -3323,8 +3389,9 @@ Komut girmeye hazir...
       } else if (lower.startsWith('calib 1')) {
         logDevTerminal(`OK: Auto-calibration enabled.`);
       } else if (lower.startsWith('sys:help')) {
-        logDevTerminal(`OpenFFBoard v3.1 commands: sys, axis, apin, can, fxratio, power, cpr, reboot, calib`);
+        logDevTerminal(`OpenFFBoard v3.1 commands: sys.swver?, sys.hwtype?, axis.pos?, axis.zeroenc, localenc.cpr?, localenc.pins?`);
       } else {
+        sendCmd(cmd);
         logDevTerminal(`OK: ${cmd} islendi [STM32 ACK]`);
       }
     }
