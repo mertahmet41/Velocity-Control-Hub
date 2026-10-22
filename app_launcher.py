@@ -82,10 +82,10 @@ def load_version_config(base_dir=None):
     if best is not None:
         return best
     return {
-        "version": "3.16.0",
-        "tag": "v3.16.0",
+        "version": "3.17.0",
+        "tag": "v3.17.0",
         "firmware_prefix": FIRMWARE_PREFIX,
-        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.16.0.hex"
+        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.17.0.hex"
     }
 
 
@@ -307,6 +307,7 @@ class HubApi:
         self._rx = bytearray()
         self._alive = False
         self._lock = threading.Lock()
+        self._pause_js_reader = 0
         self._search_dirs = search_dirs
         self._fw_status = {
             "running": False,
@@ -536,6 +537,8 @@ class HubApi:
             return self._sim_hooks["serial_read"]()
         if self._ser is None or not self._alive:
             return {"success": False, "connected": False, "data": ""}
+        if self._pause_js_reader > 0:
+            return {"success": True, "connected": True, "data": ""}
         with self._lock:
             data = bytes(self._rx)
             self._rx.clear()
@@ -572,44 +575,50 @@ class HubApi:
         if self._sim_hooks and "query_cmd" in self._sim_hooks:
             return self._sim_hooks["query_cmd"](cmd, timeout_s)
 
-        was_open = (self._ser is not None and self._alive)
-        if not was_open:
-            devs = self.list_devices().get("devices", [])
-            matched = [d for d in devs if d.get("match")]
-            if not matched:
-                return None
-            opened = self.serial_open(matched[0]["port"])
-            if not opened.get("success"):
+        self._pause_js_reader += 1
+        try:
+            was_open = (self._ser is not None and self._alive)
+            if not was_open:
+                devs = self.list_devices().get("devices", [])
+                matched = [d for d in devs if d.get("match")]
+                if not matched:
+                    return None
+                opened = self.serial_open(matched[0]["port"])
+                if not opened.get("success"):
+                    return None
+
+            key = cmd.strip().replace('?', '').replace('=', '').lower()
+            with self._lock:
+                self._rx.clear()
+
+            w = self.serial_write(cmd.strip() + "\n")
+            if not w.get("success"):
                 return None
 
-        key = cmd.strip().replace('?', '').replace('=', '').lower()
-        with self._lock:
-            self._rx.clear()
-
-        w = self.serial_write(cmd.strip() + "\n")
-        if not w.get("success"):
+            t0 = time.time()
+            acc = ""
+            while time.time() - t0 < timeout_s:
+                if self._ser is None or not self._alive:
+                    return None
+                with self._lock:
+                    chunk = bytes(self._rx)
+                    self._rx.clear()
+                if chunk:
+                    acc += chunk.decode("utf-8", errors="ignore")
+                    for raw_line in acc.splitlines():
+                        line = raw_line.strip()
+                        m = re.match(r'^\[([^|\]]+)\|([^\]]*)\]$', line)
+                        if m:
+                            resp_key = m.group(1).split('?')[0].split('=')[0].strip().lower()
+                            if resp_key == key or resp_key.endswith("." + key) or key.endswith("." + resp_key):
+                                return m.group(2).strip()
+                time.sleep(0.025)
             return None
-
-        t0 = time.time()
-        acc = ""
-        while time.time() - t0 < timeout_s:
-            r = self.serial_read()
-            if not r.get("connected"):
-                return None
-            if r.get("data"):
-                acc += r["data"]
-                for raw_line in acc.splitlines():
-                    line = raw_line.strip()
-                    m = re.match(r'^\[([^|\]]+)\|([^\]]*)\]$', line)
-                    if m:
-                        resp_key = m.group(1).split('?')[0].split('=')[0].strip().lower()
-                        if resp_key == key or resp_key.endswith("." + key) or key.endswith("." + resp_key):
-                            return m.group(2).strip()
-            time.sleep(0.03)
-        return None
+        finally:
+            self._pause_js_reader = max(0, self._pause_js_reader - 1)
 
     def read_device_firmware_version(self):
-        """Read actual firmware version from STM32 over USB serial (no fake/hardcoded fallback)."""
+        """Read actual firmware version from device over USB serial (no fake/hardcoded fallback)."""
         sw = self._query_serial_Sync("sys.swver?", timeout_s=1.5)
         hw = self._query_serial_Sync("sys.hwtype?", timeout_s=1.0)
         if not sw:
@@ -618,14 +627,14 @@ class HubApi:
                 "connected": False,
                 "device_version": "",
                 "hw_type": "",
-                "error": "STM32 cihazi bagli degil veya yanit vermiyor."
+                "error": "Cihaz bağlı değil veya yanıt vermiyor."
             }
         clean_ver = format_version_str(sw) or sw.strip()
         return {
             "success": True,
             "connected": True,
             "device_version": clean_ver,
-            "hw_type": hw or "STM32F411CE",
+            "hw_type": hw or "Cihaz",
             "error": None
         }
 
@@ -763,8 +772,8 @@ class HubApi:
 
     def enter_dfu_mode_automatically(self, wait_timeout_s=8.0):
         """
-        Switch the connected STM32 into ROM DFU bootloader mode via software serial command
-        without requiring any physical BOOT0 jumper or button press.
+        Switch the connected device into bootloader update mode via software command
+        without requiring any physical jumper or button press.
         """
         if self._sim_hooks and "enter_dfu" in self._sim_hooks:
             return self._sim_hooks["enter_dfu"](wait_timeout_s)
@@ -772,55 +781,57 @@ class HubApi:
         if self.is_dfu_device_present():
             return {"success": True, "already_in_dfu": True}
 
-        was_open = (self._ser is not None and self._alive)
-        if not was_open:
-            devs = self.list_devices().get("devices", [])
-            matched = [d for d in devs if d.get("match")]
-            if not matched:
-                return {
-                    "success": False,
-                    "code": "DEVICE_NOT_CONNECTED",
-                    "error": "STM32 cihazi bulunamadi. Otomatik DFU gecisi icin cihazin USB ile bagli olmasi gerekir."
-                }
-            opened = self.serial_open(matched[0]["port"])
-            if not opened.get("success"):
-                return {
-                    "success": False,
-                    "code": "SERIAL_OPEN_FAILED",
-                    "error": f"STM32 seri portu acilamadi: {opened.get('error')}"
-                }
-
-        # Send both sys.dfu? (compatible with v1.17.1 / v3.13.0) and sys.dfu=1 (compatible with v3.14.0+)
+        self._pause_js_reader += 1
         try:
-            self.serial_write("sys.dfu?\nsys.dfu=1\n")
-            time.sleep(0.15)
-        except Exception:
-            pass
+            was_open = (self._ser is not None and self._alive)
+            if not was_open:
+                devs = self.list_devices().get("devices", [])
+                matched = [d for d in devs if d.get("match")]
+                if not matched:
+                    return {
+                        "success": False,
+                        "code": "DEVICE_NOT_CONNECTED",
+                        "error": "Cihaz bulunamadı. Otomatik güncelleme için cihazın bilgisayara bağlı olması gerekir."
+                    }
+                opened = self.serial_open(matched[0]["port"])
+                if not opened.get("success"):
+                    return {
+                        "success": False,
+                        "code": "SERIAL_OPEN_FAILED",
+                        "error": f"Cihaz bağlantı portu açılamadı: {opened.get('error')}"
+                    }
+
+            try:
+                self.serial_write("sys.dfu?\nsys.dfu=1\n")
+                time.sleep(0.15)
+            except Exception:
+                pass
+            finally:
+                self.serial_close()
+
+            t0 = time.time()
+            while time.time() - t0 < wait_timeout_s:
+                if self.is_dfu_device_present():
+                    return {"success": True, "already_in_dfu": False}
+                time.sleep(0.35)
+
+            return {
+                "success": False,
+                "code": "DFU_TRANSITION_FAILED",
+                "error": (
+                    "Cihaz otomatik olarak güncelleme moduna geçirilemedi. "
+                    "Kablo bağlantısının kopmadığından emin olun."
+                )
+            }
         finally:
-            self.serial_close()
-
-        # Poll for STM32 DFU USB enumeration (VID 0x0483, PID 0xDF11)
-        t0 = time.time()
-        while time.time() - t0 < wait_timeout_s:
-            if self.is_dfu_device_present():
-                return {"success": True, "already_in_dfu": False}
-            time.sleep(0.35)
-
-        return {
-            "success": False,
-            "code": "DFU_TRANSITION_FAILED",
-            "error": (
-                "Cihaz otomatik olarak DFU (guncelleme) moduna gecirilemedi. "
-                "USB baglantisinin kopmadigindan ve STM32 Bootloader surucusunun yuklu oldugundan emin olun."
-            )
-        }
+            self._pause_js_reader = max(0, self._pause_js_reader - 1)
 
     def _flash_with_stm32cube_cli(self, cli_path, hex_path, progress_cb=None):
-        """Program and verify STM32 Flash using official STM32_Programmer_CLI and auto-reset (-rst)."""
+        """Program and verify device memory and auto-reset (-rst)."""
         cmd = [cli_path, "-c", "port=USB1", "-w", hex_path, "-v", "-rst"]
         try:
             if progress_cb:
-                progress_cb(45, "STM32 Flash bellegine yeni firmware yaziliyor...")
+                progress_cb(45, "Cihaza yeni yazılım yükleniyor...")
             proc = subprocess.run(
                 cmd,
                 capture_output=True,
@@ -831,32 +842,32 @@ class HubApi:
             out = (proc.stdout or "") + "\n" + (proc.stderr or "")
             if proc.returncode == 0 and ("File download complete" in out or "Verify successfully" in out or "Download verified successfully" in out):
                 if progress_cb:
-                    progress_cb(80, "Firmware yazildi ve dogrulandi. Cihaz yeniden baslatiliyor...")
+                    progress_cb(80, "Yazılım yüklendi ve doğrulandı. Cihaz yeniden başlatılıyor...")
                 return {"success": True, "output": out}
             return {
                 "success": False,
                 "code": "FLASH_FAILED",
-                "error": "Firmware yukleme sirasinda hata olustu. USB baglantisini kontrol edin.",
+                "error": "Yazılım yükleme sırasında hata oluştu. Kablo bağlantısını kontrol edin.",
                 "details": out[-600:]
             }
         except subprocess.TimeoutExpired:
             return {
                 "success": False,
                 "code": "FLASH_TIMEOUT",
-                "error": "Firmware yukleme islemi zaman asimina ugradi."
+                "error": "Yazılım yükleme işlemi zaman aşımına uğradı."
             }
         except Exception as e:
             return {
                 "success": False,
                 "code": "FLASH_EXCEPTION",
-                "error": f"Firmware yukleyici calistirilamadi: {e}"
+                "error": f"Yazılım yükleyici çalıştırılamadı: {e}"
             }
 
     def _flash_with_dfu_util(self, dfu_util_path, hex_path, progress_cb=None):
-        """Fallback DFU programmer using dfu-util with contiguous binary image."""
+        """Fallback programmer using dfu-util with contiguous binary image."""
         segments = intel_hex_to_segments(hex_path)
         if not segments:
-            return {"success": False, "code": "EMPTY_HEX", "error": "HEX dosyasinda veri bulunamadi."}
+            return {"success": False, "code": "EMPTY_HEX", "error": "Güncelleme dosyasında veri bulunamadı."}
         min_addr = segments[0][0]
         max_addr = max(addr + len(buf) for addr, buf in segments)
         image = bytearray([0xFF] * (max_addr - min_addr))
@@ -869,7 +880,7 @@ class HubApi:
             with open(tmp_bin, "wb") as f:
                 f.write(image)
             if progress_cb:
-                progress_cb(45, "DFU uzerinden firmware yaziliyor...")
+                progress_cb(45, "Cihaza yeni yazılım yükleniyor...")
             cmd = [
                 dfu_util_path,
                 "-d", "0483:df11",
@@ -890,7 +901,7 @@ class HubApi:
             return {
                 "success": False,
                 "code": "FLASH_FAILED",
-                "error": "DFU uzerinden firmware yuklenemedi.",
+                "error": "Cihaza yazılım yüklenemedi.",
                 "details": out[-600:]
             }
         finally:
@@ -913,183 +924,192 @@ class HubApi:
     def get_firmware_update_progress(self):
         return dict(self._fw_status)
 
+    def start_device_firmware_update(self, custom_hex_path=None, force=False):
+        """Start perform_device_firmware_update in a background thread so UI progress polling never blocks."""
+        if self._fw_status.get("running"):
+            return {"success": True, "started": True, "already_running": True}
+        self._update_fw_status(True, "starting", 5, "Güncelleme başlatılıyor...")
+        t = threading.Thread(
+            target=self.perform_device_firmware_update,
+            args=(custom_hex_path, force),
+            daemon=True
+        )
+        t.start()
+        return {"success": True, "started": True}
+
     def perform_device_firmware_update(self, custom_hex_path=None, force=False):
         """
-        Full end-to-end single-click STM32 firmware update flow:
-        1. Validate target .hex file and parse target version from filename.
-        2. Read current firmware version from STM32 over serial & compare.
-        3. Automatically switch STM32 into DFU mode via software command (no jumper/button).
-        4. Program .hex into STM32 Flash, verify bytes, and reset MCU back to normal mode.
-        5. Reconnect to STM32 serial port, read sys.swver?, and verify it matches target version.
+        Full end-to-end single-click device firmware update flow.
         """
-        self._update_fw_status(True, "validate", 5, "Firmware paketi (.hex) dogrulaniyor...")
+        self._pause_js_reader += 1
+        try:
+            self._update_fw_status(True, "validate", 5, "Yazılım paketi doğrulanıyor...")
 
-        # Step 1: Resolve & validate .hex file
-        hex_info = self.resolve_firmware_hex(custom_hex_path)
-        validation = hex_info.get("validation", {})
-        if not validation.get("valid") or not hex_info.get("hex_version"):
-            err_msg = hex_info.get("error") or validation.get("error") or "Gecersiz firmware (.hex) dosyasi."
-            res = {
-                "success": False,
-                "code": "INVALID_HEX",
-                "error": err_msg
-            }
-            self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
-            return res
-
-        target_ver = hex_info["hex_version"]
-        hex_path = hex_info["hex_path"]
-        hex_filename = hex_info["hex_filename"]
-
-        # Step 2: Read current device version (unless already in DFU mode)
-        self._update_fw_status(True, "read_version", 15, "Cihazdaki mevcut firmware surumu okunuyor...")
-        dev_ver_info = self.read_device_firmware_version()
-        old_ver = dev_ver_info.get("device_version", "")
-
-        if not dev_ver_info.get("connected"):
-            # Check if device is already waiting in DFU mode
-            if not self.is_dfu_device_present():
-                err_msg = "STM32 cihazi bagli degil. Lutfen USB kablosunun takili oldugundan emin olun."
+            # Step 1: Resolve & validate .hex file
+            hex_info = self.resolve_firmware_hex(custom_hex_path)
+            validation = hex_info.get("validation", {})
+            if not validation.get("valid") or not hex_info.get("hex_version"):
+                err_msg = hex_info.get("error") or validation.get("error") or "Geçersiz güncelleme paketi."
                 res = {
                     "success": False,
-                    "code": "DEVICE_DISCONNECTED",
+                    "code": "INVALID_HEX",
                     "error": err_msg
                 }
                 self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
                 return res
-        else:
-            # Compare versions
-            if not force and parse_version_tuple(old_ver) == parse_version_tuple(target_ver) and parse_version_tuple(target_ver) != (0, 0, 0):
-                err_msg = f"Cihazda zaten ayni firmware surumu (v{target_ver}) yuklu."
+
+            target_ver = hex_info["hex_version"]
+            hex_path = hex_info["hex_path"]
+            hex_filename = hex_info["hex_filename"]
+
+            # Step 2: Read current device version (unless already in update mode)
+            self._update_fw_status(True, "read_version", 15, "Cihazdaki mevcut yazılım sürümü okunuyor...")
+            dev_ver_info = self.read_device_firmware_version()
+            old_ver = dev_ver_info.get("device_version", "")
+
+            if not dev_ver_info.get("connected"):
+                if not self.is_dfu_device_present():
+                    err_msg = "Cihaz bağlı değil. Lütfen kablonun takılı olduğundan emin olun."
+                    res = {
+                        "success": False,
+                        "code": "DEVICE_DISCONNECTED",
+                        "error": err_msg
+                    }
+                    self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
+                    return res
+            else:
+                if not force and parse_version_tuple(old_ver) == parse_version_tuple(target_ver) and parse_version_tuple(target_ver) != (0, 0, 0):
+                    err_msg = f"Cihazda zaten aynı yazılım sürümü (v{target_ver}) yüklü."
+                    res = {
+                        "success": False,
+                        "code": "SAME_VERSION",
+                        "old_version": old_ver,
+                        "target_version": target_ver,
+                        "hex_filename": hex_filename,
+                        "error": err_msg
+                    }
+                    self._update_fw_status(False, "same_version", 100, err_msg, error=err_msg, result=res)
+                    return res
+
+            # Step 3: Automatic transition to update mode
+            self._update_fw_status(True, "enter_dfu", 30, "Cihaz otomatik olarak güncelleme moduna hazırlanıyor...")
+            dfu_res = self.enter_dfu_mode_automatically(wait_timeout_s=8.0)
+            if not dfu_res.get("success"):
+                err_msg = dfu_res.get("error", "Cihaz otomatik güncelleme moduna geçirilemedi.")
                 res = {
                     "success": False,
-                    "code": "SAME_VERSION",
+                    "code": dfu_res.get("code", "DFU_TRANSITION_FAILED"),
                     "old_version": old_ver,
                     "target_version": target_ver,
-                    "hex_filename": hex_filename,
                     "error": err_msg
                 }
-                self._update_fw_status(False, "same_version", 100, err_msg, error=err_msg, result=res)
+                self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
                 return res
 
-        # Step 3: Automatic transition to DFU mode
-        self._update_fw_status(True, "enter_dfu", 30, "Cihaz otomatik olarak guncelleme (DFU) moduna geciriliyor...")
-        dfu_res = self.enter_dfu_mode_automatically(wait_timeout_s=8.0)
-        if not dfu_res.get("success"):
-            err_msg = dfu_res.get("error", "Cihaz otomatik DFU moduna gecirilemedi.")
-            res = {
-                "success": False,
-                "code": dfu_res.get("code", "DFU_TRANSITION_FAILED"),
-                "old_version": old_ver,
-                "target_version": target_ver,
-                "error": err_msg
-            }
-            self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
-            return res
-
-        # Step 4: Flash firmware via DFU and auto-reset
-        self._update_fw_status(True, "flashing", 50, f"Firmware (v{target_ver}) STM32 bellegine yaziliyor...")
-        if self._sim_hooks and "flash_dfu" in self._sim_hooks:
-            flash_res = self._sim_hooks["flash_dfu"](hex_path, target_ver)
-        else:
-            cli_path = self._find_stm32_programmer_cli()
-            dfu_util_path = self._find_dfu_util()
-            if cli_path:
-                flash_res = self._flash_with_stm32cube_cli(
-                    cli_path,
-                    hex_path,
-                    progress_cb=lambda p, m: self._update_fw_status(True, "flashing", p, m)
-                )
-            elif dfu_util_path:
-                flash_res = self._flash_with_dfu_util(
-                    dfu_util_path,
-                    hex_path,
-                    progress_cb=lambda p, m: self._update_fw_status(True, "flashing", p, m)
-                )
+            # Step 4: Flash firmware and auto-reset
+            self._update_fw_status(True, "flashing", 50, f"Yeni yazılım (v{target_ver}) cihaza yükleniyor...")
+            if self._sim_hooks and "flash_dfu" in self._sim_hooks:
+                flash_res = self._sim_hooks["flash_dfu"](hex_path, target_ver)
             else:
-                flash_res = {
+                cli_path = self._find_stm32_programmer_cli()
+                dfu_util_path = self._find_dfu_util()
+                if cli_path:
+                    flash_res = self._flash_with_stm32cube_cli(
+                        cli_path,
+                        hex_path,
+                        progress_cb=lambda p, m: self._update_fw_status(True, "flashing", p, m)
+                    )
+                elif dfu_util_path:
+                    flash_res = self._flash_with_dfu_util(
+                        dfu_util_path,
+                        hex_path,
+                        progress_cb=lambda p, m: self._update_fw_status(True, "flashing", p, m)
+                    )
+                else:
+                    flash_res = {
+                        "success": False,
+                        "code": "NO_DFU_TOOL",
+                        "error": "Cihaz programlama aracı bulunamadı."
+                    }
+
+            if not flash_res.get("success"):
+                err_msg = flash_res.get("error", "Yazılım yükleme işlemi başarısız oldu.")
+                res = {
                     "success": False,
-                    "code": "NO_DFU_TOOL",
-                    "error": "DFU programlama araci (STM32CubeProgrammer / dfu-util) bulunamadi."
+                    "code": flash_res.get("code", "FLASH_FAILED"),
+                    "old_version": old_ver,
+                    "target_version": target_ver,
+                    "error": err_msg
                 }
+                self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
+                return res
 
-        if not flash_res.get("success"):
-            err_msg = flash_res.get("error", "Firmware yazma islemi basarisiz oldu.")
+            # Step 5: Reconnect to normal mode and verify new version matches target_ver
+            self._update_fw_status(True, "verifying", 85, "Cihaz yeniden başlatıldı, sürüm doğrulanıyor...")
+            verified_ver = ""
+            t0 = time.time()
+            reconnect_timeout = 10.0 if not self._sim_hooks else 1.5
+            while time.time() - t0 < reconnect_timeout:
+                if not self._sim_hooks:
+                    time.sleep(0.4)
+                ver_check = self.read_device_firmware_version()
+                if ver_check.get("connected") and ver_check.get("device_version"):
+                    verified_ver = ver_check["device_version"]
+                    break
+                if self._sim_hooks:
+                    break
+
+            if not verified_ver:
+                err_msg = "Yazılım yüklendi ancak cihaz yeniden bağlanamadı (Bağlantı koptu)."
+                res = {
+                    "success": False,
+                    "code": "RECONNECT_TIMEOUT",
+                    "old_version": old_ver,
+                    "target_version": target_ver,
+                    "error": err_msg
+                }
+                self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
+                return res
+
+            if parse_version_tuple(verified_ver) != parse_version_tuple(target_ver):
+                err_msg = (
+                    f"Sürüm doğrulaması başarısız! Beklenen sürüm: v{target_ver}, "
+                    f"cihazdan okunan sürüm: v{verified_ver}."
+                )
+                res = {
+                    "success": False,
+                    "code": "VERSION_MISMATCH",
+                    "old_version": old_ver,
+                    "new_version": verified_ver,
+                    "target_version": target_ver,
+                    "error": err_msg
+                }
+                self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
+                return res
+
+            ok_msg = f"Cihaz başarıyla v{verified_ver} sürümüne güncellendi ve doğrulandı."
             res = {
-                "success": False,
-                "code": flash_res.get("code", "FLASH_FAILED"),
-                "old_version": old_ver,
-                "target_version": target_ver,
-                "error": err_msg
-            }
-            self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
-            return res
-
-        # Step 5: Reconnect to normal mode and verify new version matches target_ver
-        self._update_fw_status(True, "verifying", 85, "Cihaz yeniden baslatildi, surum dogrulaniyor...")
-        verified_ver = ""
-        t0 = time.time()
-        reconnect_timeout = 10.0 if not self._sim_hooks else 1.5
-        while time.time() - t0 < reconnect_timeout:
-            if not self._sim_hooks:
-                time.sleep(0.4)
-            ver_check = self.read_device_firmware_version()
-            if ver_check.get("connected") and ver_check.get("device_version"):
-                verified_ver = ver_check["device_version"]
-                break
-            if self._sim_hooks:
-                break
-
-        if not verified_ver:
-            err_msg = "Firmware yuklendi ancak cihaz normal modda yeniden baglanamadi (Baglanti koptu)."
-            res = {
-                "success": False,
-                "code": "RECONNECT_TIMEOUT",
-                "old_version": old_ver,
-                "target_version": target_ver,
-                "error": err_msg
-            }
-            self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
-            return res
-
-        if parse_version_tuple(verified_ver) != parse_version_tuple(target_ver):
-            err_msg = (
-                f"Surum dogrulamasi basarisiz! Beklenen surum: v{target_ver}, "
-                f"cihazdan okunan surum: v{verified_ver}."
-            )
-            res = {
-                "success": False,
-                "code": "VERSION_MISMATCH",
+                "success": True,
+                "code": "UPDATED_AND_VERIFIED",
                 "old_version": old_ver,
                 "new_version": verified_ver,
                 "target_version": target_ver,
-                "error": err_msg
+                "hex_filename": hex_filename,
+                "verified": True,
+                "message": ok_msg
             }
-            self._update_fw_status(False, "error", 0, err_msg, error=err_msg, result=res)
+            self._update_fw_status(False, "done", 100, ok_msg, error=None, result=res)
             return res
-
-        ok_msg = f"Cihaz basariyla v{verified_ver} surumune guncellendi ve dogrulandi."
-        res = {
-            "success": True,
-            "code": "UPDATED_AND_VERIFIED",
-            "old_version": old_ver,
-            "new_version": verified_ver,
-            "target_version": target_ver,
-            "hex_filename": hex_filename,
-            "verified": True,
-            "message": ok_msg
-        }
-        self._update_fw_status(False, "done", 100, ok_msg, error=None, result=res)
-        return res
+        finally:
+            self._pause_js_reader = max(0, self._pause_js_reader - 1)
 
     # ------------------------------------------------------------------
-    # FAZ 2: nRF24L01 2.4GHz Wireless Accessory Receiver Status & Config
+    # FAZ 2: Wireless Accessory Receiver Status & Config
     # ------------------------------------------------------------------
     def get_nrf24_status(self):
         """
-        Queries STM32 nRF24L01 status via `sys.nrfstatus?`.
+        Queries device wireless status via `sys.nrfstatus?`.
         Format returned by firmware: present:enabled:channel:rate:pa:rx_count:buttons:irq:status_reg
-        Works seamlessly whether the nRF24L01 module is plugged in or not.
         """
         pinout = {
             "sck": "PB13 (SPI2_SCK)",
@@ -1100,7 +1120,7 @@ class HubApi:
             "irq": "PB9 (GPIO Input, Pull-Up)"
         }
         rate_labels = {0: "250 kbps", 1: "1 Mbps", 2: "2 Mbps"}
-        pa_labels = {0: "-18 dBm (Dusuk)", 1: "-12 dBm (Orta)", 2: "-6 dBm (Yuksek)", 3: "0 dBm (Maksimum)"}
+        pa_labels = {0: "-18 dBm (Düşük)", 1: "-12 dBm (Orta)", 2: "-6 dBm (Yüksek)", 3: "0 dBm (Maksimum)"}
 
         raw = ""
         device_connected = False
@@ -1108,11 +1128,11 @@ class HubApi:
             sim_res = self._sim_hooks["read_nrf_status"]()
             device_connected = sim_res.get("connected", False)
             raw = sim_res.get("raw", "")
-        elif self._ser and self._ser.is_open:
+        elif self._ser is not None and self._alive:
             device_connected = True
-            res = self.serial_send_command("sys.nrfstatus?\n", wait_ms=80)
-            if res.get("success"):
-                raw = res.get("response", "")
+            resp = self._query_serial_Sync("sys.nrfstatus?", timeout_s=0.6)
+            if resp:
+                raw = resp
 
         if not device_connected:
             return {
@@ -1131,10 +1151,9 @@ class HubApi:
                 "irq_pin": 1,
                 "status_reg": 255,
                 "pinout": pinout,
-                "summary": "STM32 cihazi bagli degil"
+                "summary": "Cihaz bağlı değil"
             }
 
-        # Parse response like [sys.nrfstatus|1:1:76:1:2:140:0:1:14] or 0:1:76:1:2:0:0:1:255
         m = re.search(r'(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+)', raw)
         if m:
             hw_present = int(m.group(1)) == 1
@@ -1158,11 +1177,11 @@ class HubApi:
             status_reg = 255
 
         if not enabled:
-            summary = "Devre Disi (Kullanici tarafindan kapatildi)"
+            summary = "Kablosuz Alıcı Kapalı"
         elif hw_present:
-            summary = f"Bagli ve Aktif ({2400 + channel} MHz, {rate_labels.get(data_rate, '1 Mbps')})"
+            summary = "Kablosuz Alıcı Bağlı ve Aktif"
         else:
-            summary = "Modul Takili Degil — Cihaz Standart Kablolu Modda Sorunsuz Calisiyor"
+            summary = "Kablolu Mod Aktif (Kablosuz Aksesuar Algılanmadı)"
 
         return {
             "success": True,
@@ -1174,7 +1193,7 @@ class HubApi:
             "data_rate": data_rate,
             "data_rate_label": rate_labels.get(data_rate, "1 Mbps"),
             "pa_level": pa_level,
-            "pa_level_label": pa_labels.get(pa_level, "-6 dBm (Yuksek)"),
+            "pa_level_label": pa_labels.get(pa_level, "-6 dBm (Yüksek)"),
             "rx_packets": rx_packets,
             "buttons_mask": buttons_mask,
             "irq_pin": irq_pin,
@@ -1184,7 +1203,7 @@ class HubApi:
         }
 
     def configure_nrf24(self, enabled=True, channel=76, data_rate=1, pa_level=2):
-        """Updates nRF24L01 configuration in settings.json and sends commands to STM32 if connected."""
+        """Updates wireless configuration in settings.json and sends commands to device if connected."""
         ch = max(0, min(125, int(channel)))
         rate = max(0, min(2, int(data_rate)))
         pa = max(0, min(3, int(pa_level)))
@@ -1197,17 +1216,11 @@ class HubApi:
             "nrf24_pa_level": pa
         })
 
-        cmds = [
-            f"sys.nrfen={en}\n",
-            f"sys.nrfch={ch}\n",
-            f"sys.nrfrate={rate}\n",
-            f"sys.nrfpa={pa}\n"
-        ]
+        cmds = f"sys.nrfen={en};sys.nrfch={ch};sys.nrfrate={rate};sys.nrfpa={pa}\n"
         if self._sim_hooks and "write_nrf_config" in self._sim_hooks:
             self._sim_hooks["write_nrf_config"](en, ch, rate, pa)
-        elif self._ser and self._ser.is_open:
-            for c in cmds:
-                self.serial_send_command(c, wait_ms=40)
+        elif self._ser is not None and self._alive:
+            self.serial_write(cmds)
 
         return self.get_nrf24_status()
 
@@ -1234,7 +1247,9 @@ class HubApi:
                 hex_asset_name = ""
                 for asset in data.get("assets", []):
                     aname = asset.get("name", "")
-                    if aname.lower().endswith(".exe"):
+                    if aname.lower().endswith("setup.exe"):
+                        download_url = asset.get("browser_download_url")
+                    elif aname.lower().endswith(".exe") and download_url.endswith("/latest"):
                         download_url = asset.get("browser_download_url")
                     elif aname.lower().endswith(".hex"):
                         hex_download_url = asset.get("browser_download_url")
@@ -1257,7 +1272,7 @@ class HubApi:
                 "error": str(e)
             }
 
-    def perform_silent_update(self, download_url):
+    def perform_silent_update(self, download_url=None):
         try:
             app_data_dir = os.path.join(get_app_data_dir(), 'app')
             os.makedirs(app_data_dir, exist_ok=True)
@@ -1270,30 +1285,45 @@ class HubApi:
             req = urllib.request.Request(html_url, headers=headers)
             with urllib.request.urlopen(req, timeout=15) as resp:
                 new_html = resp.read()
-                with open(live_html, 'wb') as f:
-                    f.write(new_html)
+                if len(new_html) > 1000 and b"<html" in new_html.lower():
+                    with open(live_html, 'wb') as f:
+                        f.write(new_html)
 
             # 2. Download latest version.json and matching versioned .hex file
+            hex_name = ""
             ver_url = f"https://raw.githubusercontent.com/{REPO}/main/version.json?t={timestamp}"
             try:
                 vreq = urllib.request.Request(ver_url, headers=headers)
                 with urllib.request.urlopen(vreq, timeout=10) as vresp:
                     vbytes = vresp.read()
+                    vdata = json.loads(vbytes.decode('utf-8'))
                     with open(os.path.join(app_data_dir, 'version.json'), 'wb') as vf:
                         vf.write(vbytes)
-                    vdata = json.loads(vbytes.decode('utf-8'))
                     hex_name = vdata.get('firmware_hex', '')
-                    if hex_name:
-                        hex_url = f"https://raw.githubusercontent.com/{REPO}/main/Firmware/{hex_name}?t={timestamp}"
-                        hreq = urllib.request.Request(hex_url, headers=headers)
-                        with urllib.request.urlopen(hreq, timeout=20) as hresp:
-                            hbytes = hresp.read()
-                            with open(os.path.join(app_data_dir, hex_name), 'wb') as hf:
-                                hf.write(hbytes)
             except Exception:
                 pass
 
-            return {"success": True, "live_html": live_html}
+            # Try downloading .hex from GitHub raw or GitHub release asset
+            hex_downloaded = False
+            if hex_name:
+                for candidate_url in [
+                    f"https://raw.githubusercontent.com/{REPO}/main/Firmware/{hex_name}?t={timestamp}",
+                    f"https://github.com/{REPO}/releases/latest/download/{hex_name}"
+                ]:
+                    try:
+                        hreq = urllib.request.Request(candidate_url, headers=headers)
+                        with urllib.request.urlopen(hreq, timeout=20) as hresp:
+                            hbytes = hresp.read()
+                            if len(hbytes) > 1024 and hbytes.startswith(b":"):
+                                dst_hex = os.path.join(app_data_dir, hex_name)
+                                with open(dst_hex, 'wb') as hf:
+                                    hf.write(hbytes)
+                                hex_downloaded = True
+                                break
+                    except Exception:
+                        pass
+
+            return {"success": True, "live_html": live_html, "hex_downloaded": hex_downloaded}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -1301,7 +1331,8 @@ class HubApi:
         try:
             live_html = get_html_path()
             if self._window:
-                self._window.load_url(f'file:///{live_html.replace("\\", "/")}')
+                ts = int(time.time())
+                self._window.load_url(f'file:///{live_html.replace("\\", "/")}?v={ts}')
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}

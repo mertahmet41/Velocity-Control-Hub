@@ -1033,12 +1033,12 @@
     </div>
 
     <div class="nav-tabs">
-      <div class="nav-item active" onclick="switchView('home')">DEVICES</div>
-      <div class="nav-item" onclick="switchView('settings')">SETTINGS</div>
+      <div class="nav-item active" onclick="switchView('home')">CİHAZLAR</div>
+      <div class="nav-item" onclick="switchView('settings')">AYARLAR</div>
     </div>
 
     <div class="header-right">
-      <button class="btn-add-device" onclick="openAddModal('device')">+ CİHAZ EKLE</button>
+      <button class="btn-add-device" onclick="openAddModal('device')">+ CİHAZ / KABLOSUZ EKLE</button>
     </div>
   </header>
 
@@ -1049,12 +1049,12 @@
     <section class="view-section active" id="view-home">
       <div class="hero-banner">
         <div>
-          <div class="hero-title">SIM RACING HARDWARE HUB</div>
-          <div class="hero-sub">Direct Drive Direksiyon, Pedallar ve Vites tek bir STM32F411CEU6 beyninde birleşti. Aşağıdaki cihaz kartına tıklayarak tüm alt modülleri ve cihaza özel firmware güncellemelerini yönetin.</div>
+          <div class="hero-title">SİMÜLASYON KONTROL MERKEZİ</div>
+          <div class="hero-sub">Direksiyon, Pedallar, Vites ve Kablosuz Aksesuarlar tek bir cihaz merkezinde birleşti. Aşağıdaki cihaz kartına tıklayarak tüm alt birimleri, sürüş ayarlarını ve cihaz güncellemelerini yönetin.</div>
         </div>
       </div>
 
-      <div class="section-title">BAĞLI / KAYITLI DONANIMLAR</div>
+      <div class="section-title">BAĞLI / KAYITLI CİHAZLAR</div>
       <div class="gear-grid" id="gearGrid">
         <!-- Rendered dynamically -->
       </div>
@@ -1065,9 +1065,9 @@
       <div class="top-nav-bar" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
         <div style="display: flex; align-items: center; gap: 16px;">
           <button class="back-btn" onclick="switchView('home')">← CİHAZLARA DÖN</button>
-          <div class="device-active-title" id="activeDeviceHeader">PRO DIRECT DRIVE WHEEL (ALL-IN-ONE)</div>
+          <div class="device-active-title" id="activeDeviceHeader">PRO DIRECT DRIVE DİREKSİYON SETİ</div>
         </div>
-        <button class="connect-btn" id="deviceConnectBtn" onclick="toggleUsbConnection()"> CİHAZA BAĞLAN (USB SERIAL)</button>
+        <button class="connect-btn" id="deviceConnectBtn" onclick="toggleUsbConnection()">CİHAZA BAĞLAN</button>
       </div>
 
       <div class="device-studio-layout">
@@ -1089,11 +1089,16 @@
             <span>VİTES (H-SHIFTER)</span>
           </div>
 
+          <div class="module-item" onclick="switchModule('wireless'); refreshNrf24Status();">
+            <span class="module-icon"></span>
+            <span>KABLOSUZ BAĞLANTI</span>
+          </div>
+
           <!-- DYNAMIC SUB-MODULES RENDERED HERE -->
           <div id="dynamicSubModulesList"></div>
 
           <div class="module-item add-module-btn" onclick="openAddModal('submodule')">
-            <span>[+] MODÜL / ALT CİHAZ EKLE</span>
+            <span>[+] ALT CİHAZ / KABLOSUZ EKLE</span>
           </div>
         </div>
 
@@ -1106,10 +1111,10 @@
               <div class="glass-panel wheel-stage" style="position: relative;">
                 <img src="pro_wheel.png" class="rotating-wheel" id="wheelGraphic" alt="GT3 Steering Wheel">
                 <div class="angle-readout" id="angleDisplay">+0.0°</div>
-                <div class="case-led-badge" id="caseLedStageBadge" onclick="switchSubPane('led')" title="Kasa Durum RGB LED'i (Ayarlamak için tıklayın)">
+                <div class="case-led-badge" id="caseLedStageBadge" onclick="switchSubPane('led')" title="Kasa Durum Işığı (Ayarlamak için tıklayın)">
                   <div class="case-led-dot" id="caseLedStageDot"></div>
                   <div class="case-led-info">
-                    <span class="case-led-title">KASA RGB LED</span>
+                    <span class="case-led-title">DURUM IŞIĞI</span>
                     <span class="case-led-sub" id="caseLedStageText">BEKLENİYOR (SARI)</span>
                   </div>
                 </div>
@@ -1120,8 +1125,8 @@
                   <button class="sub-tab-btn active" onclick="switchSubPane('axis')">EKSEN & PROFİLLER</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('ffb')">FFB EFEKTLERİ</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('safety')">MOTOR & GÜVENLİK</button>
-                  <button class="sub-tab-btn" onclick="switchSubPane('led')">KASA RGB LED</button>
-                  <button class="sub-tab-btn" onclick="switchSubPane('profile')">KİMLİK & SPOOFING</button>
+                  <button class="sub-tab-btn" onclick="switchSubPane('led')">DURUM IŞIĞI</button>
+                  <button class="sub-tab-btn" onclick="switchSubPane('profile')">OYUN UYUMLULUĞU</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('firmware'); refreshFirmwarePaneStatus();">CİHAZ GÜNCELLEME</button>
                   <button class="sub-tab-btn" id="subTabDev" style="display:none; color:#ffb703; border-color:rgba(255,183,3,0.4);" onclick="switchSubPane('dev')">[DEV] GELİŞTİRİCİ AYARLARI</button>
                 </div>
@@ -1148,22 +1153,22 @@
                       <span class="control-name">Dönüş Sınırı (Degrees of Rotation)</span>
                       <span class="control-badge" id="badgeDegrees">900°</span>
                     </div>
-                    <div class="control-desc">Direksiyonun donanımsal ve fiziksel maksimum dönüş açısı (180° - 900°).</div>
+                    <div class="control-desc">Direksiyonun maksimum dönüş açısı (180° - 900°).</div>
                     <input type="range" min="180" max="900" value="900" id="slDegrees" oninput="updateVal('badgeDegrees', this.value, '°', 'axis.degrees')">
                   </div>
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Uç Nokta Sertliği (Endstop Stiffness / Gain)</span>
+                      <span class="control-name">Uç Nokta Sertliği (Endstop Stiffness)</span>
                       <span class="control-badge" id="badgeEsGain">100%</span>
                     </div>
-                    <div class="control-desc">900 derece sınırına ulaşıldığında motorun duvara çarpma sertliği.</div>
+                    <div class="control-desc">Dönüş sınırına ulaşıldığında motorun durdurma sertliği.</div>
                     <input type="range" min="0" max="100" value="100" id="slEsGain" oninput="updateVal('badgeEsGain', this.value, '%', 'axis.esgain')">
                   </div>
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Maksimum Açısal Hız Limiti (Max Speed Limit)</span>
+                      <span class="control-name">Maksimum Dönüş Hızı Limiti</span>
                       <span class="control-badge" id="badgeSpeed">Sınırsız</span>
                     </div>
                     <div class="control-desc">Direksiyonun kontrolsüz aşırı hızlı dönmesini engelleyen güvenlik limiti.</div>
@@ -1172,7 +1177,7 @@
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Tork Oranı Limiti (Max Torque Rate)</span>
+                      <span class="control-name">Tork Yumuşatma Limiti</span>
                       <span class="control-badge" id="badgeTorqueRate">Kapalı</span>
                     </div>
                     <div class="control-desc">Tork değişim hızını yumuşatarak motordaki sert titreşimleri filtreler.</div>
@@ -1187,13 +1192,13 @@
                       <span class="control-name">Genel Güç Seviyesi (Overall Force Strength)</span>
                       <span class="control-badge" id="badgePower">100%</span>
                     </div>
-                    <div class="control-desc">BTS7960 motor sürücüsüne gönderilen tavan güç limiti.</div>
+                    <div class="control-desc">Direksiyon motoruna gönderilen maksimum güç limiti.</div>
                     <input type="range" min="0" max="100" value="100" id="slPower" oninput="updateVal('badgePower', this.value, '%', 'axis.power')">
                   </div>
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Damper Efekti (Independent Damper)</span>
+                      <span class="control-name">Damper Efekti (Ağırlık Hissi)</span>
                       <span class="control-badge" id="badgeDamper">15%</span>
                     </div>
                     <div class="control-desc">Direksiyon hızlandıkça oluşan hidrolik direksiyon ağırlığı.</div>
@@ -1202,16 +1207,16 @@
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Sürtünme Efekti (Independent Friction)</span>
+                      <span class="control-name">Sürtünme Efekti (Friction)</span>
                       <span class="control-badge" id="badgeFriction">10%</span>
                     </div>
-                    <div class="control-desc">Lastiklerin yerle temasındaki mekanik statik sürtünme hissi.</div>
+                    <div class="control-desc">Lastiklerin yerle temasındaki mekanik sürtünme hissi.</div>
                     <input type="range" min="0" max="100" value="10" id="slFriction" oninput="updateVal('badgeFriction', this.value, '%', 'axis.axisfriction')">
                   </div>
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Sabit Merkezleme Yayı (Idle Centering Spring)</span>
+                      <span class="control-name">Sabit Merkezleme Yayı (Centering Spring)</span>
                       <span class="control-badge" id="badgeSpring">0%</span>
                     </div>
                     <div class="control-desc">Oyun dışındayken veya düzlükte direksiyonu merkeze çeken yay kuvveti.</div>
@@ -1220,7 +1225,7 @@
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Eylemsizlik (Inertia Resistance)</span>
+                      <span class="control-name">Eylemsizlik (Inertia)</span>
                       <span class="control-badge" id="badgeInertia">5%</span>
                     </div>
                     <div class="control-desc">Ağır yarış direksiyonu simidinin kütlesini simüle eder.</div>
@@ -1229,16 +1234,16 @@
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">FFB Filtresi Kesme Frekansı (Low-Pass Filter)</span>
+                      <span class="control-name">Titreşim Yumuşatma Filtresi</span>
                       <span class="control-badge" id="badgeFilterCf">100 Hz</span>
                     </div>
-                    <div class="control-desc">Motora giden yüksek frekanslı parazit ve dişli titreşimlerini yumuşatır.</div>
+                    <div class="control-desc">Motora giden yüksek frekanslı parazit ve titreşimleri yumuşatır.</div>
                     <input type="range" min="10" max="250" value="100" id="slFilterCf" oninput="updateVal('badgeFilterCf', this.value, ' Hz', 'axis.filterSpeed')">
                   </div>
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Sürtünme Rampa Hızı (Friction Rampup Speed)</span>
+                      <span class="control-name">Sürtünme Tepki Hassasiyeti</span>
                       <span class="control-badge" id="badgeFricRamp">10%</span>
                     </div>
                     <div class="control-desc">Düşük hızlarda sürtünme hissinin devreye girme hassasiyeti.</div>
@@ -1250,11 +1255,11 @@
                 <div class="sub-pane" id="pane-safety">
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Donanım Watchdog Zaman Aşımı (Watchdog Timeout)</span>
+                      <span class="control-name">İletişim Kopma Koruması</span>
                       <span class="control-badge" id="badgeWatchdog">200 ms</span>
                     </div>
-                    <div class="control-desc">PC iletişimi koptuğu anda motorun torkta takılı kalmaması için güvenlik kesici.</div>
-                    <select class="select-box" style="margin-top: 8px;">
+                    <div class="control-desc">Bilgisayar iletişimi koptuğu anda motorun güçte takılı kalmaması için güvenlik kesici.</div>
+                    <select class="select-box" style="margin-top: 8px;" id="watchdogSelect" onchange="document.getElementById('badgeWatchdog').innerText = this.value + ' ms'">
                       <option value="200" selected>200 ms (Önerilen)</option>
                       <option value="350">350 ms</option>
                       <option value="500">500 ms</option>
@@ -1263,16 +1268,16 @@
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">BTS7960 Akım & Termal Güvenlik Limiti</span>
+                      <span class="control-name">Motor Isı ve Güç Koruması</span>
                       <span class="control-badge" id="badgeThermal">95%</span>
                     </div>
-                    <div class="control-desc">Sürücü mosfetlerinin aşırı ısınmasını önleyen yazılımsal akım sınırlayıcı.</div>
+                    <div class="control-desc">Cihazın aşırı ısınmasını önleyen otomatik güç sınırlayıcı.</div>
                     <input type="range" min="50" max="100" value="95" id="slThermal" oninput="updateVal('badgeThermal', this.value, '%', 'drv.thermalLimit')">
                   </div>
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Ani Tork Sıçrama Engelleyici (Slew-Rate Limiter)</span>
+                      <span class="control-name">Ani Darbe Yumuşatıcı</span>
                       <span class="control-badge" id="badgeSlew">Aktif</span>
                     </div>
                     <div class="control-desc">Kaldırımlara ve bariyerlere çarpışta ani darbe yumuşatma filtresi.</div>
@@ -1284,22 +1289,22 @@
                       <span class="control-name">Acil Durdurma (E-Stop) Tuşu</span>
                     </div>
                     <div class="control-desc">Kontrolsüz tork salınımında motor çıkışını anında sıfırlar.</div>
-                    <select class="select-box" style="margin-top: 8px;">
-                      <option selected>Klavye: [Space] Tuşu</option>
-                      <option>Klavye: [ESC] Tuşu</option>
-                      <option>Donanım Pini: PB12 (Harici Düğme)</option>
+                    <select class="select-box" style="margin-top: 8px;" id="estopKeySelect">
+                      <option value="space" selected>Klavye: [Space] Boşluk Tuşu</option>
+                      <option value="esc">Klavye: [ESC] Tuşu</option>
+                      <option value="hw">Cihaz Üzerindeki Harici Düğme</option>
                     </select>
                   </div>
                 </div>
 
-                <!-- PANE 4: KASA DURUM RGB LED & TELEMETRİ MONİTÖRÜ -->
+                <!-- PANE 4: KASA DURUM IŞIĞI & TELEMETRİ MONİTÖRÜ -->
                 <div class="sub-pane" id="pane-led">
                   <!-- REALISTIC LIVE LED SIMULATOR & TEST BOX -->
                   <div style="background: linear-gradient(135deg, rgba(16, 20, 28, 0.95), rgba(11, 13, 17, 0.98)); border: 1px solid rgba(0, 180, 216, 0.35); border-radius: 14px; padding: 20px; margin-bottom: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
                       <div>
-                        <div style="font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.5px;"> CANLI KASA LED SİMÜLATÖRÜ & DURUM MONİTÖRÜ</div>
-                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Direksiyon kasasındaki fiziksel RGB LED'in (PA0, PA1, PA2) canlı durum yansıması</div>
+                        <div style="font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.5px;"> CANLI DURUM IŞIĞI ÖNİZLEMESİ</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Cihaz üzerindeki durum ışığının canlı görünümü</div>
                       </div>
                       <span class="control-badge" id="badgeLedStateDesc" style="background: rgba(255, 170, 0, 0.15); color: #ffa726; border: 1px solid rgba(255, 170, 0, 0.3);">SARI: BEKLENİYOR</span>
                     </div>
@@ -1311,21 +1316,21 @@
                         <div class="led-preview-glow" id="ledPreviewGlow"></div>
                       </div>
                       <div style="max-width: 320px;">
-                        <div style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 4px;" id="ledSimStatusTitle">Bağlantı Bekleniyor (Pulsing Amber)</div>
-                        <div style="font-size: 11px; color: #8e95a5; line-height: 1.4;" id="ledSimStatusDetail">STM32 USB CDC seri portu dinleniyor. Kasa LED'i yavaş nefes alma sarı animasyonu ile kullanıcının bağlantı kurmasını bekliyor.</div>
+                        <div style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 4px;" id="ledSimStatusTitle">Bağlantı Bekleniyor</div>
+                        <div style="font-size: 11px; color: #8e95a5; line-height: 1.4;" id="ledSimStatusDetail">Cihaz bağlantısı bekleniyor. Durum ışığı yavaş nefes alma sarı animasyonu ile hazır bekliyor.</div>
                       </div>
                     </div>
 
                     <!-- TEST & TRIGGER BUTTONS -->
                     <div style="margin-top: 16px;">
-                      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;"> DURUMLARI CANLI SİMÜLE ET / TEST ET:</div>
+                      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;"> DURUMLARI CANLI TEST ET:</div>
                       <div style="display:flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('disconnected')">[BEKLEMEDE] Bağlantı Bekleme (Nefes Alma)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('connected')">[HAZIR] Normal Çalışma (Hazır Glow)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #ff3333; color: #ff5252;" onclick="testLedAnimation('clipping')">[KRITIK] FFB Aşımı (%100 Kırmızı Flaş)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #f39c12; color: #f39c12;" onclick="testLedAnimation('load')">[UYARI] Yüksek Tork Yükü (Dinamik)</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('estop')">[E-STOP] Acil Durdurma (E-Stop)</button>
-                        <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 11px; flex: 0 0 auto;" onclick="testLedAnimation('auto')"> Donanım Canlı Modu</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('disconnected')">[BEKLEMEDE] Bağlantı Bekleme</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('connected')">[HAZIR] Normal Çalışma</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #ff3333; color: #ff5252;" onclick="testLedAnimation('clipping')">[KRİTİK] Güç Sınırı Aşımı</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #f39c12; color: #f39c12;" onclick="testLedAnimation('load')">[UYARI] Yüksek Tork Yükü</button>
+                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('estop')">[DURDURMA] Acil Durdurma</button>
+                        <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 11px; flex: 0 0 auto;" onclick="testLedAnimation('auto')"> Canlı Cihaz Modu</button>
                       </div>
                     </div>
                   </div>
@@ -1333,40 +1338,40 @@
                   <!-- CONTROL 1: GENEL KASA LED MODU -->
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Kasa LED Çalışma Modu</span>
+                      <span class="control-name">Durum Işığı Çalışma Modu</span>
                       <span class="control-badge" id="badgeLedMode">Akıllı Otomatik</span>
                     </div>
-                    <div class="control-desc">LED'in direksiyon sistem durumlarına nasıl tepki vereceğini belirleyin.</div>
+                    <div class="control-desc">Işığın direksiyon durumlarına nasıl tepki vereceğini belirleyin.</div>
                     <select class="select-box" style="margin-top: 8px;" id="caseLedModeSelect" onchange="setCaseLedMode(this.value)">
-                      <option value="smart" selected> Akıllı Durum Monitörü (Tüm Durumlar: Bekleme, Bağlantı, FFB Aşımı, E-Stop)</option>
-                      <option value="clipping_only"> Sadece FFB Kırpılma / Aşırı Yükte Kırmızı Alarm</option>
-                      <option value="ambient_breath"> Dinamik RGB Ambient & Nefes Alma Animasyonu</option>
-                      <option value="telemetry_load"> Tork Yükü Telemetrisi (Yeşil  Sarı  Kırmızı)</option>
-                      <option value="solid_accent"> Sabit Velocity Neon Aydınlatması</option>
-                      <option value="off"> Kapalı (LED Devre Dışı)</option>
+                      <option value="smart" selected> Akıllı Durum Monitörü (Bekleme, Bağlantı, Güç Aşımı, Acil Durdurma)</option>
+                      <option value="clipping_only"> Sadece Aşırı Yükte Kırmızı Uyarı</option>
+                      <option value="ambient_breath"> Yumuşak Renk Geçişi (Ambient)</option>
+                      <option value="telemetry_load"> Tork Yükü Göstergesi (Yeşil - Sarı - Kırmızı)</option>
+                      <option value="solid_accent"> Sabit Tema Rengi</option>
+                      <option value="off"> Kapalı (Işık Devre Dışı)</option>
                     </select>
                   </div>
 
                   <!-- CONTROL 2: FFB AŞIMI (CLIPPING) ALARMI & HIZI -->
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">FFB Kırpılma (Clipping) Kırmızı Flaşör Eşiği</span>
+                      <span class="control-name">Güç Sınırı Aşımı (Clipping) Uyarı Eşiği</span>
                       <span class="control-badge" id="badgeClipThreshold">%92</span>
                     </div>
-                    <div class="control-desc">Tork bu güç sınırını aştığında kasa LED'i kırmızı yanıp sönerek motor aşırı yükünü haber verir.</div>
+                    <div class="control-desc">Tork bu güç sınırını aştığında durum ışığı kırmızı yanıp sönerek aşırı yükü haber verir.</div>
                     <input type="range" min="70" max="100" value="92" id="slClipThreshold" oninput="updateVal('badgeClipThreshold', this.value, '%', 'fx.clip_threshold')">
                   </div>
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Kırmızı Alarm Flaş Hızı (Strobe Frequency)</span>
-                      <span class="control-badge" id="badgeStrobeFreq">Hızlı Flaş (10 Hz)</span>
+                      <span class="control-name">Kırmızı Uyarı Yanıp Sönme Hızı</span>
+                      <span class="control-badge" id="badgeStrobeFreq">Hızlı Flaş</span>
                     </div>
-                    <div class="control-desc">FFB clipping anındaki kırmızı ikaz flaşörünün yanıp sönme frekansı.</div>
+                    <div class="control-desc">Güç sınırı aşımı anındaki kırmızı ikaz ışığının yanıp sönme hızı.</div>
                     <select class="select-box" style="margin-top: 8px;" id="strobeFreqSelect" onchange="setStrobeFreq(this.value)">
-                      <option value="fast" selected>Hızlı Flaşör (10 Hz Strobe - Anlık Uyarı)</option>
-                      <option value="medium">Orta Hızda Yan-Sön (5 Hz)</option>
-                      <option value="breath">Pürüzsüz Kırmızı Nefes Alma (Smooth Alert)</option>
+                      <option value="fast" selected>Hızlı Flaşör (Anlık Uyarı)</option>
+                      <option value="medium">Orta Hızda Yan-Sön</option>
+                      <option value="breath">Yumuşak Kırmızı Nefes Alma</option>
                     </select>
                   </div>
 
@@ -1375,7 +1380,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                       <div>
                         <div class="control-name">Bağlantı Beklerken Yavaş Sarı Nefes Alma</div>
-                        <div class="control-desc">USB bağlantısı yokken kasanın canlı olduğunu belirten yumuşak sarı/turuncu animasyon.</div>
+                        <div class="control-desc">Cihaz bağlantısı yokken hazır olduğunu belirten yumuşak sarı/turuncu animasyon.</div>
                       </div>
                       <label class="switch" style="margin-left: 20px;">
                         <input type="checkbox" checked id="ledWaitingAnimToggle" onchange="toggleLedWaiting(this.checked)">
@@ -1387,8 +1392,8 @@
                   <div class="control-group">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                       <div>
-                        <div class="control-name">Acil Durdurma (E-Stop) & Watchdog Kırmızı İkaz</div>
-                        <div class="control-desc">Motor güvenlik kesicisi devreye girdiğinde LED'i acil durum kırmızısına al.</div>
+                        <div class="control-name">Acil Durdurma Kırmızı İkaz</div>
+                        <div class="control-desc">Motor güvenlik kesicisi devreye girdiğinde ışığı acil durum kırmızısına al.</div>
                       </div>
                       <label class="switch" style="margin-left: 20px;">
                         <input type="checkbox" checked id="ledEstopAnimToggle">
@@ -1399,10 +1404,10 @@
 
                   <div class="control-group">
                     <div class="control-header">
-                      <span class="control-name">Kasa LED Parlaklığı (PWM Brightness)</span>
+                      <span class="control-name">Durum Işığı Parlaklığı</span>
                       <span class="control-badge" id="badgeLedBright">%90</span>
                     </div>
-                    <div class="control-desc">Sürücü gözünü almaması için maksimum PWM aydınlatma şiddeti.</div>
+                    <div class="control-desc">Göz almaması için maksimum aydınlatma parlaklık seviyesi.</div>
                     <input type="range" min="10" max="100" value="90" id="slLedBright" oninput="updateVal('badgeLedBright', this.value, '%', 'sys.led_brightness')">
                   </div>
 
@@ -1421,15 +1426,15 @@
                   </div>
                 </div>
 
-                <!-- PANE 5: SPOOFING & CONTROLLER PROFILES -->
+                <!-- PANE 5: OYUN UYUMLULUĞU & PROFİL -->
                 <div class="sub-pane" id="pane-profile">
                   <div class="control-group">
-                    <span class="control-name">USB Cihaz Kimliği (Hardware Spoofing VID/PID)</span>
-                    <div class="control-desc">Direksiyonun bilgisayara ve oyunlara kendini hangi marka olarak tanıtacağını seçin.</div>
+                    <span class="control-name">Oyun Uyumluluk Modu (Cihaz Kimliği)</span>
+                    <div class="control-desc">Direksiyonun bilgisayara ve oyunlara kendini hangi modda tanıtacağını seçin.</div>
                     <select class="select-box" style="margin-top: 8px;" id="spoofSelect" onchange="sendCmd('sys.profile=' + this.selectedIndex)">
-                      <option>OpenFFBoard Native (En saf Direct Drive tepki hızı - AC, iRacing, rF2)</option>
-                      <option>Logitech G29 Gaming Wheel (VID: 0x046D, PID: 0xC24F - Forza, F1, NFS)</option>
-                      <option>Moza Racing Wheel Base (VID: 0x346E, PID: 0x0002 - Moza Ekosistemi)</option>
+                      <option>Standart Direct Drive Modu (Assetto Corsa, iRacing, rFactor 2)</option>
+                      <option>Logitech G29 Uyumluluk Modu (Forza Horizon, F1, Need for Speed)</option>
+                      <option>Moza Yarış Modu (Moza Ekosistemi)</option>
                     </select>
                   </div>
                 </div>
@@ -1439,8 +1444,8 @@
                   <div class="control-group" style="background: #191c22; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                       <div>
-                        <div class="control-name" style="color: var(--accent); font-size: 15px;">Cihaz Yazılımı (Firmware) Güncelleme</div>
-                        <div class="control-desc" style="margin-top: 4px;">Direksiyon yazılımını tek tuşla otomatik olarak kontrol edin ve güncelleyin.</div>
+                        <div class="control-name" style="color: var(--accent); font-size: 15px;">Cihaz Yazılımı Güncelleme</div>
+                        <div class="control-desc" style="margin-top: 4px;">Cihaz yazılımını tek tuşla otomatik olarak kontrol edin ve güncelleyin.</div>
                       </div>
                       <span class="control-badge" id="fwStatusBadge" style="background: rgba(0,180,216,0.12); color: var(--accent);">KONTROL EDİLİYOR</span>
                     </div>
@@ -1451,13 +1456,13 @@
                         <div style="font-size: 15px; font-weight: 900; color: #fff;" id="fwCurrentDeviceVer">Cihaz Bağlı Değil</div>
                       </div>
                       <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 4px;">YENİ / PAKET SÜRÜMÜ</div>
-                        <div style="font-size: 15px; font-weight: 900; color: var(--accent);" id="fwAvailableHexVer">v3.16.0</div>
+                        <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 4px;">YENİ SÜRÜM</div>
+                        <div style="font-size: 15px; font-weight: 900; color: var(--accent);" id="fwAvailableHexVer">v3.17.0</div>
                       </div>
                     </div>
 
                     <div style="font-size: 12px; color: #caced8; margin-bottom: 14px; line-height: 1.5;" id="fwStatusDesc">
-                      Cihaz sürüm bilgisini okumak için direksiyonun USB bağlantısını açın.
+                      Sürüm bilgisini okumak ve güncellemek için cihazı bilgisayara bağlayın.
                     </div>
 
                     <!-- İLERLEME ÇUBUĞU -->
@@ -1515,9 +1520,59 @@
                     </div>
                   </div>
 
+                  <!-- GELİŞTİRİCİ MODU TEKNİK nRF24L01 AYARLARI (NORMAL KULLANICIDAN GİZLİ) -->
+                  <div class="dev-only-block" id="nrfDevTechPanel" style="background:rgba(255, 183, 3, 0.06); border:1px solid rgba(255, 183, 3, 0.3); padding:16px; border-radius:12px; margin-bottom:20px;">
+                    <div style="font-size:13px; font-weight:900; color:#ffb703; margin-bottom:10px; letter-spacing:0.5px;">
+                      GELİŞTİRİCİ MODU — nRF24L01 TEKNİK RF YAPILANDIRMASI VE PİN HARİTASI
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
+                      <div>
+                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">MODÜL DURUMU</label>
+                        <select class="select-box" id="nrfDevEnableSelect" style="width:100%;">
+                          <option value="1" selected>Etkin (Non-Blocking)</option>
+                          <option value="0">Devre Dışı</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">RF KANALI (0-125)</label>
+                        <input type="number" class="modal-input" id="nrfDevChannelInput" min="0" max="125" value="76" style="margin-bottom:0; padding:8px 10px; font-family:monospace;">
+                      </div>
+                      <div>
+                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">VERİ HIZI (DATA RATE)</label>
+                        <select class="select-box" id="nrfDevRateSelect" style="width:100%;">
+                          <option value="0">250 kbps (Uzun Menzil)</option>
+                          <option value="1" selected>1 Mbps (Dengeli)</option>
+                          <option value="2">2 Mbps (Düşük Gecikme)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">PA ÇIKIŞ GÜCÜ</label>
+                        <select class="select-box" id="nrfDevPaSelect" style="width:100%;">
+                          <option value="0">-18 dBm (Düşük)</option>
+                          <option value="1">-12 dBm (Orta)</option>
+                          <option value="2" selected>-6 dBm (Yüksek)</option>
+                          <option value="3">0 dBm (Maksimum)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px;">
+                      <div style="font-family:monospace; font-size:11px; color:#caced8;" id="nrfDevRawDiagText">
+                        STATUS_REG: 0xFF | IRQ(PB9): 1 | BTN_MASK: 0x00000000 | FREQ: 2476 MHz
+                      </div>
+                      <button class="action-btn btn-primary" style="flex:0 0 180px; font-size:11px;" onclick="applyNrf24Config()">RF AYARLARINI UYGULA</button>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.35); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); font-family:monospace; font-size:11px; color:var(--text-muted); line-height:1.5;">
+                      <b style="color:#fff;">Donanım SPI2 Pin Eşleşmesi (Çakışmasız):</b>
+                      SCK=<b style="color:#2ecc71;">PB13</b> | MISO=<b style="color:#2ecc71;">PB14</b> | MOSI=<b style="color:#2ecc71;">PB15</b> | CE=<b style="color:#00d2ff;">PB6</b> | CSN=<b style="color:#00d2ff;">PB7</b> | IRQ=<b style="color:#ffb703;">PB9</b>
+                    </div>
+                  </div>
+
                   <!-- OVERRIDE & KILL-SWITCHES -->
                   <div style="background:rgba(255, 183, 3, 0.06); border:1px solid rgba(255, 183, 3, 0.3); padding:16px; border-radius:12px; margin-bottom:20px;">
-                    <div style="font-size:14px; font-weight:900; color:#ffb703; letter-spacing:0.5px; margin-bottom:6px;">DONANIM BYPASS &GUVENLIK ANAHTARLARI (KILL-SWITCHES)</div>
+                    <div style="font-size:14px; font-weight:900; color:#ffb703; letter-spacing:0.5px; margin-bottom:6px;">DONANIM BYPASS & GUVENLIK ANAHTARLARI (KILL-SWITCHES)</div>
                     <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
                       Bu anahtarlar guvenli donanim testi icin motoru ve otomatik hareketleri izole eder. Sadece enkoder testi yapmak istediginizde kullaniniz.
                     </div>
@@ -1539,7 +1594,7 @@
                       <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:12px 14px; border-radius:8px;">
                         <div>
                           <div style="color:#fff; font-weight:800; font-size:12px;">Motor Tork Cikisini Devre Disi Birak (Torque Mute / Kill-Switch)</div>
-                          <div style="color:var(--text-muted); font-size:11px;">BTS7960 RPWM (PA9) ve LPWM (PA8) tork sinyallerini sifirlar. Motor serbest kalir (0 Nm).</div>
+                          <div style="color:var(--text-muted); font-size:11px;">Motor RPWM (PA9) ve LPWM (PA8) tork sinyallerini sifirlar. Motor serbest kalir (0 Nm).</div>
                         </div>
                         <label class="toggle-switch">
                           <input type="checkbox" id="devDisableMotorToggle" onchange="toggleDevDisableMotor(this.checked)">
@@ -1568,7 +1623,7 @@
                       <button class="action-btn btn-ghost" style="padding:4px 12px; font-size:11px; border-color:var(--accent); color:#fff;" onclick="startEncoderOnlyMode()">ENKODER TESTINI BASLAT</button>
                     </div>
                     <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
-                      Optik enkoderin (600 PPR / 2400 CPR) A (PB4), B (PB5) ve Z (PB8) pinlerindeki pals sinyallerini ve dogrulugunu motor torku olmadan olcer.
+                      Optik enkoderin A (PB4), B (PB5) ve Z (PB8) pinlerindeki pals sinyallerini ve dogrulugunu motor torku olmadan olcer.
                     </div>
 
                     <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:14px;">
@@ -1600,7 +1655,7 @@
                   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
                     <!-- MOTOR PULSE TEST -->
                     <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:10px;">
-                      <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">BTS7960 DOGRUDAN PWM SURUS TESTI</div>
+                      <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">MOTOR DOGRUDAN PWM SURUS TESTI</div>
                       <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Milin serbest oldugundan emin olun. Guvenli 1 saniyelik test darbesi uretir.</div>
                       
                       <div class="control-group" style="margin-bottom:12px;">
@@ -1620,20 +1675,20 @@
                     <!-- RAW ADC TELEMETRY -->
                     <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:10px;">
                       <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">DONANIMSAL PIN VE ADC TESHISI</div>
-                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">STM32 12-bit ADC kanallarinin dogrudan gerilim ve bit okumalari.</div>
+                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">12-bit ADC kanallarinin dogrudan gerilim ve bit okumalari.</div>
                       
                       <div style="display:flex; flex-direction:column; gap:6px; font-family:monospace; font-size:11px;">
                         <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
                           <span style="color:#2ecc71;">GAZ (PA7 / ADC1_IN7):</span>
-                          <span id="devAdcGas">2048 (1.65V)</span>
+                          <span id="devAdcGas">0 (0.00V)</span>
                         </div>
                         <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
                           <span style="color:var(--accent);">FREN (PA5 / ADC1_IN5):</span>
-                          <span id="devAdcBrake">128 (0.10V)</span>
+                          <span id="devAdcBrake">0 (0.00V)</span>
                         </div>
                         <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
                           <span style="color:#ffb703;">DEBRIYAJ (PA6 / ADC1_IN6):</span>
-                          <span id="devAdcClutch">64 (0.05V)</span>
+                          <span id="devAdcClutch">0 (0.00V)</span>
                         </div>
                         <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
                           <span style="color:var(--text-muted);">PA4 (ARIZALI PIN):</span>
@@ -1645,17 +1700,16 @@
 
                   <!-- DIRECT SERIAL COMMAND TERMINAL -->
                   <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); padding:14px; border-radius:10px;">
-                    <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">DOGRUDAN SERI KOMUT TERMINALI (OPENFFBOARD UART CONSOLE)</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">STM32 donanimina ham seri komut gonderin (Orn: sys:help, axis:0, fxratio:0, cpr:2400, calib:0).</div>
+                    <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">DOGRUDAN SERI KOMUT TERMINALI</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Cihaza ham seri komut gonderin (Orn: sys.swver?, axis.pos?, sys.pedals?, localenc.cpr?).</div>
                     
                     <div id="devTerminalLog" style="height:100px; background:#08090b; border:1px solid rgba(255,255,255,0.06); border-radius:6px; padding:8px; font-family:monospace; font-size:11px; color:#2ecc71; overflow-y:auto; margin-bottom:10px; line-height:1.4;">
 [VELOCITY DEV CONSOLE READY]
-Bagli Port: STM32F411CEU6 BlackPill (DFU / CDC)
 Komut girmeye hazir...
                     </div>
 
                     <div style="display:flex; gap:10px;">
-                      <input type="text" id="devTerminalInput" class="modal-input" placeholder="Komut yazin (Orn: power 0, cpr 2400, calib 0)..." style="font-family:monospace; font-size:12px; margin-bottom:0;" onkeydown="if(event.key==='Enter') sendDevSerialCommand()">
+                      <input type="text" id="devTerminalInput" class="modal-input" placeholder="Komut yazin (Orn: sys.swver?, sys.pedals?, localenc.cpr=2400)..." style="font-family:monospace; font-size:12px; margin-bottom:0;" onkeydown="if(event.key==='Enter') sendDevSerialCommand()">
                       <button class="action-btn btn-primary" style="flex:0 0 100px; font-size:11px;" onclick="sendDevSerialCommand()">GONDER</button>
                     </div>
                   </div>
@@ -1668,7 +1722,10 @@ Komut girmeye hazir...
           <!-- 2. GAZ TAKIMI (PEDALLAR) MODÜLÜ -->
           <div class="module-pane" id="module-pedals">
             <div class="glass-panel">
-              <div class="section-title">3'LÜ PRO PEDAL TAKIMI</div>
+              <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>3'LÜ PRO PEDAL TAKIMI</span>
+                <span id="pedalLiveStatusBadge" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:4px 10px; border-radius:6px; font-weight:800;">CANLI OKUMA HAZIR</span>
+              </div>
               
               <div class="pedals-stage">
                 <!-- CLUTCH -->
@@ -1701,17 +1758,30 @@ Komut girmeye hazir...
 
               <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 30px;">
                 <div class="control-group">
-                  <span class="control-name">Gaz Hassasiyeti (Deadzone)</span>
-                  <input type="range" min="0" max="20" value="3">
+                  <div class="control-header">
+                    <span class="control-name">Gaz Hassasiyeti (Ölü Bölge)</span>
+                    <span class="val-badge" id="badgeGasDz">3%</span>
+                  </div>
+                  <input type="range" id="slGasDz" min="0" max="20" value="3" oninput="updatePedalSetting('gasDz', this.value)">
                 </div>
                 <div class="control-group">
-                  <span class="control-name">Fren Sertlik / Gamma Eğrisi</span>
-                  <input type="range" min="1" max="3" step="0.1" value="1.8">
+                  <div class="control-header">
+                    <span class="control-name">Fren Sertlik Eğrisi</span>
+                    <span class="val-badge" id="badgeBrakeGamma">1.8</span>
+                  </div>
+                  <input type="range" id="slBrakeGamma" min="1" max="3" step="0.1" value="1.8" oninput="updatePedalSetting('brakeGamma', this.value)">
                 </div>
                 <div class="control-group">
-                  <span class="control-name">Debriyaj Kavrama Noktası</span>
-                  <input type="range" min="10" max="90" value="50">
+                  <div class="control-header">
+                    <span class="control-name">Debriyaj Kavrama Noktası</span>
+                    <span class="val-badge" id="badgeClutchBite">50%</span>
+                  </div>
+                  <input type="range" id="slClutchBite" min="10" max="90" value="50" oninput="updatePedalSetting('clutchBite', this.value)">
                 </div>
+              </div>
+
+              <div class="btn-row" style="margin-top: 18px; display:flex; gap:12px;">
+                <button class="action-btn btn-ghost" style="flex:1;" onclick="calibratePedalsAuto()">PEDALLARI OTOMATİK KALİBRE ET / SIFIRLA</button>
               </div>
             </div>
           </div>
@@ -1731,6 +1801,41 @@ Komut girmeye hazir...
                 <div class="gear-slot" id="slot-6" style="padding: 14px 20px; background: #191c22; border: 1px solid var(--border); border-radius: 8px; font-weight: 800;">6</div>
                 <div class="gear-slot" id="slot-R" style="padding: 14px 20px; background: #191c22; border: 1px solid var(--border); border-radius: 8px; font-weight: 800; color: var(--red);">R</div>
               </div>
+              <div style="color: var(--text-muted); font-size: 12px; margin-top: 22px;">
+                Vites geçişleri cihaz bağlıyken gerçek zamanlı olarak burada görüntülenir.
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. KABLOSUZ BAĞLANTI (WIRELESS ACCESSORIES) MODÜLÜ -->
+          <div class="module-pane" id="module-wireless">
+            <div class="glass-panel">
+              <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>KABLOSUZ BAĞLANTI & AKSESUARLAR</span>
+                <span id="nrfStatusPill" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:4px 10px; border-radius:6px; font-weight:800;">KABLOLU MOD</span>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:18px;">
+                <div style="background:rgba(0,0,0,0.28); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">KABLOSUZ ALICI DURUMU</div>
+                  <div style="font-size:15px; font-weight:800; color:#fff;" id="nrfSimpleStateText">Standart Kablolu Mod</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.28); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">AKSESUAR İLETİŞİM DURUMU</div>
+                  <div style="font-size:15px; font-weight:800; color:var(--accent);" id="nrfSimplePacketsText">Hazır (Beklemede)</div>
+                </div>
+              </div>
+
+              <div style="background:rgba(0, 180, 216, 0.06); border:1px solid rgba(0, 180, 216, 0.2); padding:14px 16px; border-radius:10px; margin-bottom:18px;">
+                <div style="font-size:12px; color:#caced8; line-height:1.5;" id="nrfSimpleDescText">
+                  Kablosuz alıcı takılı olmadığında cihazınız hiçbir gecikme olmadan standart kablolu modda çalışır. Kablosuz direksiyon simidi tuşları, el freni veya düğme kutusu eklemek için aşağıdaki butonları kullanabilirsiniz.
+                </div>
+              </div>
+
+              <div style="display:flex; gap:12px;">
+                <button class="action-btn btn-primary" style="flex:1;" onclick="refreshNrf24Status(true)">KABLOSUZ AKSESUARLARI TARA</button>
+                <button class="action-btn btn-ghost" style="flex:1;" onclick="openAddModal('wireless')">KABLOSUZ ALT CİHAZ EKLE</button>
+              </div>
             </div>
           </div>
 
@@ -1740,9 +1845,9 @@ Komut girmeye hazir...
               <div style="font-size: 40px; margin-bottom: 12px;"></div>
               <div style="font-size: 18px; font-weight: 800; margin-bottom: 8px;" id="customModuleTitle">ÖZEL ALT MODÜL</div>
               <div style="color: var(--text-muted); font-size: 13px; max-width: 480px; margin: 0 auto 24px auto;">
-                Bu alt donanım STM32 kartınızın dijital ve analog girişlerine bağlıdır. Giriş kalibrasyonu ve tuş atamalarını buradan yapabilirsiniz.
+                Bu alt donanım cihazınızın girişlerine bağlıdır. Giriş kalibrasyonu ve tuş atamalarını buradan yapabilirsiniz.
               </div>
-              <button class="action-btn btn-ghost" style="max-width: 200px; margin: 0 auto;" onclick="alert('Modül sinyalleri aktif.')">SİNYALİ TEST ET</button>
+              <button class="action-btn btn-ghost" style="max-width: 200px; margin: 0 auto;" onclick="showCustomAlert({title:'ALT CİHAZ AKTİF', subtitle:'BAĞLANTI DOĞRULANDI', content:'Alt cihaz sinyalleri aktif olarak dinleniyor.'})">SİNYALİ TEST ET</button>
             </div>
           </div>
 
@@ -1762,7 +1867,7 @@ Komut girmeye hazir...
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.16.0 (Production Channel).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.17.0 (Kararlı Sürüm).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1781,10 +1886,10 @@ Komut girmeye hazir...
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Güncelleme Dağıtım Kanalı</div>
-              <div class="setting-desc">Kararlı sürümleri (Stable / Production) veya erken test sürümlerini (Beta) tercih edin.</div>
+              <div class="setting-desc">Kararlı sürümleri (Kararlı) veya erken test sürümlerini (Beta) tercih edin.</div>
             </div>
             <select class="select-box" style="width: 170px;">
-              <option selected>Production (Kararlı)</option>
+              <option selected>Kararlı Sürüm</option>
               <option>Beta / Erken Erişim</option>
             </select>
           </div>
@@ -1792,12 +1897,12 @@ Komut girmeye hazir...
 
         <!-- SECTION 2: HARDWARE & TELEMETRY PREFERENCES -->
         <div class="glass-panel">
-          <div class="settings-section-title"> BAĞLANTI, USB & TELEMETRİ TERCİHLERİ</div>
+          <div class="settings-section-title"> BAĞLANTI & CİHAZ TERCİHLERİ</div>
 
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-title">Açılışta Otomatik USB Bağlantısı</div>
-              <div class="setting-desc">Uygulama açıldığında kayıtlı STM32 cihazını doğrudan porttan bağlamayı dene.</div>
+              <div class="setting-title">Açılışta Otomatik Cihaz Bağlantısı</div>
+              <div class="setting-desc">Uygulama açıldığında kayıtlı cihazı otomatik olarak bağlamayı dene.</div>
             </div>
             <label class="switch">
               <input type="checkbox" checked id="autoConnectToggle">
@@ -1808,7 +1913,7 @@ Komut girmeye hazir...
           <div class="setting-item dev-only-setting" style="display: none;">
             <div class="setting-info">
               <div class="setting-title">Hassasiyet & Örnekleme Hızı (Polling Rate)</div>
-              <div class="setting-desc">Enkoder ve FFB telemetrisi için USB HID üzerinden 1000 Hz / 1 ms gerçek zamanlı okuma.</div>
+              <div class="setting-desc">Enkoder ve FFB telemetrisi için 1000 Hz / 1 ms gerçek zamanlı okuma.</div>
             </div>
             <select class="select-box" style="width: 170px;">
               <option selected>1000 Hz (1ms Ultra)</option>
@@ -1820,7 +1925,7 @@ Komut girmeye hazir...
           <div class="setting-item dev-only-setting" style="display: none;">
             <div class="setting-info">
               <div class="setting-title">Seri Port Haberleşme Hızı (Baud Rate)</div>
-              <div class="setting-desc">STM32 USB CDC VCP sanal seri port donanım haberleşme hızı.</div>
+              <div class="setting-desc">Sanal seri port donanım haberleşme hızı.</div>
             </div>
             <select class="select-box" style="width: 170px;">
               <option selected>115200 Baud</option>
@@ -1833,90 +1938,12 @@ Komut girmeye hazir...
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Kopma Durumunda Otomatik Yeniden Bağlan</div>
-              <div class="setting-desc">USB kablosu çıkarılıp takıldığında portu otomatik tara ve bağlantıyı yenile.</div>
+              <div class="setting-desc">Cihaz kablosu çıkarılıp takıldığında bağlantıyı otomatik olarak yenile.</div>
             </div>
             <label class="switch">
               <input type="checkbox" checked id="autoReconnectToggle">
               <span class="slider-toggle"></span>
             </label>
-          </div>
-        </div>
-
-        <!-- SECTION 2B: KABLOSUZ AKSESUAR ALICISI (nRF24L01 2.4GHz) -->
-        <div class="glass-panel" id="sectionNrf24">
-          <div class="settings-section-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>KABLOSUZ AKSESUAR ALICISI (nRF24L01 2.4GHz)</span>
-            <span id="nrfStatusPill" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:3px 8px; border-radius:6px; font-weight:800;">KONTROL EDİLİYOR</span>
-          </div>
-
-          <!-- NORMAL KULLANICI SADE DURUM BİLGİSİ -->
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
-            <div style="background:rgba(0,0,0,0.28); padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-              <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">MODÜL BAĞLANTI DURUMU</div>
-              <div style="font-size:13px; font-weight:800; color:#fff;" id="nrfSimpleStateText">Modül Takılı Değil — Standart Kablolu Mod</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.28); padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-              <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">KABLOSUZ VERİ AKIŞI</div>
-              <div style="font-size:13px; font-weight:800; color:var(--accent);" id="nrfSimplePacketsText">0 Paket (Beklemede)</div>
-            </div>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-            <div style="font-size:12px; color:var(--text-muted); line-height:1.4;" id="nrfSimpleDescText">
-              nRF24L01 modülü takılı olmadığında direksiyon sıfır gecikme ile normal kablolu modda çalışır. Modül takıldığında kablosuz simit tuşları ve aksesuarlar otomatik algılanır.
-            </div>
-            <button class="action-btn btn-ghost" style="flex:0 0 150px; font-size:11px;" onclick="refreshNrf24Status()">DURUMU YENİLE</button>
-          </div>
-
-          <!-- GELİŞTİRİCİ MODU TEKNİK nRF24L01 AYARLARI (NORMAL KULLANICIDAN GİZLİ) -->
-          <div class="dev-only-block" id="nrfDevTechPanel" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
-            <div style="font-size:12px; font-weight:900; color:#ffb703; margin-bottom:10px; letter-spacing:0.5px;">
-              GELİŞTİRİCİ MODU — nRF24L01 TEKNİK RF YAPILANDIRMASI VE PİN HARİTASI
-            </div>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
-              <div>
-                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">MODÜL DURUMU</label>
-                <select class="select-box" id="nrfDevEnableSelect" style="width:100%;">
-                  <option value="1" selected>Etkin (Non-Blocking)</option>
-                  <option value="0">Devre Dışı</option>
-                </select>
-              </div>
-              <div>
-                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">RF KANALI (0-125)</label>
-                <input type="number" class="modal-input" id="nrfDevChannelInput" min="0" max="125" value="76" style="margin-bottom:0; padding:8px 10px; font-family:monospace;">
-              </div>
-              <div>
-                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">VERİ HIZI (DATA RATE)</label>
-                <select class="select-box" id="nrfDevRateSelect" style="width:100%;">
-                  <option value="0">250 kbps (Uzun Menzil)</option>
-                  <option value="1" selected>1 Mbps (Dengeli)</option>
-                  <option value="2">2 Mbps (Düşük Gecikme)</option>
-                </select>
-              </div>
-              <div>
-                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">PA ÇIKIŞ GÜCÜ</label>
-                <select class="select-box" id="nrfDevPaSelect" style="width:100%;">
-                  <option value="0">-18 dBm (Düşük)</option>
-                  <option value="1">-12 dBm (Orta)</option>
-                  <option value="2" selected>-6 dBm (Yüksek)</option>
-                  <option value="3">0 dBm (Maksimum)</option>
-                </select>
-              </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px;">
-              <div style="font-family:monospace; font-size:11px; color:#caced8;" id="nrfDevRawDiagText">
-                STATUS_REG: 0xFF | IRQ(PB9): 1 | BTN_MASK: 0x00000000 | FREQ: 2476 MHz
-              </div>
-              <button class="action-btn btn-primary" style="flex:0 0 180px; font-size:11px;" onclick="applyNrf24Config()">RF AYARLARINI UYGULA</button>
-            </div>
-
-            <div style="background:rgba(0,0,0,0.35); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); font-family:monospace; font-size:11px; color:var(--text-muted); line-height:1.5;">
-              <b style="color:#fff;">STM32F411CE Donanım SPI2 Pin Eşleşmesi (Çakışmasız):</b>
-              SCK=<b style="color:#2ecc71;">PB13</b> | MISO=<b style="color:#2ecc71;">PB14</b> | MOSI=<b style="color:#2ecc71;">PB15</b> | CE=<b style="color:#00d2ff;">PB6</b> | CSN=<b style="color:#00d2ff;">PB7</b> | IRQ=<b style="color:#ffb703;">PB9</b><br>
-              <span>Not: PA8 (TIM1 Motor PWM), PA5/PA6/PA7 (ADC1 Pedal Girişleri) ve PB0 (DIN3 Buton) FFB direksiyon tarafından aktif kullanıldığı için nRF24L01 bağımsız SPI2 hattına atanmıştır.</span>
-            </div>
           </div>
         </div>
 
@@ -1940,8 +1967,8 @@ Komut girmeye hazir...
 
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-title">Cam Bulanıklığı & Blur Efektleri (Glassmorphism)</div>
-              <div class="setting-desc">GPU donanım ivmeli arka plan buzlu cam efektleri.</div>
+              <div class="setting-title">Cam Bulanıklığı & Blur Efektleri</div>
+              <div class="setting-desc">Arka plan buzlu cam görünüm efektleri.</div>
             </div>
             <label class="switch">
               <input type="checkbox" checked>
@@ -1964,7 +1991,7 @@ Komut girmeye hazir...
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Sesli Bildirimler</div>
-              <div class="setting-desc">USB donanım bağlandığında ve firmware güncellendiğinde ses tonu çal.</div>
+              <div class="setting-desc">Cihaz bağlandığında ve yazılım güncellendiğinde bildirim sesi çal.</div>
             </div>
             <label class="switch">
               <input type="checkbox" checked>
@@ -1975,7 +2002,7 @@ Komut girmeye hazir...
 
         <!-- SECTION 4: SİSTEM & BAŞLANGIÇ -->
         <div class="glass-panel">
-          <div class="settings-section-title">[ÖZEL] SİSTEM & BAŞLANGIÇ TERCİHLERİ</div>
+          <div class="settings-section-title">SİSTEM & BAŞLANGIÇ TERCİHLERİ</div>
 
           <div class="setting-item">
             <div class="setting-info">
@@ -1990,7 +2017,7 @@ Komut girmeye hazir...
 
           <div class="setting-item">
             <div class="setting-info">
-              <div class="setting-title">Kapatılınca Sistem Tepsisine (Tray) Küçült</div>
+              <div class="setting-title">Kapatılınca Sistem Tepsisine Küçült</div>
               <div class="setting-desc">Çarpı (X) tuşuna basıldığında programı tamamen kapatmak yerine saatin yanına al.</div>
             </div>
             <label class="switch">
@@ -2018,7 +2045,7 @@ Komut girmeye hazir...
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Tüm Cihaz ve Profil Verilerini Sıfırla</div>
-              <div class="setting-desc">Tarayıcıda kayıtlı tüm özel DIY donanımları, cihaz kodlarını ve özel FFB eğrilerini temizler.</div>
+              <div class="setting-desc">Kayıtlı tüm ek cihazları ve özel FFB eğrilerini varsayılana sıfırlar.</div>
             </div>
             <button class="action-btn btn-ghost" style="color: var(--red); border-color: var(--red); flex: 0 0 160px;" onclick="resetAllData()">TÜM VERİLERİ SIFIRLA</button>
           </div>
@@ -2038,18 +2065,18 @@ Komut girmeye hazir...
             <div>
               <div style="font-size: 18px; font-weight: 900; letter-spacing: 0.5px; color: #fff; margin-bottom: 4px;">Velocity Control Hub</div>
               <div style="font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">Pro Force Feedback Direct Drive Ecosystem</div>
-              <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Açık kaynaklı simülasyon donanımları, Direct Drive direksiyonlar, yük hücresi pedallar ve buton kutuları için profesyonel ekosistem.</div>
+              <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Simülasyon direksiyonları, pedallar, vites modülleri ve kablosuz aksesuarlar için kontrol merkezi.</div>
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
-              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.16.0 (Production Stable)</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.17.0 (Kararlı Sürüm)</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
-              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">MOTOR ALTYAPISI</div>
-              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">OpenFFBoard Firmware v3.16.0</div>
+              <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">CİHAZ YAZILIM MOTORU</div>
+              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">Velocity Firmware v3.17.0</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">GELİŞTİRİCİ</div>
@@ -2062,8 +2089,8 @@ Komut girmeye hazir...
           </div>
 
           <div style="display: flex; gap: 12px;">
-            <button class="action-btn btn-primary" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub', '_blank')">GITHUB SAYFASINI AÇ</button>
-            <button class="action-btn btn-ghost" onclick="window.open('https://github.com/mertahmet41/Velocity-Control-Hub/releases', '_blank')">SÜRÜM NOTLARI</button>
+            <button class="action-btn btn-primary" onclick="openExternalUrl('https://github.com/mertahmet41/Velocity-Control-Hub')">GITHUB SAYFASINI AÇ</button>
+            <button class="action-btn btn-ghost" onclick="openExternalUrl('https://github.com/mertahmet41/Velocity-Control-Hub/releases')">SÜRÜM NOTLARI</button>
           </div>
         </div>
 
@@ -2079,7 +2106,7 @@ Komut girmeye hazir...
               <div class="setting-item" style="border-bottom: none; padding: 6px 0;">
                 <div class="setting-info">
                   <div class="setting-title">Geliştirici Modu</div>
-                  <div class="setting-desc">Enkoder pulse (CPR/PPR) ayarı, manuel DFU/bootloader kontrolleri, ham seri komut terminali ve donanım teşhis araçlarını açar.</div>
+                  <div class="setting-desc">İleri seviye donanım yapılandırması, enkoder çözünürlük ayarı ve tanı araçlarını açar.</div>
                 </div>
                 <button class="action-btn" id="btnUnlockDevMode" style="flex: 0 0 180px; background:#ffb703; color:#000; font-weight:900; border:none; padding:10px 16px; border-radius:8px; cursor:pointer;" onclick="openDeveloperCodeModal()">GELİŞTİRİCİ MODUNU AÇ</button>
               </div>
@@ -2102,41 +2129,64 @@ Komut girmeye hazir...
 
   </main>
 
-  <!-- MODAL: ADD GEAR / SUB-MODULE (MANUAL & AUTO SCAN TABS) -->
+  <!-- MODAL: ADD GEAR / SUB-MODULE (AUTO, WIRELESS & MANUAL TABS) -->
   <div class="modal-overlay" id="addModal">
     <div class="modal-box">
       <div class="modal-tab-row">
-        <button class="modal-tab-btn active" id="tabAutoBtn" onclick="switchModalTab('auto')"> OTOMATİK USB ALGILA</button>
-        <button class="modal-tab-btn" id="tabManualBtn" onclick="switchModalTab('manual')"> MANUEL KOD İLE EKLE</button>
+        <button class="modal-tab-btn active" id="tabAutoBtn" onclick="switchModalTab('auto')">OTOMATİK ALGILA</button>
+        <button class="modal-tab-btn" id="tabWirelessBtn" onclick="switchModalTab('wireless')">KABLOSUZ BAĞLANTI</button>
+        <button class="modal-tab-btn" id="tabManualBtn" onclick="switchModalTab('manual')">MANUEL EKLE</button>
       </div>
 
       <!-- AUTO SCAN TAB -->
       <div id="modalAutoPane">
         <div class="auto-scan-box">
           <div class="auto-scan-icon"></div>
-          <div style="font-size: 14px; font-weight: 800; margin-bottom: 6px;" id="modalAutoTitle">USB Portu Taranıyor...</div>
+          <div style="font-size: 14px; font-weight: 800; margin-bottom: 6px;" id="modalAutoTitle">Cihaz Taranıyor...</div>
           <div style="color: var(--text-muted); font-size: 12px; line-height: 1.4;">
-            Donanımı bilgisayarın USB portuna takın ve aşağıdaki butona tıklayın. Sistem cihazın donanım kimliğini (VID/PID) anında tanıyacaktır.
+            Cihazınızı bilgisayara bağlayın ve aşağıdaki butona tıklayın. Sistem bağlı cihazı otomatik olarak algılayacaktır.
           </div>
         </div>
         <button class="action-btn btn-primary" style="width: 100%;" onclick="autoDetectUsbDevice()">CİHAZI ŞİMDİ TARA VE BAĞLA</button>
       </div>
 
+      <!-- WIRELESS TAB (KABLOSUZ BAĞLANTI) -->
+      <div id="modalWirelessPane" style="display: none;">
+        <div class="auto-scan-box" style="margin-bottom: 14px;">
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 6px;" id="modalWirelessTitle">Kablosuz Aksesuar & Alt Cihaz Eşleştirme</div>
+          <div style="color: var(--text-muted); font-size: 12px; line-height: 1.4;" id="modalWirelessStatusDesc">
+            Kablosuz direksiyon tuş takımı, el freni, vites veya düğme kutusunu kablosuz bağlantı üzerinden taratıp ekleyebilirsiniz.
+          </div>
+        </div>
+
+        <label class="control-name">Kablosuz Aksesuar Türü:</label>
+        <select class="select-box modal-input" id="newWirelessType">
+          <option value="wheel_rim">Kablosuz Direksiyon Tuş Takımı</option>
+          <option value="handbrake">Kablosuz El Freni</option>
+          <option value="buttonbox">Kablosuz Düğme Kutusu (Button Box)</option>
+          <option value="shifter">Kablosuz Vites Aparatı</option>
+        </select>
+
+        <button class="action-btn btn-primary" style="width: 100%;" onclick="scanAndAddWirelessAccessory()">KABLOSUZ CİHAZ TARA VE EKLE</button>
+      </div>
+
       <!-- MANUAL TAB -->
       <div id="modalManualPane" style="display: none;">
-        <label class="control-name">Donanım İsmi:</label>
-        <input type="text" class="modal-input" id="newDevName" placeholder="Örn: Hall Effect Handbrake, Button Box 16">
+        <label class="control-name">Cihaz / Aksesuar İsmi:</label>
+        <input type="text" class="modal-input" id="newDevName" placeholder="Örn: El Freni, Düğme Kutusu">
 
-        <label class="control-name">Cihaz / Pin Kodu (Örn: 1209:FFB0, PIN:PA7, DIN:PB1):</label>
-        <input type="text" class="modal-input" id="newDevCode" placeholder="Cihaz Kodu veya Donanım Pini">
+        <div class="dev-only-block" style="display: none;">
+          <label class="control-name">Geliştirici Cihaz / Pin Kodu:</label>
+          <input type="text" class="modal-input" id="newDevCode" placeholder="Örn: 1209:FFB0">
+        </div>
 
-        <label class="control-name">Donanım Türü:</label>
+        <label class="control-name">Cihaz Türü:</label>
         <select class="select-box modal-input" id="newDevType">
           <option value="handbrake">El Freni (Handbrake)</option>
           <option value="buttonbox">Düğme Kutusu (Button Box)</option>
-          <option value="dashboard">Dijital Gösterge (DDU Dashboard)</option>
+          <option value="dashboard">Dijital Gösterge (Dashboard)</option>
           <option value="pedals">Ayrı Pedal Seti</option>
-          <option value="custom">Özel Donanım (Custom DIY)</option>
+          <option value="custom">Özel Aksesuar</option>
         </select>
 
         <button class="action-btn btn-primary" style="width: 100%;" onclick="saveManualDevice()">KAYDET & EKLE</button>
@@ -2190,9 +2240,9 @@ Komut girmeye hazir...
   <footer>
     <div>
       <span class="status-dot" id="footerDot"></span>
-      <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
+      <span id="footerStatusText">CİHAZ BAĞLANTISI BEKLENİYOR</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.16.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | SÜRÜM v3.17.0</div>
   </footer>
 
   <script>
@@ -2209,6 +2259,15 @@ Komut girmeye hazir...
     let writer = null;
     let reader = null;
     let isConnected = false;
+
+    function openExternalUrl(url) {
+      const api = bridgeApi();
+      if (api && api.open_external) {
+        api.open_external(url);
+      } else {
+        window.open(url, '_blank');
+      }
+    }
 
     function renderDevices() {
       const grid = document.getElementById("gearGrid");
@@ -2235,9 +2294,9 @@ Komut girmeye hazir...
 
         let imgHtml = "";
         let telemetryStrip = "";
+        const showDevPulses = !!window.isDeveloperModeActive;
         if (dev.type === "wheel") {
           imgHtml = `<img src="pro_wheel.png" alt="Wheel" class="card-wheel-img" style="transition: transform 0.05s linear; transform: rotate(${(window.currentAngle || 0).toFixed(1)}deg);">`;
-          const showDevPulses = !!window.isDeveloperModeActive;
           telemetryStrip = `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; margin-bottom:10px; background:rgba(0,180,216,0.08); border:1px solid rgba(0,180,216,0.25); border-radius:8px; font-family:monospace; font-size:11px;">
               <span style="color:var(--text-muted); font-weight:700;">CANLI AÇI: <b class="card-live-angle" style="color:var(--accent);">${((window.currentAngle || 0) >= 0 ? '+' : '') + (window.currentAngle || 0).toFixed(1)}°</b></span>
@@ -2258,9 +2317,9 @@ Komut girmeye hazir...
           <div class="card-img-wrap">${imgHtml}</div>
           ${telemetryStrip}
           <div class="card-footer">
-            <span>KOD: ${dev.code}</span>
+            <span>${showDevPulses ? ('KOD: ' + dev.code) : (isConnected ? 'DURUM: AKTİF' : 'DURUM: HAZIR')}</span>
             <span style="display:flex; gap:6px;">
-              <button class="action-btn btn-ghost" style="padding:6px 10px; font-size:11px;" onclick="event.stopPropagation(); toggleUsbConnection();">${isConnected ? ' BAĞLI' : ' BAĞLAN'}</button>
+              <button class="action-btn btn-ghost" style="padding:6px 10px; font-size:11px;" onclick="event.stopPropagation(); toggleUsbConnection();">${isConnected ? 'BAĞLI' : 'BAĞLAN'}</button>
               <button class="action-btn btn-primary" style="padding:6px 12px; font-size:11px;">AYARLA →</button>
             </span>
           </div>
@@ -2281,7 +2340,7 @@ Komut girmeye hazir...
           item.classList.add('active');
           document.querySelectorAll('.module-pane').forEach(el => el.classList.remove('active'));
           document.getElementById('module-custom-pane').classList.add('active');
-          document.getElementById('customModuleTitle').innerText = mod.name + ` (${mod.code})`;
+          document.getElementById('customModuleTitle').innerText = mod.name;
         };
         container.appendChild(item);
       });
@@ -2319,6 +2378,10 @@ Komut girmeye hazir...
       if (moduleName === 'wheel') items[0]?.classList.add('active');
       if (moduleName === 'pedals') items[1]?.classList.add('active');
       if (moduleName === 'shifter') items[2]?.classList.add('active');
+      if (moduleName === 'wireless') {
+        items[3]?.classList.add('active');
+        refreshNrf24Status(false);
+      }
     }
 
     function switchSubPane(paneName) {
@@ -2419,7 +2482,7 @@ Komut girmeye hazir...
         title: "DİREKSİYON AYARLARI SIFIRLANDI",
         subtitle: "VARSAYILAN FABRİKA PROFİLİ",
         content: `<div style="font-size: 13px; line-height: 1.6;">
-          Direksiyon FFB ve motor güvenlik parametreleri varsayılan fabrika değerlerine (GT3 / 900° / %100 Güç / BTS7960 Güvenli Sınır) başarıyla döndürüldü.
+          Direksiyon FFB ve güvenlik parametreleri varsayılan fabrika değerlerine (GT3 / 900° / %100 Güç) başarıyla döndürüldü.
         </div>`,
         confirmText: "TAMAM",
         cancelText: null
@@ -2459,8 +2522,8 @@ Komut girmeye hazir...
         }
         if (stageText) { stageText.innerText = 'BEKLENİYOR (SARI)'; stageText.style.color = '#ffa726'; }
         if (badgeDesc) { badgeDesc.innerText = 'SARI: BEKLENİYOR'; badgeDesc.style.color = '#ffa726'; badgeDesc.style.borderColor = 'rgba(255,167,38,0.3)'; }
-        if (titleEl) titleEl.innerText = 'Bağlantı Bekleniyor (Pulsing Amber)';
-        if (detailEl) detailEl.innerText = 'STM32 USB CDC seri portu dinleniyor. Kasa LED\'i yumuşak sarı/turuncu nefes alma efektiyle bağlantı bekliyor.';
+        if (titleEl) titleEl.innerText = 'Bağlantı Bekleniyor (Sarı Nefes Efekti)';
+        if (detailEl) detailEl.innerText = 'Cihaz bağlantısı bekleniyor. Kasa LED\'i yumuşak sarı/turuncu nefes alma efektiyle bağlantı bekliyor.';
       } else if (state === 'connected') {
         core.style.animation = 'ledGlowCyan 2.5s infinite ease-in-out';
         core.style.background = '#00d2ff';
@@ -2473,7 +2536,7 @@ Komut girmeye hazir...
         if (stageText) { stageText.innerText = 'HAZIR (CYAN)'; stageText.style.color = '#00d2ff'; }
         if (badgeDesc) { badgeDesc.innerText = 'CYAN: HAZIR'; badgeDesc.style.color = '#00d2ff'; badgeDesc.style.borderColor = 'rgba(0,210,255,0.3)'; }
         if (titleEl) titleEl.innerText = 'Sistem Hazır / Normal Çalışma (Neon Cyan)';
-        if (detailEl) detailEl.innerText = 'USB bağlantısı aktif, FFB motor sürücüsü hazır durumda. Kasa LED\'i sakin neon cyan ışığı yayıyor.';
+        if (detailEl) detailEl.innerText = 'Cihaz bağlantısı aktif, direksiyon hazır durumda. Kasa LED\'i sakin neon cyan ışığı yayıyor.';
       } else if (state === 'clipping') {
         core.style.animation = 'ledStrobeRed 0.15s infinite alternate';
         core.style.background = '#ff1744';
@@ -2485,7 +2548,7 @@ Komut girmeye hazir...
         }
         if (stageText) { stageText.innerText = 'FFB AŞILDI! (KIRMIZI)'; stageText.style.color = '#ff1744'; }
         if (badgeDesc) { badgeDesc.innerText = 'ALARM: FFB CLIPPING'; badgeDesc.style.color = '#ff1744'; badgeDesc.style.borderColor = 'rgba(255,23,68,0.4)'; }
-        if (titleEl) titleEl.innerText = 'FFB Clipping / Tork Aşımı (Kırmızı Flaşör Strobe)';
+        if (titleEl) titleEl.innerText = 'FFB Clipping / Tork Aşımı (Kırmızı Flaşör)';
         if (detailEl) detailEl.innerText = 'Direksiyona iletilen kuvvet tavan sınırını aştı! Motor doygunluğunu bildirmek için LED hızlıca kırmızı yanıp sönüyor.';
       } else if (state === 'load') {
         core.style.animation = 'ledPulseOrange 0.8s infinite alternate';
@@ -2511,8 +2574,8 @@ Komut girmeye hazir...
         }
         if (stageText) { stageText.innerText = 'E-STOP / KESİLDİ'; stageText.style.color = '#ff1744'; }
         if (badgeDesc) { badgeDesc.innerText = 'DURDURMA: E-STOP'; badgeDesc.style.color = '#ff1744'; badgeDesc.style.borderColor = 'rgba(255,23,68,0.4)'; }
-        if (titleEl) titleEl.innerText = 'Acil Durdurma / Watchdog Kesici Aktif';
-        if (detailEl) detailEl.innerText = 'Motor tork çıkışı sıfırlandı. Donanımsal veya yazılımsal güvenlik kilidi aktif.';
+        if (titleEl) titleEl.innerText = 'Acil Durdurma / Kesici Aktif';
+        if (detailEl) detailEl.innerText = 'Motor tork çıkışı sıfırlandı. Güvenlik kilidi aktif.';
       }
     }
 
@@ -2571,14 +2634,220 @@ Komut girmeye hazir...
     }
 
     // ==========================================================
+    // PEDALLAR (GAZ / FREN / DEBRİYAJ) VE VİTES CANLI MOTORU
+    // ==========================================================
+    let pedalSettings = {
+      gasDz: parseFloat(localStorage.getItem('velocity_gas_dz') || '3'),
+      brakeGamma: parseFloat(localStorage.getItem('velocity_brake_gamma') || '1.8'),
+      clutchBite: parseFloat(localStorage.getItem('velocity_clutch_bite') || '50')
+    };
+
+    let lastRawPedals = { gas: -32768, brake: -32768, clutch: -32768, btns: 0 };
+    let pedalBaseline = { gasMin: null, gasMax: null, brakeMin: null, brakeMax: null, clutchMin: null, clutchMax: null };
+
+    function updatePedalSetting(key, val) {
+      const num = parseFloat(val);
+      if (key === 'gasDz') {
+        pedalSettings.gasDz = num;
+        localStorage.setItem('velocity_gas_dz', String(num));
+        const b = document.getElementById('badgeGasDz');
+        if (b) b.innerText = num + '%';
+      } else if (key === 'brakeGamma') {
+        pedalSettings.brakeGamma = num;
+        localStorage.setItem('velocity_brake_gamma', String(num));
+        const b = document.getElementById('badgeBrakeGamma');
+        if (b) b.innerText = num.toFixed(1);
+      } else if (key === 'clutchBite') {
+        pedalSettings.clutchBite = num;
+        localStorage.setItem('velocity_clutch_bite', String(num));
+        const b = document.getElementById('badgeClutchBite');
+        if (b) b.innerText = num + '%';
+      }
+      renderPedalGauges(lastRawPedals.gas, lastRawPedals.brake, lastRawPedals.clutch);
+    }
+
+    function calibratePedalsAuto() {
+      pedalBaseline = {
+        gasMin: lastRawPedals.gas,
+        gasMax: 32767,
+        brakeMin: lastRawPedals.brake,
+        brakeMax: 32767,
+        clutchMin: lastRawPedals.clutch,
+        clutchMax: 32767
+      };
+      if (isConnected) {
+        sendCmd("sys.ain=1;apin.mask=28;apin.autocal=1");
+      }
+      renderPedalGauges(lastRawPedals.gas, lastRawPedals.brake, lastRawPedals.clutch);
+      showCustomAlert({
+        title: "PEDAL KALİBRASYONU BAŞLATILDI",
+        subtitle: "GAZ / FREN / DEBRİYAJ",
+        content: "Pedalların mevcut serbest konumu sıfır (0%) olarak kaydedildi. Şimdi Gaz, Fren ve Debriyaj pedallarına birer kez sonuna kadar basıp bırakın; maksimum aralık otomatik olarak algılanacaktır."
+      });
+    }
+
+    function normalizeSinglePedal(rawVal, minKey, maxKey) {
+      let v = Number(rawVal);
+      if (isNaN(v)) return 0;
+
+      // Support both signed 16-bit (-32768..32767) and unsigned 12-bit/16-bit (0..4095)
+      let norm = 0;
+      if (pedalBaseline[minKey] !== null) {
+        if (v > (pedalBaseline[maxKey] || -32768)) pedalBaseline[maxKey] = v;
+        const span = Math.max(2000, (pedalBaseline[maxKey] || 32767) - pedalBaseline[minKey]);
+        norm = ((v - pedalBaseline[minKey]) / span) * 100.0;
+      } else if (v >= -32768 && v <= 32767 && v < 0) {
+        norm = ((v + 32768.0) / 65535.0) * 100.0;
+      } else if (v >= 0 && v <= 4096) {
+        norm = (v / 4095.0) * 100.0;
+      } else {
+        norm = ((v + 32768.0) / 65535.0) * 100.0;
+      }
+      if (norm < 0) norm = 0;
+      if (norm > 100) norm = 100;
+      return norm;
+    }
+
+    function renderPedalGauges(rawGas, rawBrake, rawClutch) {
+      lastRawPedals.gas = rawGas;
+      lastRawPedals.brake = rawBrake;
+      lastRawPedals.clutch = rawClutch;
+
+      // 1. Gas with Deadzone
+      let gasPct = normalizeSinglePedal(rawGas, 'gasMin', 'gasMax');
+      const dz = pedalSettings.gasDz || 0;
+      if (gasPct <= dz) {
+        gasPct = 0;
+      } else {
+        gasPct = ((gasPct - dz) / Math.max(1, 100 - dz)) * 100.0;
+      }
+      gasPct = Math.round(Math.max(0, Math.min(100, gasPct)));
+
+      // 2. Brake with Gamma Curve
+      let brakePct = normalizeSinglePedal(rawBrake, 'brakeMin', 'brakeMax');
+      const gamma = pedalSettings.brakeGamma || 1.0;
+      brakePct = Math.pow(brakePct / 100.0, gamma) * 100.0;
+      brakePct = Math.round(Math.max(0, Math.min(100, brakePct)));
+
+      // 3. Clutch with Bite Point shaping
+      let clutchPct = normalizeSinglePedal(rawClutch, 'clutchMin', 'clutchMax');
+      const bite = (pedalSettings.clutchBite || 50) / 100.0;
+      const cNorm = clutchPct / 100.0;
+      if (cNorm <= 0.5) {
+        clutchPct = (cNorm / 0.5) * bite * 100.0;
+      } else {
+        clutchPct = (bite + ((cNorm - 0.5) / 0.5) * (1.0 - bite)) * 100.0;
+      }
+      clutchPct = Math.round(Math.max(0, Math.min(100, clutchPct)));
+
+      const barGas = document.getElementById('barGas');
+      const txtGas = document.getElementById('txtGas');
+      if (barGas) barGas.style.height = gasPct + '%';
+      if (txtGas) txtGas.innerText = gasPct + '%';
+
+      const barBrake = document.getElementById('barBrake');
+      const txtBrake = document.getElementById('txtBrake');
+      if (barBrake) barBrake.style.height = brakePct + '%';
+      if (txtBrake) txtBrake.innerText = brakePct + '%';
+
+      const barClutch = document.getElementById('barClutch');
+      const txtClutch = document.getElementById('txtClutch');
+      if (barClutch) barClutch.style.height = clutchPct + '%';
+      if (txtClutch) txtClutch.innerText = clutchPct + '%';
+
+      // Update Developer ADC diagnostics as well
+      const toAdc12 = (raw) => {
+        if (raw < 0) return Math.max(0, Math.min(4095, Math.round(((raw + 32768) / 65535) * 4095)));
+        if (raw <= 4095) return Math.round(raw);
+        return Math.max(0, Math.min(4095, Math.round(((raw + 32768) / 65535) * 4095)));
+      };
+      const gAdc = toAdc12(rawGas);
+      const bAdc = toAdc12(rawBrake);
+      const cAdc = toAdc12(rawClutch);
+      const devGas = document.getElementById('devAdcGas');
+      const devBrake = document.getElementById('devAdcBrake');
+      const devClutch = document.getElementById('devAdcClutch');
+      if (devGas) devGas.innerText = `${gAdc} (${((gAdc / 4095) * 3.3).toFixed(2)}V)`;
+      if (devBrake) devBrake.innerText = `${bAdc} (${((bAdc / 4095) * 3.3).toFixed(2)}V)`;
+      if (devClutch) devClutch.innerText = `${cAdc} (${((cAdc / 4095) * 3.3).toFixed(2)}V)`;
+    }
+
+    function renderShifterState(btnMask) {
+      lastRawPedals.btns = btnMask;
+      const mask = Number(btnMask) >>> 0;
+      const slots = ['1', '2', '3', '4', '5', '6', 'R'];
+      let activeGear = null;
+
+      for (let i = 0; i < slots.length; i++) {
+        const isPressed = (mask & (1 << i)) !== 0;
+        const slotEl = document.getElementById('slot-' + slots[i]);
+        if (slotEl) {
+          if (isPressed && !activeGear) {
+            activeGear = slots[i];
+            slotEl.style.background = slots[i] === 'R' ? 'rgba(231, 76, 60, 0.28)' : 'rgba(0, 180, 216, 0.28)';
+            slotEl.style.borderColor = slots[i] === 'R' ? 'var(--red)' : 'var(--accent)';
+            slotEl.style.boxShadow = slots[i] === 'R' ? '0 0 14px rgba(231,76,60,0.4)' : '0 0 14px rgba(0,180,216,0.4)';
+          } else {
+            slotEl.style.background = '#191c22';
+            slotEl.style.borderColor = 'var(--border)';
+            slotEl.style.boxShadow = 'none';
+          }
+        }
+      }
+
+      const badge = document.getElementById('activeGearBadge');
+      if (badge) {
+        if (activeGear === 'R') {
+          badge.innerText = 'AKTİF VİTES: GERİ (R)';
+          badge.style.color = 'var(--red)';
+        } else if (activeGear) {
+          badge.innerText = `AKTİF VİTES: ${activeGear}. VİTES`;
+          badge.style.color = 'var(--accent)';
+        } else {
+          badge.innerText = 'AKTİF VİTES: BOŞTA (N)';
+          badge.style.color = 'var(--accent)';
+        }
+      }
+    }
+
+    // Fallback: also poll browser Gamepad API if OS exposes HID joystick axes
+    setInterval(() => {
+      if (!navigator.getGamepads) return;
+      try {
+        const gps = navigator.getGamepads();
+        for (const gp of gps) {
+          if (!gp || !gp.connected) continue;
+          const id = (gp.id || '').toLowerCase();
+          if (id.includes('ffboard') || id.includes('1209') || id.includes('g29') || id.includes('moza') || id.includes('velocity')) {
+            if (gp.axes && gp.axes.length >= 4 && !replyCache['sys.pedals']) {
+              // axes[0]=wheel, axes[1]=brake/Y, axes[2]=clutch/Z, axes[3]=gas/RX
+              const rawBrk = Math.round((gp.axes[1] || 0) * 32767);
+              const rawClt = Math.round((gp.axes[2] || 0) * 32767);
+              const rawGas = Math.round((gp.axes[3] || 0) * 32767);
+              renderPedalGauges(rawGas, rawBrk, rawClt);
+            }
+            if (gp.buttons && gp.buttons.length > 0 && !replyCache['sys.pedals']) {
+              let bmask = 0;
+              for (let i = 0; i < Math.min(16, gp.buttons.length); i++) {
+                if (gp.buttons[i] && gp.buttons[i].pressed) bmask |= (1 << i);
+              }
+              renderShifterState(bmask);
+            }
+            break;
+          }
+        }
+      } catch (e) {}
+    }, 80);
+
+    // ==========================================================
     // USB SERIAL TRANSPORT (native Python bridge first, Web Serial fallback)
     // ==========================================================
     const serialFilters = [
-      { usbVendorId: 0x1209, usbProductId: 0xFFB0 }, // OpenFFBoard Native
-      { usbVendorId: 0x046D, usbProductId: 0xC24F }, // Logitech G29 Spoofed
-      { usbVendorId: 0x0483, usbProductId: 0x5740 }, // STM32 Virtual COM Port
-      { usbVendorId: 0x346E, usbProductId: 0x0002 }, // Moza R5 Spoofed
-      { usbVendorId: 0x0483 }                         // STMicroelectronics devices
+      { usbVendorId: 0x1209, usbProductId: 0xFFB0 },
+      { usbVendorId: 0x046D, usbProductId: 0xC24F },
+      { usbVendorId: 0x0483, usbProductId: 0x5740 },
+      { usbVendorId: 0x346E, usbProductId: 0x0002 },
+      { usbVendorId: 0x0483 }
     ];
 
     let pollInterval = null;
@@ -2604,12 +2873,12 @@ Komut girmeye hazir...
       setTimeout(() => {
         const savedCpr = parseInt(localStorage.getItem('velocity_encoder_cpr') || String(encoderCpr || 2400), 10) || 2400;
         encoderCpr = savedCpr;
-        sendCmd(`localenc.cpr=${savedCpr};sys.swver?;sys.profile?;axis.degrees?;axis.power?;localenc.cpr?;localenc.pins?`);
-        setTimeout(refreshFirmwarePaneStatus, 350);
+        sendCmd(`sys.ain=1;sys.btn=1;apin.mask=28;dpin.mask=251;localenc.cpr=${savedCpr};sys.swver?;sys.profile?;axis.degrees?;axis.power?;localenc.cpr?;localenc.pins?;sys.pedals?`);
+        setTimeout(refreshFirmwarePaneStatus, 400);
       }, 300);
       pollInterval = setInterval(() => {
         if (isConnected) {
-          sendCmd("axis.pos?;axis.curpos?;axis.curtorque?;localenc.pins?");
+          sendCmd("axis.pos?;axis.curpos?;axis.curtorque?;localenc.pins?;sys.pedals?;apin.values?;dpin.values?");
         }
       }, 65);
     }
@@ -2620,79 +2889,138 @@ Komut girmeye hazir...
 
     function handleRxText(text) {
       rxBuffer += text;
-      const parts = rxBuffer.split(String.fromCharCode(10));
-      rxBuffer = parts.pop();
-      if (rxBuffer.length > 4096) rxBuffer = "";
-      for (let raw of parts) {
-        const line = raw.trim();
-        if (!line) continue;
-        lastSerialResponse = line;
+      if (rxBuffer.length > 8192) rxBuffer = rxBuffer.slice(-4096);
 
-        // Reply format: [cmd?|value]
-        const mm = line.match(/^\[([^|\]]+)\|([^\]]*)\]?$/);
-        if (mm) {
-          const key = mm[1].replace(/[?=].*$/, "").toLowerCase();
-          replyCache[key] = mm[2];
+      // Extract complete bracketed [cmd|val] packets (including multi-line apin.values? replies!)
+      while (true) {
+        const startIdx = rxBuffer.indexOf('[');
+        if (startIdx === -1) {
+          rxBuffer = "";
+          break;
+        }
+        const endIdx = rxBuffer.indexOf(']', startIdx);
+        if (endIdx === -1) {
+          if (startIdx > 0) rxBuffer = rxBuffer.slice(startIdx);
+          break;
+        }
+        const packet = rxBuffer.slice(startIdx, endIdx + 1).trim();
+        rxBuffer = rxBuffer.slice(endIdx + 1);
+        processSerialPacket(packet);
+      }
+    }
+
+    function processSerialPacket(packet) {
+      if (!packet) return;
+      lastSerialResponse = packet;
+
+      const mm = packet.match(/^\[([^|\]]+)\|([\s\S]*)\]$/);
+      if (mm) {
+        const rawKey = mm[1].trim();
+        const key = rawKey.replace(/[?=].*$/, "").toLowerCase();
+        const valStr = mm[2].trim();
+        replyCache[key] = valStr;
+
+        // 1. Single-line sys.pedals? -> gas:brake:clutch:btns
+        if (key === 'sys.pedals') {
+          const parts = valStr.split(':');
+          if (parts.length >= 3) {
+            const g = parseInt(parts[0], 10);
+            const b = parseInt(parts[1], 10);
+            const c = parseInt(parts[2], 10);
+            const btns = parts.length >= 4 ? parseInt(parts[3], 10) : lastRawPedals.btns;
+            if (!isNaN(g) && !isNaN(b) && !isNaN(c)) {
+              renderPedalGauges(g, b, c);
+            }
+            if (!isNaN(btns)) {
+              renderShifterState(btns);
+            }
+          }
+          return;
         }
 
-        if (/\[(axis\.0\.pos|axis\.pos)\?\|/.test(line)) {
-          const m = line.match(/pos\?\|\s*(-?[0-9]+)/);
-          if (m && !devFreezeEncoder) {
-            const rawTicks = parseInt(m[1]);
-            if (!isNaN(rawTicks)) {
-              window.devEncoderRawPulses = rawTicks;
-              const deg = (rawTicks / (encoderCpr || 2400)) * 360.0;
-              setWheelAngle(deg, rawTicks);
+        // 2. Multi-line apin.values? or apin.0.values? -> v0\nv1\nv2
+        if (key === 'apin.values' || key === 'apin.0.values') {
+          const lines = valStr.split(/[\r\n:]+/).map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+          if (lines.length >= 3) {
+            // Default mask 0x1C (AIN2=PA5 Brake, AIN3=PA6 Clutch, AIN4=PA7 Gas)
+            const brk = lines[0];
+            const clt = lines[1];
+            const gas = lines[2];
+            renderPedalGauges(gas, brk, clt);
+          } else if (lines.length === 1) {
+            renderPedalGauges(lines[0], lastRawPedals.brake, lastRawPedals.clutch);
+          }
+          return;
+        }
+
+        // 3. Digital buttons dpin.values? or dpin.0.values?
+        if (key === 'dpin.values' || key === 'dpin.0.values') {
+          const bval = parseInt(valStr, 10);
+          if (!isNaN(bval)) {
+            renderShifterState(bval);
+          }
+          return;
+        }
+      }
+
+      const line = packet;
+      if (/\[(axis\.0\.pos|axis\.pos)\?\|/.test(line)) {
+        const m = line.match(/pos\?\|\s*(-?[0-9]+)/);
+        if (m && !devFreezeEncoder) {
+          const rawTicks = parseInt(m[1]);
+          if (!isNaN(rawTicks)) {
+            window.devEncoderRawPulses = rawTicks;
+            const deg = (rawTicks / (encoderCpr || 2400)) * 360.0;
+            setWheelAngle(deg, rawTicks);
+          }
+        }
+      } else if (line.includes("curpos")) {
+        const m = line.match(/curpos[^|:]*[|:]\s*(-?[0-9]+)/);
+        if (m && !devFreezeEncoder) {
+          const rawPos = parseInt(m[1]);
+          if (!isNaN(rawPos)) {
+            const deg = (rawPos / 32767.0) * (wheelRangeDeg / 2.0);
+            setWheelAngle(deg, window.devEncoderRawPulses);
+          }
+        }
+      } else if (line.includes("curtorque")) {
+        const m = line.match(/curtorque[^|:]*[|:]\s*(-?[0-9]+)/);
+        if (m) {
+          const tq = Math.abs(parseInt(m[1]) || 0);
+          const clipThreshold = parseInt(document.getElementById('slClipThreshold')?.value || '92');
+          const tqPct = (tq / 32767.0) * 100.0;
+          if (currentLedMode === 'smart' || currentLedMode === 'clipping_only') {
+            if (tqPct >= clipThreshold) {
+              triggerClippingFlash();
+            } else if (currentLedMode === 'smart' && tqPct >= 65 && !isLedManualTest && currentLedState !== 'clipping') {
+              updateLedVisuals('load');
             }
           }
-        } else if (line.includes("curpos")) {
-          const m = line.match(/curpos[^|:]*[|:]\s*(-?[0-9]+)/);
-          if (m && !devFreezeEncoder) {
-            const rawPos = parseInt(m[1]);
-            if (!isNaN(rawPos)) {
-              const deg = (rawPos / 32767.0) * (wheelRangeDeg / 2.0);
-              setWheelAngle(deg, window.devEncoderRawPulses);
-            }
-          }
-        } else if (line.includes("curtorque")) {
-          const m = line.match(/curtorque[^|:]*[|:]\s*(-?[0-9]+)/);
-          if (m) {
-            const tq = Math.abs(parseInt(m[1]) || 0);
-            const clipThreshold = parseInt(document.getElementById('slClipThreshold')?.value || '92');
-            const tqPct = (tq / 32767.0) * 100.0;
-            if (currentLedMode === 'smart' || currentLedMode === 'clipping_only') {
-              if (tqPct >= clipThreshold) {
-                triggerClippingFlash();
-              } else if (currentLedMode === 'smart' && tqPct >= 65 && !isLedManualTest && currentLedState !== 'clipping') {
-                updateLedVisuals('load');
-              }
-            }
-          }
-        } else if (line.includes("cpr")) {
-          const m = line.match(/cpr[^|:]*[|:]\s*([0-9]+)/);
-          if (m && parseInt(m[1]) > 0) encoderCpr = parseInt(m[1]);
-        } else if (line.includes("pins")) {
-          const m = line.match(/pins[^|:]*[|:]\s*([0-9]+)/);
-          if (m) {
-            const p = parseInt(m[1]);
-            const aHigh = (p & 1) !== 0;
-            const bHigh = (p & 2) !== 0;
-            const zHigh = (p & 4) !== 0;
-            const phEl = document.getElementById('devPhaseStatus');
-            if (phEl) phEl.innerText = `A: ${aHigh ? 'HIGH(1)' : 'LOW(0)'} | B: ${bHigh ? 'HIGH(1)' : 'LOW(0)'}`;
-            const idxEl = document.getElementById('devIndexStatus');
-            if (idxEl) idxEl.innerText = `Z (PB8): ${zHigh ? 'HIGH(1)' : 'LOW(0)'}`;
-          }
-        } else if (line.includes("degrees")) {
-          const m = line.match(/degrees[^|:]*[|:]\s*([0-9]+)/);
-          if (m && parseInt(m[1]) > 0) wheelRangeDeg = parseInt(m[1]);
-        } else if (line.includes("profile")) {
-          const m = line.match(/profile[^|:]*[|:]\s*([0-9]+)/);
-          if (m) {
-            const sel = document.getElementById('spoofSelect');
-            const idx = parseInt(m[1]);
-            if (sel && idx < sel.options.length && sel.selectedIndex !== idx) sel.selectedIndex = idx;
-          }
+        }
+      } else if (line.includes("cpr")) {
+        const m = line.match(/cpr[^|:]*[|:]\s*([0-9]+)/);
+        if (m && parseInt(m[1]) > 0) encoderCpr = parseInt(m[1]);
+      } else if (line.includes("pins")) {
+        const m = line.match(/pins[^|:]*[|:]\s*([0-9]+)/);
+        if (m) {
+          const p = parseInt(m[1]);
+          const aHigh = (p & 1) !== 0;
+          const bHigh = (p & 2) !== 0;
+          const zHigh = (p & 4) !== 0;
+          const phEl = document.getElementById('devPhaseStatus');
+          if (phEl) phEl.innerText = `A: ${aHigh ? 'HIGH(1)' : 'LOW(0)'} | B: ${bHigh ? 'HIGH(1)' : 'LOW(0)'}`;
+          const idxEl = document.getElementById('devIndexStatus');
+          if (idxEl) idxEl.innerText = `Z (PB8): ${zHigh ? 'HIGH(1)' : 'LOW(0)'}`;
+        }
+      } else if (line.includes("degrees")) {
+        const m = line.match(/degrees[^|:]*[|:]\s*([0-9]+)/);
+        if (m && parseInt(m[1]) > 0) wheelRangeDeg = parseInt(m[1]);
+      } else if (line.includes("profile")) {
+        const m = line.match(/profile[^|:]*[|:]\s*([0-9]+)/);
+        if (m) {
+          const sel = document.getElementById('spoofSelect');
+          const idx = parseInt(m[1]);
+          if (sel && idx < sel.options.length && sel.selectedIndex !== idx) sel.selectedIndex = idx;
         }
       }
     }
@@ -2753,7 +3081,7 @@ Komut girmeye hazir...
           const p = await navigator.serial.requestPort({ filters: serialFilters });
           await webSerialOpen(p);
           const info = p.getInfo();
-          return { vid: hex4(info.usbVendorId), pid: hex4(info.usbProductId), label: "USB SERIAL" };
+          return { vid: hex4(info.usbVendorId), pid: hex4(info.usbProductId), label: "CİHAZ" };
         }
         return null;
       } catch (err) {
@@ -2850,8 +3178,8 @@ Komut girmeye hazir...
         showHubModal({
           icon: "",
           title: "CİHAZ BULUNAMADI",
-          subtitle: "USB BAĞLANTISI",
-          content: "Direksiyon (STM32) USB portunda bulunamadı. Kartın USB kablosunun takılı olduğundan ve yeni firmware'in yüklendiğinden emin olun. Cihaz takıldığında uygulama otomatik bağlanır.",
+          subtitle: "CİHAZ BAĞLANTISI",
+          content: "Bağlı bir direksiyon cihazı algılanamadı. Cihazın bilgisayara bağlı ve açık olduğundan emin olun. Cihaz takıldığında uygulama otomatik olarak bağlanır.",
           confirmText: "TAMAM",
           cancelText: null
         });
@@ -2867,22 +3195,29 @@ Komut girmeye hazir...
       const cockpitBtn = document.getElementById('deviceConnectBtn');
       if (cockpitBtn) {
         if (status) {
-          cockpitBtn.innerText = " BAĞLANDI (USB SERIAL)";
+          cockpitBtn.innerText = "CİHAZ BAĞLI";
           cockpitBtn.classList.add('connected');
         } else {
-          cockpitBtn.innerText = " CİHAZA BAĞLAN (USB SERIAL)";
+          cockpitBtn.innerText = "CİHAZA BAĞLAN";
           cockpitBtn.classList.remove('connected');
         }
+      }
+
+      const pedalBadge = document.getElementById('pedalLiveStatusBadge');
+      if (pedalBadge) {
+        pedalBadge.innerText = status ? 'CANLI OKUMA AKTİF' : 'BAĞLANTI BEKLENİYOR';
+        pedalBadge.style.color = status ? '#2ecc71' : '#ffb703';
+        pedalBadge.style.background = status ? 'rgba(46,204,113,0.15)' : 'rgba(255,183,3,0.15)';
       }
 
       if (status) {
         dot.style.background = "#2ecc71";
         dot.style.boxShadow = "0 0 8px #2ecc71";
-        text.innerText = "BAĞLANDI: OPENFFBOARD HARDWARE";
+        text.innerText = "CİHAZ BAĞLI VE HAZIR";
       } else {
         dot.style.background = "var(--text-muted)";
         dot.style.boxShadow = "none";
-        text.innerText = "BAĞLANTI BEKLENİYOR (USB SERIAL)";
+        text.innerText = "CİHAZ BAĞLANTISI BEKLENİYOR";
       }
 
       if (!isLedManualTest) {
@@ -2940,16 +3275,19 @@ Komut girmeye hazir...
     setWheelAngle(0.0);
     updateLedVisuals('disconnected');
 
-    // MODAL DIALOGS (SHARED FOR DEVICE AND SUBMODULE)
+    // MODAL DIALOGS (SHARED FOR DEVICE, SUBMODULE AND WIRELESS)
     function openAddModal(targetType) {
-      currentModalTarget = targetType;
+      currentModalTarget = targetType || 'device';
       document.getElementById('addModal').classList.add('active');
-      if (targetType === 'submodule') {
-        document.getElementById('modalAutoTitle').innerText = "Alt Modül / Pin Portu Taranıyor...";
+      if (targetType === 'wireless') {
+        switchModalTab('wireless');
+      } else if (targetType === 'submodule') {
+        document.getElementById('modalAutoTitle').innerText = "Alt Cihaz Taranıyor...";
+        switchModalTab('auto');
       } else {
-        document.getElementById('modalAutoTitle').innerText = "USB Portu Taranıyor...";
+        document.getElementById('modalAutoTitle').innerText = "Cihaz Taranıyor...";
+        switchModalTab('auto');
       }
-      switchModalTab('auto');
     }
 
     function closeAddModal() {
@@ -2958,21 +3296,56 @@ Komut girmeye hazir...
 
     function switchModalTab(tab) {
       const autoPane = document.getElementById('modalAutoPane');
+      const wirelessPane = document.getElementById('modalWirelessPane');
       const manualPane = document.getElementById('modalManualPane');
       const autoBtn = document.getElementById('tabAutoBtn');
+      const wirelessBtn = document.getElementById('tabWirelessBtn');
       const manualBtn = document.getElementById('tabManualBtn');
 
-      if (tab === 'auto') {
-        autoPane.style.display = 'block';
-        manualPane.style.display = 'none';
-        autoBtn.classList.add('active');
-        manualBtn.classList.remove('active');
-      } else {
-        autoPane.style.display = 'none';
-        manualPane.style.display = 'block';
-        manualBtn.classList.add('active');
-        autoBtn.classList.remove('active');
+      if (autoPane) autoPane.style.display = (tab === 'auto') ? 'block' : 'none';
+      if (wirelessPane) wirelessPane.style.display = (tab === 'wireless') ? 'block' : 'none';
+      if (manualPane) manualPane.style.display = (tab === 'manual') ? 'block' : 'none';
+
+      if (autoBtn) autoBtn.classList.toggle('active', tab === 'auto');
+      if (wirelessBtn) wirelessBtn.classList.toggle('active', tab === 'wireless');
+      if (manualBtn) manualBtn.classList.toggle('active', tab === 'manual');
+    }
+
+    async function scanAndAddWirelessAccessory() {
+      const sel = document.getElementById('newWirelessType');
+      const wType = sel ? sel.value : 'wheel_rim';
+      const labelMap = {
+        wheel_rim: 'KABLOSUZ DİREKSİYON TUŞ TAKIMI',
+        handbrake: 'KABLOSUZ EL FRENİ',
+        buttonbox: 'KABLOSUZ DÜĞME KUTUSU',
+        shifter: 'KABLOSUZ VİTES APARATI'
+      };
+      const friendlyName = labelMap[wType] || 'KABLOSUZ AKSESUAR';
+
+      const st = await refreshNrf24Status(false);
+      const newMod = {
+        id: "submod_w_" + Date.now(),
+        name: friendlyName,
+        code: "KABLOSUZ",
+        type: wType
+      };
+      if (!userSubModules.some(m => m.name === friendlyName)) {
+        userSubModules.push(newMod);
+        localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
+        renderSubModules();
       }
+      closeAddModal();
+
+      const receiverActive = st && st.hw_present;
+      showHubModal({
+        icon: "",
+        title: receiverActive ? "KABLOSUZ AKSESUAR EŞLEŞTİRİLDİ" : "KABLOSUZ AKSESUAR EKLENDİ",
+        subtitle: "KABLOSUZ BAĞLANTI",
+        content: receiverActive
+          ? `<b>${friendlyName}</b> kablosuz alıcı üzerinden algılandı ve direksiyon sisteminize eklendi.`
+          : `<b>${friendlyName}</b> sol menüye eklendi. Cihazınıza kablosuz alıcı taktığınızda otomatik olarak aktifleşecektir.`,
+        confirmText: "TAMAM"
+      });
     }
 
     async function autoDetectUsbDevice() {
@@ -2982,8 +3355,8 @@ Komut girmeye hazir...
         showHubModal({
           icon: "",
           title: "CİHAZ BULUNAMADI",
-          subtitle: "USB TARAMA SONUCU",
-          content: "USB üzerinde OpenFFBoard / G29 / STM32 aygıtı bulunamadı. Klavye, fare gibi diğer aygıtlar bilinçli olarak yok sayılır. Kartın USB kablosunu kontrol edin; takılınca uygulama otomatik bağlanır.",
+          subtitle: "CİHAZ TARAMA SONUCU",
+          content: "Bağlı bir direksiyon veya alt cihaz algılanamadı. Cihazın bilgisayara bağlı olduğundan emin olun; takıldığında uygulama otomatik olarak bağlanır.",
           confirmText: "TAMAM",
           cancelText: null
         });
@@ -2993,29 +3366,29 @@ Komut girmeye hazir...
 
       if (currentModalTarget === 'submodule') {
         if (!userSubModules.some(m => m.code === devCode)) {
-          userSubModules.push({ id: "submod_" + Date.now(), name: `DIY MODÜL (${devCode})`, code: devCode, type: "custom" });
+          userSubModules.push({ id: "submod_" + Date.now(), name: `EK MODÜL`, code: devCode, type: "custom" });
           localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
           renderSubModules();
         }
         closeAddModal();
         showHubModal({
-          icon: "", title: "ALT MODÜL BAĞLANDI", subtitle: "DİREKSİYON EKOSİSTEMİ",
-          content: `Alt modül tanındı ve otomatik olarak bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
+          icon: "", title: "ALT CİHAZ BAĞLANDI", subtitle: "DİREKSİYON EKOSİSTEMİ",
+          content: `Alt cihaz algılandı ve otomatik olarak bağlandı.`,
           confirmText: "TAMAM"
         });
       } else {
         const exists = userDevices.some(d => (d.code || "").toUpperCase() === devCode);
         if (!exists) {
-          userDevices.push({ id: "dev_" + Date.now(), name: `YENİ DONANIM (${devCode})`, code: devCode, type: "custom", status: "online" });
+          userDevices.push({ id: "dev_" + Date.now(), name: `DİREKSİYON CİHAZI`, code: devCode, type: "custom", status: "online" });
           localStorage.setItem("ghub_devices", JSON.stringify(userDevices));
         }
         renderDevices();
         closeAddModal();
         showHubModal({
-          icon: "", title: "CİHAZ TANINDI VE BAĞLANDI", subtitle: "USB DONANIM AKTİF",
+          icon: "", title: "CİHAZ TANINDI VE BAĞLANDI", subtitle: "CİHAZ AKTİF",
           content: exists
-            ? `Cihaz zaten listede, bağlantı kuruldu.<br><br><b>Donanım Kodu:</b> ${devCode}`
-            : `Yeni donanım başarıyla algılandı ve sisteme otomatik bağlandı!<br><br><b>Donanım Kodu:</b> ${devCode}`,
+            ? `Cihazınız zaten listede kayıtlı, bağlantı başarıyla kuruldu.`
+            : `Yeni cihazınız başarıyla algılandı ve sisteme otomatik bağlandı.`,
           confirmText: "TAMAM"
         });
       }
@@ -3023,15 +3396,16 @@ Komut girmeye hazir...
 
     function saveManualDevice() {
       const name = document.getElementById('newDevName').value.trim();
-      const code = document.getElementById('newDevCode').value.trim();
+      const rawCode = document.getElementById('newDevCode').value.trim();
+      const code = rawCode || "ÖZEL";
       const type = document.getElementById('newDevType').value;
 
-      if (!name || !code) {
+      if (!name) {
         showHubModal({
           icon: "",
           title: "EKSİK BİLGİ",
-          subtitle: "DONANIM GİRİŞİ",
-          content: "Lütfen donanım ismi ve donanım kodunu eksiksiz doldurun!",
+          subtitle: "CİHAZ GİRİŞİ",
+          content: "Lütfen eklemek istediğiniz cihaz veya aksesuarın adını yazın.",
           confirmText: "ANLADIM"
         });
         return;
@@ -3050,10 +3424,10 @@ Komut girmeye hazir...
         closeAddModal();
         showHubModal({
           icon: "",
-          title: "ALT MODÜL KAYDEDİLDİ",
+          title: "ALT CİHAZ KAYDEDİLDİ",
           subtitle: "DİREKSİYON EKOSİSTEMİ",
-          content: `<b>${name}</b> alt modülü direksiyon sisteminize eklendi.<br><br><b>Kod:</b> ${code}`,
-          confirmText: "HARİKA"
+          content: `<b>${name}</b> alt cihazı direksiyon sisteminize eklendi.`,
+          confirmText: "TAMAM"
         });
       } else {
         const newDev = {
@@ -3070,9 +3444,9 @@ Komut girmeye hazir...
         showHubModal({
           icon: "",
           title: "CİHAZ KAYDEDİLDİ",
-          subtitle: "DONANIM EKOSİSTEMİ",
-          content: `<b>${name}</b> cihazı başarıyla oluşturuldu ve eklendi.<br><br><b>Donanım Kodu:</b> ${code}`,
-          confirmText: "HARİKA"
+          subtitle: "CİHAZ EKOSİSTEMİ",
+          content: `<b>${name}</b> cihazı başarıyla eklendi.`,
+          confirmText: "TAMAM"
         });
       }
     }
@@ -3129,7 +3503,7 @@ Komut girmeye hazir...
       document.getElementById('hubModalOverlay').classList.remove('active');
     }
 
-    const CURRENT_APP_VERSION = "v3.16.0";
+    const CURRENT_APP_VERSION = "v3.17.0";
     let lastSerialResponse = "";
 
     function showCustomAlert(opts) {
@@ -3190,7 +3564,7 @@ Komut girmeye hazir...
               badgeEl.style.color = 'var(--red)';
               badgeEl.style.background = 'rgba(231,76,60,0.15)';
             }
-            if (descEl) descEl.innerText = st.error || 'Firmware paketi doğrulanamadı.';
+            if (descEl) descEl.innerText = st.error || 'Yazılım paketi doğrulanamadı.';
             return st;
           }
           if (!st.connected) {
@@ -3200,7 +3574,7 @@ Komut girmeye hazir...
               badgeEl.style.color = '#ffb703';
               badgeEl.style.background = 'rgba(255,183,3,0.15)';
             }
-            if (descEl) descEl.innerText = 'Cihazdaki sürümü okumak ve güncellemek için direksiyonun USB kablosunu takın.';
+            if (descEl) descEl.innerText = 'Cihazdaki sürümü okumak ve güncellemek için cihazı bilgisayara bağlayın.';
             if (btnEl) btnEl.innerText = 'GÜNCELLE';
             return st;
           }
@@ -3211,7 +3585,7 @@ Komut girmeye hazir...
               badgeEl.style.color = '#2ecc71';
               badgeEl.style.background = 'rgba(46,204,113,0.15)';
             }
-            if (descEl) descEl.innerText = `Cihazınızda v${st.device_version} yüklü. Tek tuşla v${st.hex_version} sürümüne güncelleyebilirsiniz (${st.hex_filename}).`;
+            if (descEl) descEl.innerText = `Cihazınızda v${st.device_version} yüklü. Tek tuşla v${st.hex_version} sürümüne güncelleyebilirsiniz.`;
             if (btnEl) btnEl.innerText = `v${st.hex_version} SÜRÜMÜNE GÜNCELLE`;
           } else if (st.same_version) {
             if (badgeEl) {
@@ -3235,7 +3609,6 @@ Komut girmeye hazir...
         }
       }
 
-      // Fallback when running in standalone browser mode without native bridge
       if (!isConnected) {
         if (curEl) curEl.innerText = 'Cihaz Bağlı Değil';
         if (badgeEl) {
@@ -3260,8 +3633,8 @@ Komut girmeye hazir...
       setFwInlineAlert(null, '');
 
       const api = bridgeApi();
-      if (!api || !api.perform_device_firmware_update) {
-        setFwInlineAlert('error', 'Otomatik cihaz güncelleme özelliği masaüstü sürücü (VelocityControlHub.exe) üzerinden çalışır.');
+      if (!api || (!api.start_device_firmware_update && !api.perform_device_firmware_update)) {
+        setFwInlineAlert('error', 'Otomatik cihaz güncelleme özelliği masaüstü uygulaması üzerinden çalışır.');
         return;
       }
 
@@ -3273,23 +3646,7 @@ Komut girmeye hazir...
 
       stopPolling();
 
-      const pollProg = setInterval(async () => {
-        try {
-          if (api.get_firmware_update_progress) {
-            const p = await api.get_firmware_update_progress();
-            if (p && typeof p.percent === 'number') {
-              if (progBar) progBar.style.width = `${p.percent}%`;
-              if (progPct) progPct.innerText = `${p.percent}%`;
-              if (progTxt && p.message) progTxt.innerText = p.message;
-            }
-          }
-        } catch (e) {}
-      }, 200);
-
-      try {
-        const res = await api.perform_device_firmware_update(null, !!forceReinstall);
-        clearInterval(pollProg);
-
+      const handleUpdateResult = async (res) => {
         if (res && res.success) {
           if (progBar) progBar.style.width = '100%';
           if (progPct) progPct.innerText = '100%';
@@ -3310,11 +3667,35 @@ Komut girmeye hazir...
           if (isConnected) startPolling();
           await refreshFirmwarePaneStatus();
         }
+        if (btn) btn.disabled = false;
+      };
+
+      try {
+        if (api.start_device_firmware_update) {
+          await api.start_device_firmware_update(null, !!forceReinstall);
+          const pollProg = setInterval(async () => {
+            try {
+              const p = await api.get_firmware_update_progress();
+              if (p) {
+                if (typeof p.percent === 'number') {
+                  if (progBar) progBar.style.width = `${p.percent}%`;
+                  if (progPct) progPct.innerText = `${p.percent}%`;
+                }
+                if (progTxt && p.message) progTxt.innerText = p.message;
+                if (!p.running && p.result) {
+                  clearInterval(pollProg);
+                  await handleUpdateResult(p.result);
+                }
+              }
+            } catch (e) {}
+          }, 220);
+        } else {
+          const res = await api.perform_device_firmware_update(null, !!forceReinstall);
+          await handleUpdateResult(res);
+        }
       } catch (err) {
-        clearInterval(pollProg);
         if (progWrap) progWrap.style.display = 'none';
         setFwInlineAlert('error', 'Güncelleme işlemi sırasında bağlantı hatası oluştu: ' + (err.message || err));
-      } finally {
         if (btn) btn.disabled = false;
       }
     }
@@ -3322,15 +3703,15 @@ Komut girmeye hazir...
     async function checkDeviceFirmware() {
       if (!isConnected) {
         showHubModal({
-          icon: "", title: "STM32 KARTI BAĞLI DEĞİL", subtitle: "DONANIM BAĞLANTISI GEREKLİ",
-          content: "Karttaki firmware'i sorgulamak için önce <b>CİHAZA BAĞLAN (USB SERIAL)</b> butonuyla kartı bağlayın.",
+          icon: "", title: "CİHAZ BAĞLI DEĞİL", subtitle: "BAĞLANTI GEREKLİ",
+          content: "Cihaz yazılımını sorgulamak için önce <b>CİHAZA BAĞLAN</b> butonuyla cihazı bağlayın.",
           confirmText: "ANLADIM", cancelText: null
         });
         return;
       }
       showHubModal({
-        icon: "", title: "STM32 DONANIM SORGULANIYOR...", subtitle: "USB SERIAL PROTOCOL (115200 BAUD)",
-        content: "<div style='text-align:center; padding:12px 0;'>Kart yanıtı bekleniyor (sys.swver?, sys.hwtype?)...</div>",
+        icon: "", title: "CİHAZ SORGULANIYOR...", subtitle: "DONANIM KONTROLÜ",
+        content: "<div style='text-align:center; padding:12px 0;'>Cihaz yanıtı bekleniyor...</div>",
         confirmText: "LÜTFEN BEKLEYİN...", cancelText: null
       });
       const sw = await queryCmd("sys.swver?", 2000);
@@ -3339,28 +3720,28 @@ Komut girmeye hazir...
       const main = await queryCmd("sys.main?", 1500);
       if (sw === null && hw === null) {
         showHubModal({
-          icon: "", title: "YANIT ALINAMADI", subtitle: "SERİAL KOMUT YANITSIZ",
-          content: "Kart seri porta bağlı ama komutlara yanıt vermiyor. Yeni firmware'i (.hex) yüklediğinizden emin olun.",
+          icon: "", title: "YANIT ALINAMADI", subtitle: "CİHAZ YANITSIZ",
+          content: "Cihaz bağlı ancak komutlara yanıt vermiyor. Cihaz yazılımını güncellediğinizden emin olun.",
           confirmText: "KAPAT", cancelText: null
         });
         return;
       }
-      const profNames = ["OpenFFBoard Native", "Logitech G29", "Moza R5"];
+      const profNames = ["Standart Uyumluluk Modu", "Logitech G29 Uyumluluk Modu", "Moza R5 Uyumluluk Modu"];
       const row = (k, v, c) => `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-muted);">${k}:</span><span style="color:${c}; font-weight:800;">${v}</span></div>`;
       showHubModal({
-        icon: "", title: "STM32 FİRMWARE YANITI ALINDI", subtitle: "CANLI HARDWARE SENKRONİZASYONU",
+        icon: "", title: "CİHAZ YANITI ALINDI", subtitle: "CANLI CİHAZ BİLGİSİ",
         content:
           row("Donanım", hw || "-", "#2ecc71") +
-          row("Firmware sürümü", sw || "-", "var(--accent)") +
-          row("Ana sınıf (1 = FFB Wheel)", main || "-", "#fff") +
-          row("Kimlik profili", profNames[parseInt(prof)] || (prof || "-"), "#00d2ff"),
+          row("Cihaz Yazılım Sürümü", sw || "-", "var(--accent)") +
+          row("Ana Mod", main || "-", "#fff") +
+          row("Uyumluluk Profili", profNames[parseInt(prof)] || (prof || "-"), "#00d2ff"),
         confirmText: "TAMAM", cancelText: null
       });
     }
 
     function triggerManualDfuBootloader() {
       sendCmd("sys.dfu?;sys.dfu=1");
-      logDevTerminal("[DFU] Cihaza yazılımsal DFU bootloader komutu gönderildi (sys.dfu=1).");
+      logDevTerminal("[DFU] Cihaza yazılımsal bootloader komutu gönderildi (sys.dfu=1).");
     }
 
     function onDevPprInputChange(pprVal) {
@@ -3483,7 +3864,7 @@ Komut girmeye hazir...
             icon: "",
             title: "GÜNCELLEME DENETLENEMEDİ",
             subtitle: "BAĞLANTI HATASI",
-            content: "GitHub güncelleme sunucusuna ulaşılamadı. İnternet bağlantınızı kontrol edin.",
+            content: "Güncelleme sunucusuna ulaşılamadı. İnternet bağlantınızı kontrol edin.",
             confirmText: "TAMAM"
           });
         }
@@ -3529,14 +3910,14 @@ Komut girmeye hazir...
           clearInterval(timer);
           if (res && res.success) {
             pBar.style.width = '100%';
-            if (statusText) statusText.innerText = ' Güncelleme tamamlandı! Yeniden başlatılıyor...';
+            if (statusText) statusText.innerText = 'Güncelleme tamamlandı! Yeniden başlatılıyor...';
             setTimeout(() => {
               if (window.pywebview && window.pywebview.api && window.pywebview.api.reload_window) {
                 window.pywebview.api.reload_window();
               } else {
                 location.reload(true);
               }
-            }, 800);
+            }, 600);
           } else {
             showHubModal({
               icon: "",
@@ -3546,22 +3927,22 @@ Komut girmeye hazir...
               confirmText: "TARAYICIDA AÇ",
               cancelText: "Kapat",
               onConfirm: () => {
-                window.open(downloadUrl, '_blank');
+                openExternalUrl(downloadUrl);
                 closeHubModal();
               }
             });
           }
         } catch (e) {
           clearInterval(timer);
-          window.open(downloadUrl, '_blank');
+          openExternalUrl(downloadUrl);
         }
       } else {
         clearInterval(timer);
         pBar.style.width = '100%';
-        if (statusText) statusText.innerText = ' Tamamlandı! Sayfa yenileniyor...';
+        if (statusText) statusText.innerText = 'Tamamlandı! Sayfa yenileniyor...';
         setTimeout(() => {
           location.reload();
-        }, 800);
+        }, 600);
       }
     }
 
@@ -3571,14 +3952,30 @@ Komut girmeye hazir...
       document.documentElement.style.setProperty('--accent-glow', color + '44');
     }
 
-    // Açılışta sürüm etiketlerini ve güncellemeyi doğrula
+    // Açılışta sürüm etiketlerini, pedal ayarlarını ve güncellemeyi doğrula
     window.addEventListener('DOMContentLoaded', () => {
       const descEl = document.getElementById('settingAppVersionDesc');
-      if (descEl) descEl.innerText = `Mevcut Sürüm: ${CURRENT_APP_VERSION} (Production Channel).`;
+      if (descEl) descEl.innerText = `Mevcut Sürüm: ${CURRENT_APP_VERSION} (Kararlı Sürüm).`;
       const footerEl = document.getElementById('footerAppVersionText');
-      if (footerEl) footerEl.innerText = `VELOCITY CONTROL HUB | OPENFFBOARD ENGINE ${CURRENT_APP_VERSION}`;
+      if (footerEl) footerEl.innerText = `VELOCITY CONTROL HUB | SÜRÜM ${CURRENT_APP_VERSION}`;
       const aboutEl = document.getElementById('aboutVersionText');
-      if (aboutEl) aboutEl.innerText = `${CURRENT_APP_VERSION} (Production Stable)`;
+      if (aboutEl) aboutEl.innerText = `${CURRENT_APP_VERSION} (Kararlı Sürüm)`;
+
+      // Restore pedal sliders
+      const slGas = document.getElementById('slGasDz');
+      const bgGas = document.getElementById('badgeGasDz');
+      if (slGas) slGas.value = pedalSettings.gasDz;
+      if (bgGas) bgGas.innerText = pedalSettings.gasDz + '%';
+
+      const slBrk = document.getElementById('slBrakeGamma');
+      const bgBrk = document.getElementById('badgeBrakeGamma');
+      if (slBrk) slBrk.value = pedalSettings.brakeGamma;
+      if (bgBrk) bgBrk.innerText = Number(pedalSettings.brakeGamma).toFixed(1);
+
+      const slClt = document.getElementById('slClutchBite');
+      const bgClt = document.getElementById('badgeClutchBite');
+      if (slClt) slClt.value = pedalSettings.clutchBite;
+      if (bgClt) bgClt.innerText = pedalSettings.clutchBite + '%';
 
       setTimeout(() => {
         checkAppUpdates(false);
@@ -3590,7 +3987,7 @@ Komut girmeye hazir...
         icon: "",
         title: "TÜM VERİLERİ SIFIRLA",
         subtitle: "DİKKAT: BU İŞLEM GERİ ALINAMAZ",
-        content: `Kayıtlı tüm özel DIY donanımları, cihaz kodlarını ve ayarları sıfırlamak istediğinize emin misiniz?`,
+        content: `Kayıtlı tüm ek cihazları ve özel ayarları sıfırlamak istediğinize emin misiniz?`,
         confirmText: "EVET, SIFIRLA",
         cancelText: "İptal",
         onConfirm: () => {
@@ -3644,10 +4041,10 @@ Komut girmeye hazir...
 
       setDeveloperMode(devActive, false);
       refreshFirmwarePaneStatus();
-      refreshNrf24Status();
+      refreshNrf24Status(false);
     }
 
-    async function refreshNrf24Status() {
+    async function refreshNrf24Status(showFeedbackModal = false) {
       const pillEl = document.getElementById('nrfStatusPill');
       const stateEl = document.getElementById('nrfSimpleStateText');
       const pktEl = document.getElementById('nrfSimplePacketsText');
@@ -3663,18 +4060,18 @@ Komut girmeye hazir...
           const st = await api.get_nrf24_status();
           if (st && st.success) {
             if (stateEl) stateEl.innerText = st.summary || 'Standart Kablolu Mod';
-            if (pktEl) pktEl.innerText = `${st.rx_packets || 0} Paket (${st.hw_present ? 'Aktif' : 'Beklemede'})`;
+            if (pktEl) pktEl.innerText = st.hw_present ? `Aktif (${st.rx_packets || 0} Paket)` : 'Hazır (Kablolu Mod)';
             if (pillEl) {
               if (!st.device_connected) {
                 pillEl.innerText = 'CİHAZ BAĞLI DEĞİL';
                 pillEl.style.color = '#ffb703';
                 pillEl.style.background = 'rgba(255,183,3,0.15)';
               } else if (st.hw_present) {
-                pillEl.innerText = 'MODÜL AKTİF';
+                pillEl.innerText = 'KABLOSUZ ALICI AKTİF';
                 pillEl.style.color = '#2ecc71';
                 pillEl.style.background = 'rgba(46,204,113,0.15)';
               } else {
-                pillEl.innerText = 'KABLOLU MOD (nRF24 TAKILI DEĞİL)';
+                pillEl.innerText = 'KABLOLU MOD';
                 pillEl.style.color = 'var(--accent)';
                 pillEl.style.background = 'rgba(0,180,216,0.15)';
               }
@@ -3688,9 +4085,29 @@ Komut girmeye hazir...
               const bmask = '0x' + Number(st.buttons_mask || 0).toString(16).toUpperCase().padStart(8, '0');
               rawEl.innerText = `STATUS_REG: ${sreg} | IRQ(PB9): ${st.irq_pin} | BTN_MASK: ${bmask} | FREQ: ${st.freq_mhz} MHz`;
             }
+            if (showFeedbackModal) {
+              showCustomAlert({
+                title: st.hw_present ? "KABLOSUZ ALICI AKTİF" : "KABLOSUZ TARAMA TAMAMLANDI",
+                subtitle: "KABLOSUZ BAĞLANTI DURUMU",
+                content: st.hw_present
+                  ? "Kablosuz alıcı aktif ve aksesuarlarınızla iletişim kurmaya hazır."
+                  : (st.device_connected
+                    ? "Cihazınız şu anda standart kablolu modda çalışıyor. Kablosuz alıcı takıldığında kablosuz aksesuarlar otomatik olarak devreye girer."
+                    : "Kablosuz aksesuar taraması için önce ana cihazınızı bilgisayara bağlayın.")
+              });
+            }
             return st;
           }
         } catch (e) {}
+      }
+      if (showFeedbackModal) {
+        showCustomAlert({
+          title: "KABLOSUZ TARAMA TAMAMLANDI",
+          subtitle: "KABLOSUZ BAĞLANTI DURUMU",
+          content: isConnected
+            ? "Cihazınız standart kablolu modda çalışıyor."
+            : "Kablosuz aksesuarları taramak için önce cihazınızı bilgisayara bağlayın."
+        });
       }
       return null;
     }
@@ -3709,14 +4126,14 @@ Komut girmeye hazir...
       const api = bridgeApi();
       if (api && api.configure_nrf24) {
         await api.configure_nrf24(en, ch, rate, pa);
-        await refreshNrf24Status();
+        await refreshNrf24Status(false);
       } else if (isConnected) {
         sendCmd(`sys.nrfen=${en ? 1 : 0};sys.nrfch=${ch};sys.nrfrate=${rate};sys.nrfpa=${pa}`);
       }
       showCustomAlert({
-        title: "nRF24L01 AYARLARI KAYDEDİLDİ",
-        subtitle: "KABLOSUZ ALICI YAPILANDIRMASI",
-        content: `nRF24L01 parametreleri güncellendi (Kanal: ${ch} / ${2400 + ch} MHz).`
+        title: "RF AYARLARI KAYDEDİLDİ",
+        subtitle: "GELİŞTİRİCİ KABLOSUZ YAPILANDIRMASI",
+        content: `Kablosuz RF parametreleri güncellendi (Kanal: ${ch} / ${2400 + ch} MHz).`
       });
     }
 
@@ -3815,7 +4232,7 @@ Komut girmeye hazir...
         type: "info",
         title: "GELİŞTİRİCİ MODU KAPATILDI",
         subtitle: "SADE KULLANICI GÖRÜNÜMÜ",
-        content: "Geliştirici seçenekleri gizlendi. Enkoder pulse (CPR) ve FFB ayarlarınız olduğu gibi korunmaya devam etmektedir."
+        content: "Geliştirici seçenekleri gizlendi. Enkoder çözünürlüğü ve FFB ayarlarınız olduğu gibi korunmaya devam etmektedir."
       });
       const devPane = document.getElementById('pane-dev');
       if (devPane && devPane.classList.contains('active')) {
@@ -3841,7 +4258,7 @@ Komut girmeye hazir...
 
     function toggleDevDisableMotor(checked) {
       sendCmd(checked ? "axis.power=0" : "axis.power=10000");
-      logDevTerminal(`[MOTOR] BTS7960 Tork Cikisi: ${checked ? 'TAMAMEN KESILDI (0 Nm / KILL)' : 'ETKIN'}`);
+      logDevTerminal(`[MOTOR] Tork Cikisi: ${checked ? 'TAMAMEN KESILDI (0 Nm / KILL)' : 'ETKIN'}`);
       if (checked) {
         logDevTerminal(`[PWM] PA8 (LPWM) = 0%, PA9 (RPWM) = 0%`);
       }
@@ -3865,7 +4282,7 @@ Komut girmeye hazir...
       logDevTerminal(`[MOD] YALNIZCA ENKODER TEST MODU BASLATILDI`);
       logDevTerminal(`- Motor tork cikisi kapatildi (axis.power=0).`);
       logDevTerminal(`- Otomatik kalibrasyon kapatildi.`);
-      logDevTerminal(`- 600 PPR optik enkoder portlari (PB4/PB5) dinleniyor.`);
+      logDevTerminal(`- Enkoder portlari (PB4/PB5) dinleniyor.`);
       logDevTerminal(`Direksiyonu elle dondurerek palsleri izleyebilirsiniz.`);
       logDevTerminal(`========================================`);
 
@@ -3873,7 +4290,7 @@ Komut girmeye hazir...
         type: "success",
         title: "ENKODER TEST MODU AKTIF",
         subtitle: "MOTOR DEVRE DISI",
-        content: "Motor tork cikisi ve kalibrasyon guvenle kapatildi.<br>Artik direksiyonu elle cevirerek donanimsal pals sayacini (0-2400 ticks) ve aci degisimini saf sekilde test edebilirsiniz."
+        content: "Motor tork cikisi ve kalibrasyon guvenle kapatildi.<br>Artik direksiyonu elle cevirerek donanimsal pals sayacini ve aci degisimini saf sekilde test edebilirsiniz."
       });
     }
 
@@ -3894,7 +4311,7 @@ Komut girmeye hazir...
     function testMotorPwmPulse() {
       const slider = document.getElementById('devPwmSlider');
       const val = slider ? parseInt(slider.value) : 0;
-      logDevTerminal(`[TEST] BTS7960 Manuel Darbe Sinyali Gonderildi: ${val}% (1 Saniye)`);
+      logDevTerminal(`[TEST] Manuel Darbe Sinyali Gonderildi: ${val}% (1 Saniye)`);
       if (val > 0) {
         logDevTerminal(`-> PA9 (RPWM) = %${val}, PA8 (LPWM) = 0`);
       } else if (val < 0) {
