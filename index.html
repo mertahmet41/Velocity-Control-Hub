@@ -1127,8 +1127,6 @@
                   <button class="sub-tab-btn" onclick="switchSubPane('safety')">MOTOR & GÜVENLİK</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('led')">DURUM IŞIĞI</button>
                   <button class="sub-tab-btn" onclick="switchSubPane('profile')">OYUN UYUMLULUĞU</button>
-                  <button class="sub-tab-btn" onclick="switchSubPane('firmware'); refreshFirmwarePaneStatus();">CİHAZ GÜNCELLEME</button>
-                  <button class="sub-tab-btn" id="subTabDev" style="display:none; color:#ffb703; border-color:rgba(255,183,3,0.4);" onclick="switchSubPane('dev')">[DEV] GELİŞTİRİCİ AYARLARI</button>
                 </div>
 
                 <!-- PANE 1: AXIS & DRIVING PROFILES -->
@@ -1249,6 +1247,10 @@
                     <div class="control-desc">Düşük hızlarda sürtünme hissinin devreye girme hassasiyeti.</div>
                     <input type="range" min="0" max="100" value="10" id="slFricRamp" oninput="updateVal('badgeFricRamp', this.value, '%', 'fx.frictionPctSpeedToRampup')">
                   </div>
+
+                  <div class="btn-row" style="margin-top: 18px;">
+                    <button class="action-btn btn-ghost" onclick="sendCmd('axis.zeroenc')">MERKEZ KALİBRASYONU (DİREKSİYON MERKEZİNİ SIFIRLA)</button>
+                  </div>
                 </div>
 
                 <!-- PANE 3: MOTOR & GÜVENLİK (DİREKSİYONA ÖZEL) -->
@@ -1297,131 +1299,124 @@
                   </div>
                 </div>
 
-                <!-- PANE 4: KASA DURUM IŞIĞI & TELEMETRİ MONİTÖRÜ -->
+                <!-- PANE 4: KASA RGB DURUM IŞIĞI (SADECE 2 MOD) -->
                 <div class="sub-pane" id="pane-led">
-                  <!-- REALISTIC LIVE LED SIMULATOR & TEST BOX -->
                   <div style="background: linear-gradient(135deg, rgba(16, 20, 28, 0.95), rgba(11, 13, 17, 0.98)); border: 1px solid rgba(0, 180, 216, 0.35); border-radius: 14px; padding: 20px; margin-bottom: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
                       <div>
-                        <div style="font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.5px;"> CANLI DURUM IŞIĞI ÖNİZLEMESİ</div>
-                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Cihaz üzerindeki durum ışığının canlı görünümü</div>
+                        <div style="font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.5px;">CANLI DURUM IŞIĞI ÖNİZLEMESİ</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Cihaz üzerindeki dahili RGB LED durumu</div>
                       </div>
-                      <span class="control-badge" id="badgeLedStateDesc" style="background: rgba(255, 170, 0, 0.15); color: #ffa726; border: 1px solid rgba(255, 170, 0, 0.3);">SARI: BEKLENİYOR</span>
+                      <span class="control-badge" id="badgeLedStateDesc" style="background: rgba(0, 180, 216, 0.15); color: var(--accent); border: 1px solid rgba(0, 180, 216, 0.3);">DURUM MODU AKTİF</span>
                     </div>
 
-                    <!-- VISUAL LED BULB BEZEL -->
+                    <!-- VISUAL LED PREVIEW -->
                     <div style="display:flex; align-items:center; justify-content:center; gap: 24px; padding: 24px 0; background: rgba(0,0,0,0.35); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); position: relative; overflow: hidden;">
                       <div class="led-preview-bezel">
                         <div class="led-preview-core" id="ledPreviewCore"></div>
                         <div class="led-preview-glow" id="ledPreviewGlow"></div>
                       </div>
                       <div style="max-width: 320px;">
-                        <div style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 4px;" id="ledSimStatusTitle">Bağlantı Bekleniyor</div>
-                        <div style="font-size: 11px; color: #8e95a5; line-height: 1.4;" id="ledSimStatusDetail">Cihaz bağlantısı bekleniyor. Durum ışığı yavaş nefes alma sarı animasyonu ile hazır bekliyor.</div>
-                      </div>
-                    </div>
-
-                    <!-- TEST & TRIGGER BUTTONS -->
-                    <div style="margin-top: 16px;">
-                      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;"> DURUMLARI CANLI TEST ET:</div>
-                      <div style="display:flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('disconnected')">[BEKLEMEDE] Bağlantı Bekleme</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('connected')">[HAZIR] Normal Çalışma</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #ff3333; color: #ff5252;" onclick="testLedAnimation('clipping')">[KRİTİK] Güç Sınırı Aşımı</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px; border-color: #f39c12; color: #f39c12;" onclick="testLedAnimation('load')">[UYARI] Yüksek Tork Yükü</button>
-                        <button class="action-btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="testLedAnimation('estop')">[DURDURMA] Acil Durdurma</button>
-                        <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 11px; flex: 0 0 auto;" onclick="testLedAnimation('auto')"> Canlı Cihaz Modu</button>
+                        <div style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 4px;" id="ledSimStatusTitle">Cihaz Durum Modu</div>
+                        <div style="font-size: 11px; color: #8e95a5; line-height: 1.4;" id="ledSimStatusDetail">Cihaz donanım ve bağlantı durumuna göre otomatik renk değiştirir.</div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- CONTROL 1: GENEL KASA LED MODU -->
-                  <div class="control-group">
+                  <!-- 2-MOD SEÇİMİ -->
+                  <div class="control-group" style="background:#191c22; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom:18px;">
                     <div class="control-header">
-                      <span class="control-name">Durum Işığı Çalışma Modu</span>
-                      <span class="control-badge" id="badgeLedMode">Akıllı Otomatik</span>
+                      <span class="control-name" style="color:var(--accent); font-size:14px;">RGB LED ÇALIŞMA MODU</span>
+                      <span class="control-badge" id="badgeActiveRgbMode">MOD 1: DURUM</span>
                     </div>
-                    <div class="control-desc">Işığın direksiyon durumlarına nasıl tepki vereceğini belirleyin.</div>
-                    <select class="select-box" style="margin-top: 8px;" id="caseLedModeSelect" onchange="setCaseLedMode(this.value)">
-                      <option value="smart" selected> Akıllı Durum Monitörü (Bekleme, Bağlantı, Güç Aşımı, Acil Durdurma)</option>
-                      <option value="clipping_only"> Sadece Aşırı Yükte Kırmızı Uyarı</option>
-                      <option value="ambient_breath"> Yumuşak Renk Geçişi (Ambient)</option>
-                      <option value="telemetry_load"> Tork Yükü Göstergesi (Yeşil - Sarı - Kırmızı)</option>
-                      <option value="solid_accent"> Sabit Tema Rengi</option>
-                      <option value="off"> Kapalı (Işık Devre Dışı)</option>
-                    </select>
+                    <div class="control-desc" style="margin-bottom:12px;">RGB ışık için 2 moddan birini seçin. Seçiminiz donanım hafızasına kalıcı olarak kaydedilir.</div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                      <button class="action-btn" id="btnRgbModeStatus" style="padding:14px; background:linear-gradient(135deg, #00b4d8, #0077b6); color:#fff; font-weight:800; border:none; border-radius:8px; cursor:pointer;" onclick="selectRgbMode(1)">
+                        MOD 1: CİHAZ DURUM IŞIĞI
+                      </button>
+                      <button class="action-btn btn-ghost" id="btnRgbModeUser" style="padding:14px; font-weight:800;" onclick="selectRgbMode(2)">
+                        MOD 2: ÖZEL KULLANICI RENGİ
+                      </button>
+                    </div>
                   </div>
 
-                  <!-- CONTROL 2: FFB AŞIMI (CLIPPING) ALARMI & HIZI -->
-                  <div class="control-group">
-                    <div class="control-header">
-                      <span class="control-name">Güç Sınırı Aşımı (Clipping) Uyarı Eşiği</span>
-                      <span class="control-badge" id="badgeClipThreshold">%92</span>
+                  <!-- MOD 1: DURUM AÇIKLAMA TABLOSU -->
+                  <div id="rgbStatusModeContainer" style="background:#191c22; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom:18px;">
+                    <div style="font-size:13px; font-weight:800; color:#fff; margin-bottom:10px;">DURUM MODU RENK EŞLEŞMESİ:</div>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+                      <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px;">
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:#00d2ff; box-shadow:0 0 8px #00d2ff;"></span>
+                        <b style="color:#00d2ff;">Camgöbeği (Cyan) Yan-Sön:</b>
+                        <span style="color:#caced8;">Açılış aşaması (İlk 10 saniye sistem hazırlığı)</span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px;">
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:#0055ff; box-shadow:0 0 8px #0055ff;"></span>
+                        <b style="color:#0055ff;">Mavi:</b>
+                        <span style="color:#caced8;">USB Bağlandı, Cihaz Hazır</span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px;">
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:#00e676; box-shadow:0 0 8px #00e676;"></span>
+                        <b style="color:#00e676;">Yeşil:</b>
+                        <span style="color:#caced8;">FFB & Motor Gücü Aktif (Oyunda)</span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px;">
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:#00e5ff; box-shadow:0 0 8px #00e5ff;"></span>
+                        <b style="color:#00e5ff;">Zümrüt:</b>
+                        <span style="color:#caced8;">Kablosuz Aksesuar Bağlandı</span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px;">
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:#ff9100; box-shadow:0 0 8px #ff9100;"></span>
+                        <b style="color:#ff9100;">Turuncu:</b>
+                        <span style="color:#caced8;">Kablosuz Bağlantı Yok / Beklemede</span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px;">
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:#ff1744; box-shadow:0 0 8px #ff1744;"></span>
+                        <b style="color:#ff1744;">Kırmızı:</b>
+                        <span style="color:#caced8;">Hata / Acil Durdurma / Aşırı Yük</span>
+                      </div>
                     </div>
-                    <div class="control-desc">Tork bu güç sınırını aştığında durum ışığı kırmızı yanıp sönerek aşırı yükü haber verir.</div>
-                    <input type="range" min="70" max="100" value="92" id="slClipThreshold" oninput="updateVal('badgeClipThreshold', this.value, '%', 'fx.clip_threshold')">
                   </div>
 
-                  <div class="control-group">
-                    <div class="control-header">
-                      <span class="control-name">Kırmızı Uyarı Yanıp Sönme Hızı</span>
-                      <span class="control-badge" id="badgeStrobeFreq">Hızlı Flaş</span>
+                  <!-- MOD 2: KULLANICI RENK SEÇİCİ KUTUSU -->
+                  <div id="rgbUserModeContainer" style="display:none; background:#191c22; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom:18px;">
+                    <div style="font-size:13px; font-weight:800; color:#fff; margin-bottom:8px;">ÖZEL RENK SEÇİMİ (KALICI KAYIT):</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:14px;">
+                      Dilediğiniz rengi seçin; cihaz bu rengi flash hafızasına kaydeder ve sonraki açılışlarda hatırlar.
                     </div>
-                    <div class="control-desc">Güç sınırı aşımı anındaki kırmızı ikaz ışığının yanıp sönme hızı.</div>
-                    <select class="select-box" style="margin-top: 8px;" id="strobeFreqSelect" onchange="setStrobeFreq(this.value)">
-                      <option value="fast" selected>Hızlı Flaşör (Anlık Uyarı)</option>
-                      <option value="medium">Orta Hızda Yan-Sön</option>
-                      <option value="breath">Yumuşak Kırmızı Nefes Alma</option>
-                    </select>
+                    
+                    <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+                      <input type="color" id="rgbColorInput" value="#00b4d8" style="width:54px; height:54px; border:none; border-radius:8px; cursor:pointer; background:none;" oninput="onUserColorPickerChange(this.value)">
+                      <div style="flex:1;">
+                        <div style="font-size:11px; font-weight:800; color:#fff; margin-bottom:4px;">SEÇİLEN RENK KODU:</div>
+                        <input type="text" id="rgbColorHexText" class="modal-input" value="#00B4D8" style="font-family:monospace; margin-bottom:0; font-weight:800;" readonly>
+                      </div>
+                      <button class="action-btn btn-primary" style="height:44px; padding:0 20px; font-size:12px;" onclick="saveUserRgbColor()">RENGİ CİHAZA KAYDET</button>
+                    </div>
+
+                    <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:8px;">HIZLI RENK PALETİ:</div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                      <button class="action-btn btn-ghost" style="padding:6px 14px; font-size:11px; border-color:#00b4d8; color:#00b4d8;" onclick="setPresetRgbColor('#00b4d8')">Camgöbeği</button>
+                      <button class="action-btn btn-ghost" style="padding:6px 14px; font-size:11px; border-color:#0055ff; color:#0055ff;" onclick="setPresetRgbColor('#0055ff')">Mavi</button>
+                      <button class="action-btn btn-ghost" style="padding:6px 14px; font-size:11px; border-color:#00e676; color:#00e676;" onclick="setPresetRgbColor('#00e676')">Yeşil</button>
+                      <button class="action-btn btn-ghost" style="padding:6px 14px; font-size:11px; border-color:#ff1744; color:#ff1744;" onclick="setPresetRgbColor('#ff1744')">Kırmızı</button>
+                      <button class="action-btn btn-ghost" style="padding:6px 14px; font-size:11px; border-color:#ff9100; color:#ff9100;" onclick="setPresetRgbColor('#ff9100')">Turuncu</button>
+                      <button class="action-btn btn-ghost" style="padding:6px 14px; font-size:11px; border-color:#9c27b0; color:#9c27b0;" onclick="setPresetRgbColor('#9c27b0')">Mor</button>
+                      <button class="action-btn btn-ghost" style="padding:6px 14px; font-size:11px; border-color:#ffffff; color:#ffffff;" onclick="setPresetRgbColor('#ffffff')">Beyaz</button>
+                    </div>
                   </div>
 
-                  <!-- CONTROL 3: BAĞLANTI VE DİĞER DURUMLARIN TETİKLEYİCİLERİ -->
-                  <div class="control-group">
+                  <!-- DONANIM POLARİTE SEÇİMİ (ORTAK KATOT / ORTAK ANOT) -->
+                  <div class="control-group" style="background:#191c22; padding:16px; border-radius:12px; border:1px solid var(--border);">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                       <div>
-                        <div class="control-name">Bağlantı Beklerken Yavaş Sarı Nefes Alma</div>
-                        <div class="control-desc">Cihaz bağlantısı yokken hazır olduğunu belirten yumuşak sarı/turuncu animasyon.</div>
+                        <div class="control-name" style="font-size:13px;">Donanım LED Polaritesi</div>
+                        <div class="control-desc">LED bağlantınıza göre Ortak Katot (Varsayılan) veya Ortak Anot (Ters PWM) seçimi.</div>
                       </div>
-                      <label class="switch" style="margin-left: 20px;">
-                        <input type="checkbox" checked id="ledWaitingAnimToggle" onchange="toggleLedWaiting(this.checked)">
-                        <span class="slider-toggle"></span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div class="control-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <div>
-                        <div class="control-name">Acil Durdurma Kırmızı İkaz</div>
-                        <div class="control-desc">Motor güvenlik kesicisi devreye girdiğinde ışığı acil durum kırmızısına al.</div>
-                      </div>
-                      <label class="switch" style="margin-left: 20px;">
-                        <input type="checkbox" checked id="ledEstopAnimToggle">
-                        <span class="slider-toggle"></span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div class="control-group">
-                    <div class="control-header">
-                      <span class="control-name">Durum Işığı Parlaklığı</span>
-                      <span class="control-badge" id="badgeLedBright">%90</span>
-                    </div>
-                    <div class="control-desc">Göz almaması için maksimum aydınlatma parlaklık seviyesi.</div>
-                    <input type="range" min="10" max="100" value="90" id="slLedBright" oninput="updateVal('badgeLedBright', this.value, '%', 'sys.led_brightness')">
-                  </div>
-
-                  <!-- CONTROL 4: DONANIM PİN BİLGİSİ (SADECE GELİŞTİRİCİ MODUNDA GÖRÜNÜR) -->
-                  <div class="control-group dev-only-block" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                      <span style="font-weight: 800; color: #fff; font-size: 12px;">STM32 DONANIM PİN ATAMALARI & TIM2 PWM:</span>
-                      <span style="font-size: 11px; color: var(--accent); font-weight: 700;">84/100 MHz Donanım Zamanlayıcı</span>
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-                      • <b>Kırmızı (R):</b> Pin PA0 (Timer 2 - Kanal 1 PWM)<br>
-                      • <b>Yeşil (G):</b> Pin PA1 (Timer 2 - Kanal 2 PWM)<br>
-                      • <b>Mavi (B):</b> Pin PA2 (Timer 2 - Kanal 3 PWM)<br>
-                      • <b>Polarite Modu:</b> Ortak Katot (Varsayılan) / Ortak Anot Uyumlu
+                      <select class="select-box" id="rgbPolaritySelect" style="width:220px;" onchange="applyRgbPolarity(this.value)">
+                        <option value="0" selected>Ortak Katot (Common Cathode)</option>
+                        <option value="1">Ortak Anot (Common Anode)</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -1439,284 +1434,7 @@
                   </div>
                 </div>
 
-                <!-- PANE 6: SADE CİHAZ GÜNCELLEME EKRANI (NORMAL KULLANICI) -->
-                <div class="sub-pane" id="pane-firmware">
-                  <div class="control-group" style="background: #191c22; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                      <div>
-                        <div class="control-name" style="color: var(--accent); font-size: 15px;">Cihaz Yazılımı Güncelleme</div>
-                        <div class="control-desc" style="margin-top: 4px;">Cihaz yazılımını tek tuşla otomatik olarak kontrol edin ve güncelleyin.</div>
-                      </div>
-                      <span class="control-badge" id="fwStatusBadge" style="background: rgba(0,180,216,0.12); color: var(--accent);">KONTROL EDİLİYOR</span>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                      <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 4px;">MEVCUT CİHAZ SÜRÜMÜ</div>
-                        <div style="font-size: 15px; font-weight: 900; color: #fff;" id="fwCurrentDeviceVer">Cihaz Bağlı Değil</div>
-                      </div>
-                      <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 4px;">YENİ SÜRÜM</div>
-                        <div style="font-size: 15px; font-weight: 900; color: var(--accent);" id="fwAvailableHexVer">v3.18.0</div>
-                      </div>
-                    </div>
-
-                    <div style="font-size: 12px; color: #caced8; margin-bottom: 14px; line-height: 1.5;" id="fwStatusDesc">
-                      Sürüm bilgisini okumak ve güncellemek için cihazı bilgisayara bağlayın.
-                    </div>
-
-                    <!-- İLERLEME ÇUBUĞU -->
-                    <div id="fwInlineProgressWrap" style="display: none; margin-bottom: 14px;">
-                      <div style="display:flex; justify-content:space-between; font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 6px;">
-                        <span id="fwInlineProgressText">Hazırlanıyor...</span>
-                        <span id="fwInlineProgressPct">0%</span>
-                      </div>
-                      <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden;">
-                        <div id="fwInlineProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00b4d8, #2ecc71); transition: width 0.25s ease;"></div>
-                      </div>
-                    </div>
-
-                    <!-- ANLAŞILIR TÜRKÇE HATA / SONUÇ KUTUSU -->
-                    <div id="fwInlineAlertBox" style="display: none; padding: 12px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; line-height: 1.5; margin-bottom: 14px;"></div>
-
-                    <!-- TEK BİR GÜNCELLE BUTONU -->
-                    <div class="btn-row" style="margin-top: 0;">
-                      <button class="action-btn btn-primary" id="btnSingleClickUpdate" onclick="startOneClickDeviceFirmwareUpdate(false)">GÜNCELLE</button>
-                    </div>
-                  </div>
-
-                  <div class="btn-row" style="margin-top: 20px;">
-                    <button class="action-btn btn-ghost" onclick="sendCmd('axis.zeroenc')">MERKEZ KALİBRASYONU (DİREKSİYON MERKEZİNİ SIFIRLA)</button>
-                  </div>
-                </div>
-
-              </div>
-            
-                <!-- PANE 7: GELİŞTİRİCİ AYARLARI VE DONANIM TEŞHİSİ -->
-                <div class="sub-pane" id="pane-dev">
-                  
-                  <!-- ENKODER PULSE (CPR / PPR) VE MANUEL DFU BÖLÜMÜ (NORMAL KULLANICIDAN GİZLİ) -->
-                  <div style="background:rgba(0, 180, 216, 0.08); border:1px solid rgba(0, 180, 216, 0.35); padding:16px; border-radius:12px; margin-bottom:20px;">
-                    <div style="font-size:14px; font-weight:900; color:var(--accent); letter-spacing:0.5px; margin-bottom:6px;">ENKODER PULSE SAYISI (PPR / CPR) & MANUEL DFU KONTROLÜ</div>
-                    <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
-                      Enkoder çözünürlüğü (Pulse / CPR) ve manuel bootloader (DFU) komutları geliştirici moduna taşınmıştır. Geliştirici modu kapatılsa dahi buradaki enkoder pulse değeri korunur ve sıfırlanmaz.
-                    </div>
-
-                    <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:end; margin-bottom:14px;">
-                      <div>
-                        <label style="font-size:11px; font-weight:800; color:#fff; display:block; margin-bottom:4px;">Enkoder Fiziksel Pulse (PPR):</label>
-                        <input type="number" id="devEncoderPprInput" class="modal-input" value="600" min="100" max="25000" style="margin-bottom:0;" oninput="onDevPprInputChange(this.value)">
-                      </div>
-                      <div>
-                        <label style="font-size:11px; font-weight:800; color:#fff; display:block; margin-bottom:4px;">Toplam Sayım (CPR = PPR x 4):</label>
-                        <input type="number" id="devEncoderCprInput" class="modal-input" value="2400" min="400" max="100000" style="margin-bottom:0;" oninput="onDevCprInputChange(this.value)">
-                      </div>
-                      <button class="action-btn btn-primary" style="height:41px; padding:0 18px; font-size:11px;" onclick="saveEncoderPulseSetting()">PULSE KAYDET</button>
-                    </div>
-
-                    <div style="display:flex; gap:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06);">
-                      <button class="action-btn btn-ghost" style="flex:1; font-size:11px; border-color:#ffb703; color:#ffb703;" onclick="triggerManualDfuBootloader()">MANUEL DFU (BOOTLOADER) MODUNA AL</button>
-                      <button class="action-btn btn-ghost" style="flex:1; font-size:11px;" onclick="checkDeviceFirmware()">HAM FİRMWARE SORGULA (sys.swver?)</button>
-                    </div>
-                  </div>
-
-                  <!-- GELİŞTİRİCİ MODU TEKNİK nRF24L01 AYARLARI (NORMAL KULLANICIDAN GİZLİ) -->
-                  <div class="dev-only-block" id="nrfDevTechPanel" style="background:rgba(255, 183, 3, 0.06); border:1px solid rgba(255, 183, 3, 0.3); padding:16px; border-radius:12px; margin-bottom:20px;">
-                    <div style="font-size:13px; font-weight:900; color:#ffb703; margin-bottom:10px; letter-spacing:0.5px;">
-                      GELİŞTİRİCİ MODU — nRF24L01 TEKNİK RF YAPILANDIRMASI VE PİN HARİTASI
-                    </div>
-
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
-                      <div>
-                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">MODÜL DURUMU</label>
-                        <select class="select-box" id="nrfDevEnableSelect" style="width:100%;">
-                          <option value="1" selected>Etkin (Non-Blocking)</option>
-                          <option value="0">Devre Dışı</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">RF KANALI (0-125)</label>
-                        <input type="number" class="modal-input" id="nrfDevChannelInput" min="0" max="125" value="76" style="margin-bottom:0; padding:8px 10px; font-family:monospace;">
-                      </div>
-                      <div>
-                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">VERİ HIZI (DATA RATE)</label>
-                        <select class="select-box" id="nrfDevRateSelect" style="width:100%;">
-                          <option value="0">250 kbps (Uzun Menzil)</option>
-                          <option value="1" selected>1 Mbps (Dengeli)</option>
-                          <option value="2">2 Mbps (Düşük Gecikme)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">PA ÇIKIŞ GÜCÜ</label>
-                        <select class="select-box" id="nrfDevPaSelect" style="width:100%;">
-                          <option value="0">-18 dBm (Düşük)</option>
-                          <option value="1">-12 dBm (Orta)</option>
-                          <option value="2" selected>-6 dBm (Yüksek)</option>
-                          <option value="3">0 dBm (Maksimum)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px;">
-                      <div style="font-family:monospace; font-size:11px; color:#caced8;" id="nrfDevRawDiagText">
-                        STATUS_REG: 0xFF | IRQ(PB9): 1 | BTN_MASK: 0x00000000 | FREQ: 2476 MHz
-                      </div>
-                      <button class="action-btn btn-primary" style="flex:0 0 180px; font-size:11px;" onclick="applyNrf24Config()">RF AYARLARINI UYGULA</button>
-                    </div>
-
-                    <div style="background:rgba(0,0,0,0.35); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); font-family:monospace; font-size:11px; color:var(--text-muted); line-height:1.5;">
-                      <b style="color:#fff;">Donanım SPI2 Pin Eşleşmesi (Çakışmasız):</b>
-                      SCK=<b style="color:#2ecc71;">PB13</b> | MISO=<b style="color:#2ecc71;">PB14</b> | MOSI=<b style="color:#2ecc71;">PB15</b> | CE=<b style="color:#00d2ff;">PB6</b> | CSN=<b style="color:#00d2ff;">PB7</b> | IRQ=<b style="color:#ffb703;">PB9</b>
-                    </div>
-                  </div>
-
-                  <!-- OVERRIDE & KILL-SWITCHES -->
-                  <div style="background:rgba(255, 183, 3, 0.06); border:1px solid rgba(255, 183, 3, 0.3); padding:16px; border-radius:12px; margin-bottom:20px;">
-                    <div style="font-size:14px; font-weight:900; color:#ffb703; letter-spacing:0.5px; margin-bottom:6px;">DONANIM BYPASS & GUVENLIK ANAHTARLARI (KILL-SWITCHES)</div>
-                    <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
-                      Bu anahtarlar guvenli donanim testi icin motoru ve otomatik hareketleri izole eder. Sadece enkoder testi yapmak istediginizde kullaniniz.
-                    </div>
-
-                    <div style="display:flex; flex-direction:column; gap:14px;">
-                      <!-- BYPASS CALIBRATION -->
-                      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:12px 14px; border-radius:8px;">
-                        <div>
-                          <div style="color:#fff; font-weight:800; font-size:12px;">Otomatik Kalibrasyonu Devre Disi Birak (Bypass Auto-Calibration)</div>
-                          <div style="color:var(--text-muted); font-size:11px;">Cihaz baslatildiginda saga sola donerek merkez arama hareketini iptal eder. Mil tamamen serbest kalir.</div>
-                        </div>
-                        <label class="toggle-switch">
-                          <input type="checkbox" id="devBypassCalibToggle" onchange="toggleDevBypassCalib(this.checked)">
-                          <span class="toggle-slider"></span>
-                        </label>
-                      </div>
-
-                      <!-- DISABLE MOTOR OUTPUT -->
-                      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:12px 14px; border-radius:8px;">
-                        <div>
-                          <div style="color:#fff; font-weight:800; font-size:12px;">Motor Tork Cikisini Devre Disi Birak (Torque Mute / Kill-Switch)</div>
-                          <div style="color:var(--text-muted); font-size:11px;">Motor RPWM (PA9) ve LPWM (PA8) tork sinyallerini sifirlar. Motor serbest kalir (0 Nm).</div>
-                        </div>
-                        <label class="toggle-switch">
-                          <input type="checkbox" id="devDisableMotorToggle" onchange="toggleDevDisableMotor(this.checked)">
-                          <span class="toggle-slider"></span>
-                        </label>
-                      </div>
-
-                      <!-- DISABLE ENCODER READINGS -->
-                      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:12px 14px; border-radius:8px;">
-                        <div>
-                          <div style="color:#fff; font-weight:800; font-size:12px;">Enkoder Okumasini Dondur / Devre Disi Birak (Freeze Encoder)</div>
-                          <div style="color:var(--text-muted); font-size:11px;">Donanim enkoder aci guncellemelerini dondurur, ekseni 0 derece merkezde sabit tutar.</div>
-                        </div>
-                        <label class="toggle-switch">
-                          <input type="checkbox" id="devDisableEncoderToggle" onchange="toggleDevDisableEncoder(this.checked)">
-                          <span class="toggle-slider"></span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- ENCODER-ONLY DIAGNOSTIC BENCH -->
-                  <div style="background:rgba(0, 180, 216, 0.06); border:1px solid rgba(0, 180, 216, 0.3); padding:16px; border-radius:12px; margin-bottom:20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                      <div style="font-size:14px; font-weight:900; color:var(--accent); letter-spacing:0.5px;">YALNIZCA ENKODER TEST VE TESHIS PANELI</div>
-                      <button class="action-btn btn-ghost" style="padding:4px 12px; font-size:11px; border-color:var(--accent); color:#fff;" onclick="startEncoderOnlyMode()">ENKODER TESTINI BASLAT</button>
-                    </div>
-                    <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
-                      Optik enkoderin A (PB4), B (PB5) ve Z (PB8) pinlerindeki pals sinyallerini ve dogrulugunu motor torku olmadan olcer.
-                    </div>
-
-                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:14px;">
-                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
-                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">HAM PALS (RAW CPR)</div>
-                        <div style="font-size:18px; font-weight:900; color:#fff; font-family:monospace; margin-top:4px;" id="devRawPulses">0 / 2400</div>
-                      </div>
-                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
-                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">HASSAS ACI (DEGREE)</div>
-                        <div style="font-size:18px; font-weight:900; color:var(--accent); font-family:monospace; margin-top:4px;" id="devPreciseAngle">0.00°</div>
-                      </div>
-                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
-                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">FAZ A / B (PB4/PB5)</div>
-                        <div style="font-size:13px; font-weight:900; color:#2ecc71; font-family:monospace; margin-top:8px;" id="devPhaseStatus">A: HIGH | B: LOW</div>
-                      </div>
-                      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
-                        <div style="font-size:10px; color:var(--text-muted); font-weight:800;">INDEX Z PALS (PB8)</div>
-                        <div style="font-size:13px; font-weight:900; color:#ffb703; font-family:monospace; margin-top:8px;" id="devIndexStatus">YAKALANDI (x1)</div>
-                      </div>
-                    </div>
-
-                    <div style="display:flex; gap:10px;">
-                      <button class="action-btn btn-ghost" style="flex:1; font-size:11px;" onclick="zeroEncoderOrigin()">ENKODER SIFIR NOKTASINI AYARLA (ZERO)</button>
-                      <button class="action-btn btn-ghost" style="flex:1; font-size:11px;" onclick="invertEncoderDirection()">ENKODER YONUNU TERSINE CEVIR</button>
-                    </div>
-                  </div>
-
-                  <!-- DIRECT PWM MOTOR TEST & ADC MONITOR -->
-                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
-                    <!-- MOTOR PULSE TEST -->
-                    <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:10px;">
-                      <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">MOTOR DOGRUDAN PWM SURUS TESTI</div>
-                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Milin serbest oldugundan emin olun. Guvenli 1 saniyelik test darbesi uretir.</div>
-                      
-                      <div class="control-group" style="margin-bottom:12px;">
-                        <div style="display:flex; justify-content:space-between;">
-                          <span class="control-name" style="font-size:11px;">Test Gucu (% Sol / % Sag):</span>
-                          <span style="font-family:monospace; font-weight:800; font-size:11px; color:var(--accent);" id="devPwmValText">0%</span>
-                        </div>
-                        <input type="range" min="-100" max="100" value="0" id="devPwmSlider" oninput="document.getElementById('devPwmValText').innerText = this.value + '%'">
-                      </div>
-
-                      <div style="display:flex; gap:8px;">
-                        <button class="action-btn btn-primary" style="flex:1; font-size:11px;" onclick="testMotorPwmPulse()">1 SN DARBE TESTI</button>
-                        <button class="action-btn btn-ghost" style="color:var(--red); border-color:var(--red); font-size:11px;" onclick="emergencyStopMotor()">ACIL MOTOR DURDUR</button>
-                      </div>
-                    </div>
-
-                    <!-- RAW ADC TELEMETRY -->
-                    <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:10px;">
-                      <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">DONANIMSAL PIN VE ADC TESHISI</div>
-                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">12-bit ADC kanallarinin dogrudan gerilim ve bit okumalari.</div>
-                      
-                      <div style="display:flex; flex-direction:column; gap:6px; font-family:monospace; font-size:11px;">
-                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
-                          <span style="color:#2ecc71;">GAZ (PA7 / ADC1_IN7):</span>
-                          <span id="devAdcGas">0 (0.00V)</span>
-                        </div>
-                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
-                          <span style="color:var(--accent);">FREN (PA5 / ADC1_IN5):</span>
-                          <span id="devAdcBrake">0 (0.00V)</span>
-                        </div>
-                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
-                          <span style="color:#ffb703;">DEBRIYAJ (PA6 / ADC1_IN6):</span>
-                          <span id="devAdcClutch">0 (0.00V)</span>
-                        </div>
-                        <div style="background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between;">
-                          <span style="color:var(--text-muted);">PA4 (ARIZALI PIN):</span>
-                          <span style="color:var(--red);">DEVRE DISI / BYPASS</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- DIRECT SERIAL COMMAND TERMINAL -->
-                  <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); padding:14px; border-radius:10px;">
-                    <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:6px;">DOGRUDAN SERI KOMUT TERMINALI</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Cihaza ham seri komut gonderin (Orn: sys.swver?, axis.pos?, sys.pedals?, localenc.cpr?).</div>
-                    
-                    <div id="devTerminalLog" style="height:100px; background:#08090b; border:1px solid rgba(255,255,255,0.06); border-radius:6px; padding:8px; font-family:monospace; font-size:11px; color:#2ecc71; overflow-y:auto; margin-bottom:10px; line-height:1.4;">
-[VELOCITY DEV CONSOLE READY]
-Komut girmeye hazir...
-                    </div>
-
-                    <div style="display:flex; gap:10px;">
-                      <input type="text" id="devTerminalInput" class="modal-input" placeholder="Komut yazin (Orn: sys.swver?, sys.pedals?, localenc.cpr=2400)..." style="font-family:monospace; font-size:12px; margin-bottom:0;" onkeydown="if(event.key==='Enter') sendDevSerialCommand()">
-                      <button class="action-btn btn-primary" style="flex:0 0 100px; font-size:11px;" onclick="sendDevSerialCommand()">GONDER</button>
-                    </div>
-                  </div>
-
-                </div>
-
-                </div>
+                              </div>
           </div>
 
           <!-- 2. GAZ TAKIMI (PEDALLAR) MODÜLÜ -->
@@ -1811,30 +1529,47 @@ Komut girmeye hazir...
           <div class="module-pane" id="module-wireless">
             <div class="glass-panel">
               <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>KABLOSUZ BAĞLANTI & AKSESUARLAR</span>
+                <span>KABLOSUZ AKSESUARLAR</span>
                 <span id="nrfStatusPill" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:4px 10px; border-radius:6px; font-weight:800;">KABLOLU MOD</span>
               </div>
 
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:18px;">
                 <div style="background:rgba(0,0,0,0.28); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
-                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">KABLOSUZ ALICI DURUMU</div>
-                  <div style="font-size:15px; font-weight:800; color:#fff;" id="nrfSimpleStateText">Standart Kablolu Mod</div>
+                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">KABLOSUZ BAĞLANTI DURUMU</div>
+                  <div style="font-size:15px; font-weight:800; color:#fff;" id="nrfSimpleStateText">Kablolu Mod Aktif</div>
                 </div>
                 <div style="background:rgba(0,0,0,0.28); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
-                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">AKSESUAR İLETİŞİM DURUMU</div>
-                  <div style="font-size:15px; font-weight:800; color:var(--accent);" id="nrfSimplePacketsText">Hazır (Beklemede)</div>
+                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">EŞLEŞMİŞ CİHAZ SAYISI</div>
+                  <div style="font-size:15px; font-weight:800; color:var(--accent);" id="nrfPairedCountText">0 Cihaz Kayıtlı</div>
                 </div>
               </div>
 
-              <div style="background:rgba(0, 180, 216, 0.06); border:1px solid rgba(0, 180, 216, 0.2); padding:14px 16px; border-radius:10px; margin-bottom:18px;">
-                <div style="font-size:12px; color:#caced8; line-height:1.5;" id="nrfSimpleDescText">
-                  Kablosuz alıcı takılı olmadığında cihazınız hiçbir gecikme olmadan standart kablolu modda çalışır. Kablosuz direksiyon simidi tuşları, el freni veya düğme kutusu eklemek için aşağıdaki butonları kullanabilirsiniz.
+              <!-- EŞLEŞTİRME BUTONU VE GERİ SAYIM -->
+              <div style="background:rgba(0, 180, 216, 0.08); border:1px solid rgba(0, 180, 216, 0.25); padding:16px; border-radius:10px; margin-bottom:18px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <div>
+                    <div style="font-size:13px; font-weight:800; color:#fff;">CİHAZ EŞLEŞTİRME MODU</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Yeni bir kablosuz direksiyon tuş takımı veya vites eşleştirmek için butona tıklayın.</div>
+                  </div>
+                  <button class="action-btn btn-primary" id="btnNrfPairing" style="padding:10px 18px; font-size:12px;" onclick="startNrfPairingCountdown(15)">EŞLEŞTİRMEYİ BAŞLAT (15 SN)</button>
+                </div>
+                <div id="nrfPairingCountdownBox" style="display:none; font-size:12px; font-weight:800; color:#ffb703; padding:8px 12px; background:rgba(255,183,3,0.12); border-radius:6px; border:1px solid rgba(255,183,3,0.3);">
+                  Eşleştirme Modu Aktif: Kalan Süre <span id="nrfPairingSeconds">15</span> saniye — Kablosuz aksesuarınızın eşleştirme tuşuna basılı tutun.
                 </div>
               </div>
 
-              <div style="display:flex; gap:12px;">
-                <button class="action-btn btn-primary" style="flex:1;" onclick="refreshNrf24Status(true)">KABLOSUZ AKSESUARLARI TARA</button>
-                <button class="action-btn btn-ghost" style="flex:1;" onclick="openAddModal('wireless')">KABLOSUZ ALT CİHAZ EKLE</button>
+              <!-- EŞLEŞMİŞ CİHAZLAR LİSTESİ -->
+              <div style="background:rgba(0,0,0,0.25); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div style="font-size:13px; font-weight:800; color:#fff;">KAYITLI KABLOSUZ CİHAZLAR</div>
+                  <button class="action-btn btn-ghost" style="padding:4px 10px; font-size:11px;" onclick="refreshNrfDevicesList()">LİSTEYİ YENİLE</button>
+                </div>
+
+                <div id="nrfPairedDevicesList" style="display:flex; flex-direction:column; gap:8px;">
+                  <div style="font-size:12px; color:var(--text-muted); padding:10px 0; text-align:center;">
+                    Henüz eşleşmiş bir kablosuz cihaz bulunmuyor.
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2113,12 +1848,89 @@ Komut girmeye hazir...
             </div>
 
             <div id="devUnlockedContent" style="display:none;">
-              <div style="font-size:12px; color:#2ecc71; font-weight:700; margin-bottom:14px;">
+              <div style="font-size:12px; color:#2ecc71; font-weight:700; margin-bottom:16px;">
                 Geliştirici Modu aktif (Ayar dosyasına kaydedildi, uygulama yeniden başlatıldığında açık kalır).
               </div>
+
+              <!-- 1. CİHAZ YAZILIMI GÜNCELLEME (STM32 FIRMWARE & DFU) -->
+              <div style="background:#191c22; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom:18px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div>
+                    <div style="font-size:14px; font-weight:900; color:var(--accent);">CİHAZ YAZILIMI GÜNCELLEME (FIRMWARE & DFU)</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Cihaz yazılımı güncelleme özelliği güvenlik gereği yalnızca geliştirici modunda sunulur.</div>
+                  </div>
+                  <span class="control-badge" id="fwStatusBadge" style="background:rgba(0,180,216,0.12); color:var(--accent);">KONTROL EDİLİYOR</span>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                  <div style="background:rgba(0,0,0,0.3); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">MEVCUT CİHAZ SÜRÜMÜ</div>
+                    <div style="font-size:14px; font-weight:900; color:#fff;" id="fwCurrentDeviceVer">Cihaz Bağlı Değil</div>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.3); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">HEDEF FİRMWARE SÜRÜMÜ</div>
+                    <div style="font-size:14px; font-weight:900; color:var(--accent);" id="fwAvailableHexVer">v4.0.0</div>
+                  </div>
+                </div>
+
+                <div style="font-size:11px; color:#caced8; margin-bottom:12px; line-height:1.5;" id="fwStatusDesc">
+                  Yazılım güncellemek için cihazı bağlayıp aşağıdaki butona tıklayın. Sistem cihazı otomatik olarak DFU moduna geçirir ve yeni firmware'i yükler.
+                </div>
+
+                <div id="fwInlineProgressWrap" style="display:none; margin-bottom:12px;">
+                  <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:var(--accent); margin-bottom:6px;">
+                    <span id="fwInlineProgressText">Hazırlanıyor...</span>
+                    <span id="fwInlineProgressPct">0%</span>
+                  </div>
+                  <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:6px; overflow:hidden;">
+                    <div id="fwInlineProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #00b4d8, #2ecc71); transition:width 0.25s ease;"></div>
+                  </div>
+                </div>
+
+                <div id="fwInlineAlertBox" style="display:none; padding:10px 12px; border-radius:8px; font-size:11px; font-weight:700; line-height:1.4; margin-bottom:12px;"></div>
+
+                <div style="display:flex; gap:10px;">
+                  <button class="action-btn btn-primary" id="btnSingleClickUpdate" style="flex:1;" onclick="startOneClickDeviceFirmwareUpdate(false)">CİHAZ YAZILIMINI GÜNCELLE</button>
+                  <button class="action-btn btn-ghost" style="flex:1;" onclick="checkDeviceFirmware()">SÜRÜM KONTROL ET (sys.swver?)</button>
+                </div>
+              </div>
+
+              <!-- 2. ENKODER PULSE AYARI (PPR / CPR) -->
+              <div style="background:#191c22; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom:18px;">
+                <div style="font-size:14px; font-weight:900; color:var(--accent); margin-bottom:4px;">ENKODER PULSE SAYISI (PPR / CPR)</div>
+                <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:12px;">
+                  Enkoder çözünürlüğü teknik bir ayardır ve geliştirici modunda korunur. Geliştirici modu kapatılsa dahi buradaki değer cihazda ve ayar dosyasında kalıcı olarak saklanır.
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:end; margin-bottom:10px;">
+                  <div>
+                    <label style="font-size:11px; font-weight:800; color:#fff; display:block; margin-bottom:4px;">Enkoder Fiziksel Pulse (PPR):</label>
+                    <input type="number" id="devEncoderPprInput" class="modal-input" value="600" min="100" max="25000" style="margin-bottom:0;" oninput="onDevPprInputChange(this.value)">
+                  </div>
+                  <div>
+                    <label style="font-size:11px; font-weight:800; color:#fff; display:block; margin-bottom:4px;">Toplam Sayım (CPR = PPR x 4):</label>
+                    <input type="number" id="devEncoderCprInput" class="modal-input" value="2400" min="400" max="100000" style="margin-bottom:0;" oninput="onDevCprInputChange(this.value)">
+                  </div>
+                  <button class="action-btn btn-primary" style="height:41px; padding:0 18px; font-size:11px;" onclick="saveEncoderPulseSetting()">PULSE KAYDET</button>
+                </div>
+              </div>
+
+              <!-- 3. TEKNİK RF & SERİ DİYAGNOSTİK ARAÇLARI -->
+              <div style="background:#191c22; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom:18px;">
+                <div style="font-size:13px; font-weight:900; color:#ffb703; margin-bottom:8px;">DONANIM VE SERİ KOMUT ARAÇLARI</div>
+                <div style="display:flex; gap:10px; margin-bottom:12px;">
+                  <button class="action-btn btn-ghost" style="flex:1; font-size:11px; border-color:#ffb703; color:#ffb703;" onclick="triggerManualDfuBootloader()">MANUEL DFU MODUNA GEÇİR</button>
+                  <button class="action-btn btn-ghost" style="flex:1; font-size:11px;" onclick="sendCmd('axis.zeroenc')">ENKODER SIFIRLA (axis.zeroenc)</button>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">Doğrudan Seri Komut Konsolu:</div>
+                <div style="display:flex; gap:10px;">
+                  <input type="text" id="devTerminalInput" class="modal-input" placeholder="Komut (Örn: sys.swver?, axis.pos?, sys.pedals?)..." style="font-family:monospace; font-size:12px; margin-bottom:0;" onkeydown="if(event.key==='Enter') sendDevSerialCommand()">
+                  <button class="action-btn btn-primary" style="flex:0 0 100px; font-size:11px;" onclick="sendDevSerialCommand()">GÖNDER</button>
+                </div>
+              </div>
+
               <div style="display:flex; gap:12px;">
-                <button class="action-btn btn-primary" style="flex:1; background:linear-gradient(135deg, #00b4d8, #0077b6);" onclick="goToDeveloperWheelSettings()">GELİŞTİRİCİ AYARLARINA GİT</button>
-                <button class="action-btn btn-ghost" id="btnLockDevMode" style="color:var(--red); border-color:var(--red);" onclick="lockDeveloperMode()">GELİŞTİRİCİ MODUNU KAPAT</button>
+                <button class="action-btn btn-ghost" id="btnLockDevMode" style="flex:1; color:var(--red); border-color:var(--red);" onclick="lockDeveloperMode()">GELİŞTİRİCİ MODUNU KAPAT</button>
               </div>
             </div>
           </div>
@@ -2667,22 +2479,24 @@ Komut girmeye hazir...
     }
 
     function calibratePedalsAuto() {
+      const isAdc12 = (lastRawPedals.gas <= 4096 && lastRawPedals.brake <= 4096 && lastRawPedals.clutch <= 4096);
+      const defaultMax = isAdc12 ? 4095 : 32767;
       pedalBaseline = {
-        gasMin: lastRawPedals.gas,
-        gasMax: 32767,
-        brakeMin: lastRawPedals.brake,
-        brakeMax: 32767,
-        clutchMin: lastRawPedals.clutch,
-        clutchMax: 32767
+        gasMin: lastRawPedals.gas || 0,
+        gasMax: Math.max((lastRawPedals.gas || 0) + 1000, defaultMax),
+        brakeMin: lastRawPedals.brake || 0,
+        brakeMax: Math.max((lastRawPedals.brake || 0) + 1000, defaultMax),
+        clutchMin: lastRawPedals.clutch || 0,
+        clutchMax: Math.max((lastRawPedals.clutch || 0) + 1000, defaultMax)
       };
       if (isConnected) {
-        sendCmd("sys.ain=1;apin.mask=28;apin.autocal=1");
+        sendCmd("sys.ain=1;apin.mask=28");
       }
       renderPedalGauges(lastRawPedals.gas, lastRawPedals.brake, lastRawPedals.clutch);
       showCustomAlert({
         title: "PEDAL KALİBRASYONU BAŞLATILDI",
         subtitle: "GAZ / FREN / DEBRİYAJ",
-        content: "Pedalların mevcut serbest konumu sıfır (0%) olarak kaydedildi. Şimdi Gaz, Fren ve Debriyaj pedallarına birer kez sonuna kadar basıp bırakın; maksimum aralık otomatik olarak algılanacaktır."
+        content: "Pedalların serbest konumu sıfır (0%) olarak kaydedildi. Şimdi Gaz, Fren ve Debriyaj pedallarına sonuna kadar basın; maksimum aralık otomatik algılanacaktır."
       });
     }
 
@@ -2690,22 +2504,23 @@ Komut girmeye hazir...
       let v = Number(rawVal);
       if (isNaN(v)) return 0;
 
-      // Support both signed 16-bit (-32768..32767) and unsigned 12-bit/16-bit (0..4095)
-      let norm = 0;
-      if (pedalBaseline[minKey] !== null) {
-        if (v > (pedalBaseline[maxKey] || -32768)) pedalBaseline[maxKey] = v;
-        const span = Math.max(2000, (pedalBaseline[maxKey] || 32767) - pedalBaseline[minKey]);
-        norm = ((v - pedalBaseline[minKey]) / span) * 100.0;
-      } else if (v >= -32768 && v <= 32767 && v < 0) {
-        norm = ((v + 32768.0) / 65535.0) * 100.0;
-      } else if (v >= 0 && v <= 4096) {
-        norm = (v / 4095.0) * 100.0;
-      } else {
-        norm = ((v + 32768.0) / 65535.0) * 100.0;
+      // Dynamic tracking if baseline is calibrated
+      if (pedalBaseline[minKey] !== null && pedalBaseline[maxKey] !== null) {
+        if (v > pedalBaseline[maxKey]) pedalBaseline[maxKey] = v;
+        const span = Math.max(200, pedalBaseline[maxKey] - pedalBaseline[minKey]);
+        let norm = ((v - pedalBaseline[minKey]) / span) * 100.0;
+        return Math.max(0, Math.min(100, norm));
       }
-      if (norm < 0) norm = 0;
-      if (norm > 100) norm = 100;
-      return norm;
+
+      // Uncalibrated 12-bit ADC (0..4095 STM32 hardware range)
+      if (v >= 0 && v <= 4095) {
+        return Math.max(0, Math.min(100, (v / 4095.0) * 100.0));
+      }
+      // Signed 16-bit fallback
+      if (v >= -32768 && v <= 32767) {
+        return Math.max(0, Math.min(100, ((v + 32768.0) / 65535.0) * 100.0));
+      }
+      return 0;
     }
 
     function renderPedalGauges(rawGas, rawBrake, rawClutch) {
@@ -2878,9 +2693,9 @@ Komut girmeye hazir...
       }, 300);
       pollInterval = setInterval(() => {
         if (isConnected) {
-          sendCmd("axis.pos?;axis.curpos?;axis.curtorque?;localenc.pins?;sys.pedals?;apin.values?;dpin.values?");
+          sendCmd("axis.pos?;sys.pedals?");
         }
-      }, 65);
+      }, 50);
     }
 
     function stopPolling() {
@@ -4379,6 +4194,202 @@ Komut girmeye hazir...
       initDeveloperMode();
     });
 
+
+    // ==========================================================
+    // RGB LED 2-MODE & POLARITY CONTROLLERS
+    // ==========================================================
+    let activeRgbMode = 1;
+    let userRgbHex = "#00B4D8";
+
+    async function selectRgbMode(mode) {
+      activeRgbMode = mode;
+      const bStatus = document.getElementById('btnRgbModeStatus');
+      const bUser = document.getElementById('btnRgbModeUser');
+      const boxStatus = document.getElementById('rgbStatusModeContainer');
+      const boxUser = document.getElementById('rgbUserModeContainer');
+      const badge = document.getElementById('badgeActiveRgbMode');
+      const stateBadge = document.getElementById('badgeLedStateDesc');
+      const simTitle = document.getElementById('ledSimStatusTitle');
+      const simDesc = document.getElementById('ledSimStatusDetail');
+
+      if (mode === 1) {
+        if (bStatus) { bStatus.className = 'action-btn btn-primary'; bStatus.style.background = 'linear-gradient(135deg, #00b4d8, #0077b6)'; }
+        if (bUser) { bUser.className = 'action-btn btn-ghost'; bUser.style.background = 'none'; }
+        if (boxStatus) boxStatus.style.display = 'block';
+        if (boxUser) boxUser.style.display = 'none';
+        if (badge) badge.innerText = 'MOD 1: DURUM';
+        if (stateBadge) { stateBadge.innerText = 'DURUM MODU AKTİF'; stateBadge.style.color = 'var(--accent)'; }
+        if (simTitle) simTitle.innerText = 'Cihaz Durum Modu';
+        if (simDesc) simDesc.innerText = 'Cihaz donanım ve bağlantı durumuna göre otomatik renk değiştirir.';
+        updateLedSimulationVisual('#00d2ff');
+      } else {
+        if (bStatus) { bStatus.className = 'action-btn btn-ghost'; bStatus.style.background = 'none'; }
+        if (bUser) { bUser.className = 'action-btn btn-primary'; bUser.style.background = 'linear-gradient(135deg, #00b4d8, #0077b6)'; }
+        if (boxStatus) boxStatus.style.display = 'none';
+        if (boxUser) boxUser.style.display = 'block';
+        if (badge) badge.innerText = 'MOD 2: KULLANICI RENGİ';
+        if (stateBadge) { stateBadge.innerText = 'ÖZEL RENK AKTİF'; stateBadge.style.color = '#2ecc71'; }
+        if (simTitle) simTitle.innerText = 'Özel Kullanıcı Rengi';
+        if (simDesc) simDesc.innerText = 'Kullanıcının seçtiği kalıcı renk cihaz LED\'inde gösterilmektedir.';
+        updateLedSimulationVisual(userRgbHex);
+      }
+
+      sendCmd(`sys.rgbmode=${mode};sys.save`);
+      const api = bridgeApi();
+      if (api && api.set_rgb_mode) {
+        try { await api.set_rgb_mode(mode); } catch(e){}
+      }
+    }
+
+    function onUserColorPickerChange(hexVal) {
+      userRgbHex = hexVal.toUpperCase();
+      const txt = document.getElementById('rgbColorHexText');
+      if (txt) txt.value = userRgbHex;
+      updateLedSimulationVisual(userRgbHex);
+    }
+
+    function setPresetRgbColor(hexVal) {
+      userRgbHex = hexVal.toUpperCase();
+      const picker = document.getElementById('rgbColorInput');
+      const txt = document.getElementById('rgbColorHexText');
+      if (picker) picker.value = userRgbHex;
+      if (txt) txt.value = userRgbHex;
+      updateLedSimulationVisual(userRgbHex);
+      saveUserRgbColor();
+    }
+
+    async function saveUserRgbColor() {
+      const colorInt = parseInt(userRgbHex.replace('#', ''), 16);
+      sendCmd(`sys.rgbcolor=${colorInt};sys.save`);
+      const api = bridgeApi();
+      if (api && api.set_rgb_color) {
+        try { await api.set_rgb_color(userRgbHex); } catch(e){}
+      }
+      showCustomAlert({
+        title: "RGB RENK KAYDEDİLDİ",
+        subtitle: "KALICI HAFIZA",
+        content: `Özel RGB rengi (${userRgbHex}) cihaz donanım hafızasına kaydedildi.`
+      });
+    }
+
+    async function applyRgbPolarity(polarity) {
+      const p = parseInt(polarity, 10);
+      sendCmd(`sys.rgbpolarity=${p};sys.save`);
+      const api = bridgeApi();
+      if (api && api.set_rgb_polarity) {
+        try { await api.set_rgb_polarity(p); } catch(e){}
+      }
+    }
+
+    function updateLedSimulationVisual(hexColor) {
+      const core = document.getElementById('ledPreviewCore');
+      const glow = document.getElementById('ledPreviewGlow');
+      if (core) core.style.background = hexColor;
+      if (glow) {
+        glow.style.background = hexColor;
+        glow.style.boxShadow = `0 0 35px ${hexColor}`;
+      }
+    }
+
+    // ==========================================================
+    // WIRELESS (nRF24) PAIRING & UNPAIRING CONTROLLERS
+    // ==========================================================
+    let pairingTimer = null;
+    let pairingSecondsLeft = 0;
+
+    async function startNrfPairingCountdown(seconds = 15) {
+      pairingSecondsLeft = seconds;
+      const box = document.getElementById('nrfPairingCountdownBox');
+      const secEl = document.getElementById('nrfPairingSeconds');
+      const btn = document.getElementById('btnNrfPairing');
+      if (box) box.style.display = 'block';
+      if (btn) btn.disabled = true;
+
+      sendCmd(`sys.nrfpair=${seconds}`);
+      const api = bridgeApi();
+      if (api && api.start_nrf_pairing) {
+        try { await api.start_nrf_pairing(seconds); } catch(e){}
+      }
+
+      if (pairingTimer) clearInterval(pairingTimer);
+      pairingTimer = setInterval(() => {
+        pairingSecondsLeft--;
+        if (secEl) secEl.innerText = String(pairingSecondsLeft);
+        if (pairingSecondsLeft <= 0) {
+          clearInterval(pairingTimer);
+          pairingTimer = null;
+          if (box) box.style.display = 'none';
+          if (btn) btn.disabled = false;
+          refreshNrfDevicesList();
+        }
+      }, 1000);
+    }
+
+    async function refreshNrfDevicesList() {
+      const listEl = document.getElementById('nrfPairedDevicesList');
+      const countEl = document.getElementById('nrfPairedCountText');
+      const pill = document.getElementById('nrfStatusPill');
+      const stateText = document.getElementById('nrfSimpleStateText');
+
+      const api = bridgeApi();
+      let devices = [];
+      if (api && api.get_nrf_devices) {
+        try {
+          const res = await api.get_nrf_devices();
+          if (res && res.devices) devices = res.devices;
+        } catch(e){}
+      }
+
+      if (countEl) countEl.innerText = `${devices.length} Cihaz Kayıtlı`;
+      if (pill) {
+        pill.innerText = devices.length > 0 ? 'KABLOSUZ MOD AKTİF' : 'KABLOLU MOD';
+        pill.style.color = devices.length > 0 ? '#2ecc71' : 'var(--accent)';
+      }
+      if (stateText) {
+        stateText.innerText = devices.length > 0 ? 'Kablosuz Aksesuarlar Bağlı' : 'Kablolu Mod Aktif';
+      }
+
+      if (!listEl) return;
+      if (devices.length === 0) {
+        listEl.innerHTML = `
+          <div style="font-size:12px; color:var(--text-muted); padding:10px 0; text-align:center;">
+            Henüz eşleşmiş bir kablosuz cihaz bulunmuyor. Eşleştirmeyi Başlat butonuna tıklayarak yeni aksesuar ekleyebilirsiniz.
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      for (const dev of devices) {
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+            <div>
+              <div style="font-size:13px; font-weight:800; color:#fff;">${dev.type_name || 'Kablosuz Aksesuar'}</div>
+              <div style="font-size:10px; font-family:monospace; color:var(--text-muted); margin-top:2px;">Cihaz ID: 0x${(dev.id || 0).toString(16).toUpperCase()}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:11px; font-weight:800; color:${dev.active ? '#2ecc71' : '#ff9100'};">${dev.active ? 'SİNYAL AKTİF' : 'BEKLENİYOR'}</span>
+              <button class="action-btn btn-ghost" style="padding:4px 10px; font-size:11px; border-color:var(--red); color:var(--red);" onclick="unpairNrfDeviceUI(${dev.id})">EŞLEŞMEYİ KALDIR</button>
+            </div>
+          </div>
+        `;
+      }
+      listEl.innerHTML = html;
+    }
+
+    async function unpairNrfDeviceUI(devId) {
+      sendCmd(`sys.nrfunpair=${devId}`);
+      const api = bridgeApi();
+      if (api && api.unpair_nrf_device) {
+        try { await api.unpair_nrf_device(devId); } catch(e){}
+      }
+      showCustomAlert({
+        title: "CİHAZ SİLİNDİ",
+        subtitle: "KABLOSUZ LİSTE GÜNCELLENDİ",
+        content: `Kablosuz cihaz (ID: ${devId}) eşleşmiş cihazlar listesinden ve hafızadan kalıcı olarak silindi.`
+      });
+      setTimeout(refreshNrfDevicesList, 300);
+    }
 </script>
 
   <!-- MODAL: GELİSTİRİCİ ERİSİM KODU (DEVELOPER AUTHENTICATION) -->

@@ -82,10 +82,10 @@ def load_version_config(base_dir=None):
     if best is not None:
         return best
     return {
-        "version": "3.18.0",
-        "tag": "v3.18.0",
+        "version": "4.0.0",
+        "tag": "v4.0.0",
         "firmware_prefix": FIRMWARE_PREFIX,
-        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.18.0.hex"
+        "firmware_hex": f"{FIRMWARE_PREFIX}_v4.0.0.hex"
     }
 
 
@@ -340,7 +340,10 @@ class HubApi:
             "auto_update": True,
             "accent_color": "#00b4d8",
             "nrf24_enabled": True,
-            "nrf24_channel": 76
+            "nrf24_channel": 76,
+            "rgb_mode": 1,
+            "rgb_color": "#00b4d8",
+            "rgb_polarity": 0
         }
 
     def get_settings(self):
@@ -1242,6 +1245,86 @@ class HubApi:
             self.serial_write(cmds)
 
         return self.get_nrf24_status()
+
+    # ------------------------------------------------------------------
+    # RGB LED 2-Mode & Polarity Control
+    # ------------------------------------------------------------------
+    def set_rgb_mode(self, mode: int):
+        """Sets RGB LED mode: 1 = Status Mode, 2 = User Custom Color Mode."""
+        m = 2 if int(mode) == 2 else 1
+        self.save_settings({"rgb_mode": m})
+        if self._ser is not None and self._alive:
+            self.serial_write(f"sys.rgbmode={m}\n;sys.save\n")
+        return {"success": True, "mode": m}
+
+    def set_rgb_color(self, hex_or_int):
+        """Sets persistent RGB user color (24-bit RGB, e.g. #00B4D8 or 0x00B4D8)."""
+        color_int = 0x00B4D8
+        if isinstance(hex_or_int, str):
+            s = hex_or_int.strip().lstrip('#')
+            try:
+                color_int = int(s, 16) & 0xFFFFFF
+            except Exception:
+                color_int = 0x00B4D8
+        elif isinstance(hex_or_int, int):
+            color_int = hex_or_int & 0xFFFFFF
+
+        self.save_settings({"rgb_color": f"#{color_int:06X}"})
+        if self._ser is not None and self._alive:
+            self.serial_write(f"sys.rgbcolor={color_int}\n;sys.save\n")
+        return {"success": True, "color": color_int, "hex": f"#{color_int:06X}"}
+
+    def set_rgb_polarity(self, polarity: int):
+        """Sets RGB polarity: 0 = Common Cathode, 1 = Common Anode (Inverted PWM)."""
+        p = 1 if int(polarity) == 1 else 0
+        self.save_settings({"rgb_polarity": p})
+        if self._ser is not None and self._alive:
+            self.serial_write(f"sys.rgbpolarity={p}\n;sys.save\n")
+        return {"success": True, "polarity": p}
+
+    # ------------------------------------------------------------------
+    # Wireless (nRF24) Pairing & Unpairing
+    # ------------------------------------------------------------------
+    def start_nrf_pairing(self, timeout_s: int = 15):
+        """Puts firmware into wireless pairing mode for specified duration in seconds."""
+        t = max(5, min(60, int(timeout_s)))
+        if self._ser is not None and self._alive:
+            self.serial_write(f"sys.nrfpair={t}\n")
+        return {"success": True, "timeout_s": t}
+
+    def unpair_nrf_device(self, device_id: int):
+        """Unpairs and deletes a paired device ID from firmware flash."""
+        dev_id = int(device_id)
+        if self._ser is not None and self._alive:
+            self.serial_write(f"sys.nrfunpair={dev_id}\n")
+        return {"success": True, "unpaired_id": dev_id}
+
+    def get_nrf_devices(self):
+        """Queries list of paired devices from firmware via sys.nrfdevices?."""
+        if self._ser is None or not self._alive:
+            return {"success": False, "devices": [], "error": "Cihaz bagli degil"}
+        resp = self._query_serial_Sync("sys.nrfdevices?", timeout_s=0.6)
+        devices = []
+        if resp:
+            # Parse response format: dev_id:type:active:rssi;...
+            parts = resp.strip().split(';')
+            type_names = {1: "Direksiyon Tusu", 2: "Pedal Takimi", 3: "Vites Modulu", 4: "El Freni"}
+            for p in parts:
+                sub = p.strip().split(':')
+                if len(sub) >= 2:
+                    try:
+                        did = int(sub[0])
+                        dtype = int(sub[1])
+                        active = int(sub[2]) == 1 if len(sub) >= 3 else True
+                        devices.append({
+                            "id": did,
+                            "type_id": dtype,
+                            "type_name": type_names.get(dtype, "Aksesuar"),
+                            "active": active
+                        })
+                    except Exception:
+                        pass
+        return {"success": True, "devices": devices}
 
     # ------------------------------------------------------------------
     # GitHub App Release Update Check
