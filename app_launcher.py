@@ -78,10 +78,10 @@ def load_version_config(base_dir=None):
             except Exception:
                 pass
     return {
-        "version": "3.15.0",
-        "tag": "v3.15.0",
+        "version": "3.16.0",
+        "tag": "v3.16.0",
         "firmware_prefix": FIRMWARE_PREFIX,
-        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.15.0.hex"
+        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.16.0.hex"
     }
 
 

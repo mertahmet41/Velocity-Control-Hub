@@ -1,6 +1,6 @@
 # Velocity Control Hub & OpenFFBoard STM32F411CE Firmware
 
-**Sürüm:** v3.15.0  
+**Sürüm:** v3.16.0  
 **Hedef Donanım:** STM32F411CEU6 (WeAct Black Pill V3.1 - 48 Pin)  
 **Motor Sürücü:** BTS7960 (IBT-2) Çift Yönlü H-Köprüsü  
 **Altyapı:** OpenFFBoard Tabanlı Gerçek Zamanlı Force Feedback (1000 Hz USB HID + CDC VCP)
@@ -33,6 +33,7 @@ Velocity Control Hub, STM32F411CEU6 mikrodenetleyicisi üzerine inşa edilmiş D
 - **1000 Hz Gerçek Zamanlı Force Feedback:** USB HID PID (Physical Interface Device) protokolü üzerinden yay, sönümleme (damper), sürtünme (friction), atalet (inertia) ve sabit kuvvet (constant force) efektlerini 1 ms döngü süresiyle işler.
 - **Donanım Kimliği Profilleri (Hardware Spoofing):** Cihaz kimliğini oyun uyumluluğuna göre çalışma zamanında değiştirebilir (`OpenFFBoard Native`, `Logitech G29`, `Moza R5`).
 - **Tek Tuşla Otomatik DFU Firmware Güncelleme:** BOOT0 tuşuna veya jumper müdahalesine gerek kalmadan, sürücü üzerinden yazılımsal komutla (`sys.dfu=1`) STM32 ROM DFU Bootloader (`0483:DF11`) moduna geçiş yapar, `.hex` dosyasını doğrular, yükler ve yeni sürümü otomatik teyit eder.
+- **Donanımsal Mavi SMD LED Sürüm Doğrulaması (`PC13`):** Sürücü arayüzüne bakmaksızın kartın üzerindeki fiziksel yazılımı doğrulamak için, STM32 üzerindeki dahili mavi SMD LED (`PC13`) enerji verildiğinde ilk **10 saniye boyunca sabit yanar** ve **10. saniyede tamamen söner**.
 - **İzole nRF24L01+ 2.4GHz Kablosuz Alıcı Desteği:** Direksiyon simidi üzerindeki kablosuz butonları ve ek eksenleri `SPI2` hattı üzerinden FFB döngüsünü bloklamadan okur. Modül takılı olmadığında sıfır işlemci yüküyle standart kablolu modda çalışır.
 - **Tek Kaynaklı Sürüm Yönetimi:** Firmware (`SW_VERSION_INT`), `.hex` paket adı ve masaüstü sürücüsü (`version.json`) tek bir sürüm kaynağından senkronize edilir.
 - **Sade Kullanıcı Arayüzü ve Geliştirici Modu:** Günlük kullanımda yalnızca temel FFB, direksiyon ve tek tuşla güncelleme kontrolleri gösterilir; düşük seviyeli donanım ve RF parametreleri kalıcı Geliştirici Modu altında korunur.
@@ -270,7 +271,7 @@ STM32 kartı USB üzerinden `115200 Baud` sanal seri port (CDC VCP) sağlar. Ba�
 
 | Komut | Açıklama | Örnek Yanıt / Kullanım |
 | :--- | :--- | :--- |
-| `sys.swver?` | Yüklü firmware sürümünü döndürür | `3.15.0` |
+| `sys.swver?` | Yüklü firmware sürümünü döndürür | `3.16.0` |
 | `sys.hwtype?` | Donanım hedef adını döndürür | `F411CE` |
 | `sys.dfu=1` | Kartı yazılımsal olarak ROM DFU Bootloader moduna geçirir | Otomatik DFU geçişi |
 | `sys.profile?` / `sys.profile=<0\|1\|2>` | USB cihaz kimliğini okur veya değiştirir (`0`=Native, `1`=G29, `2`=Moza) | `0` |
@@ -309,8 +310,8 @@ python -m PyInstaller --noconfirm --onefile --windowed --name "VelocityControlHu
   --add-data "version.json;." `
   --add-data "pro_wheel.png;." `
   --add-data "wheel.png;." `
-  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.15.0.hex;Firmware" `
-  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.15.0.hex;." `
+  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.16.0.hex;Firmware" `
+  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.16.0.hex;." `
   app_launcher.py
 ```
 
