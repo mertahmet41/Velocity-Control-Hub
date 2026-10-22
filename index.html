@@ -1452,7 +1452,7 @@
                       </div>
                       <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 4px;">YENİ / PAKET SÜRÜMÜ</div>
-                        <div style="font-size: 15px; font-weight: 900; color: var(--accent);" id="fwAvailableHexVer">v3.14.0</div>
+                        <div style="font-size: 15px; font-weight: 900; color: var(--accent);" id="fwAvailableHexVer">v3.15.0</div>
                       </div>
                     </div>
 
@@ -1842,6 +1842,84 @@ Komut girmeye hazir...
           </div>
         </div>
 
+        <!-- SECTION 2B: KABLOSUZ AKSESUAR ALICISI (nRF24L01 2.4GHz) -->
+        <div class="glass-panel" id="sectionNrf24">
+          <div class="settings-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>KABLOSUZ AKSESUAR ALICISI (nRF24L01 2.4GHz)</span>
+            <span id="nrfStatusPill" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:3px 8px; border-radius:6px; font-weight:800;">KONTROL EDİLİYOR</span>
+          </div>
+
+          <!-- NORMAL KULLANICI SADE DURUM BİLGİSİ -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div style="background:rgba(0,0,0,0.28); padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+              <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">MODÜL BAĞLANTI DURUMU</div>
+              <div style="font-size:13px; font-weight:800; color:#fff;" id="nrfSimpleStateText">Modül Takılı Değil — Standart Kablolu Mod</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.28); padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+              <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">KABLOSUZ VERİ AKIŞI</div>
+              <div style="font-size:13px; font-weight:800; color:var(--accent);" id="nrfSimplePacketsText">0 Paket (Beklemede)</div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.4;" id="nrfSimpleDescText">
+              nRF24L01 modülü takılı olmadığında direksiyon sıfır gecikme ile normal kablolu modda çalışır. Modül takıldığında kablosuz simit tuşları ve aksesuarlar otomatik algılanır.
+            </div>
+            <button class="action-btn btn-ghost" style="flex:0 0 150px; font-size:11px;" onclick="refreshNrf24Status()">DURUMU YENİLE</button>
+          </div>
+
+          <!-- GELİŞTİRİCİ MODU TEKNİK nRF24L01 AYARLARI (NORMAL KULLANICIDAN GİZLİ) -->
+          <div class="dev-only-block" id="nrfDevTechPanel" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:12px; font-weight:900; color:#ffb703; margin-bottom:10px; letter-spacing:0.5px;">
+              GELİŞTİRİCİ MODU — nRF24L01 TEKNİK RF YAPILANDIRMASI VE PİN HARİTASI
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
+              <div>
+                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">MODÜL DURUMU</label>
+                <select class="select-box" id="nrfDevEnableSelect" style="width:100%;">
+                  <option value="1" selected>Etkin (Non-Blocking)</option>
+                  <option value="0">Devre Dışı</option>
+                </select>
+              </div>
+              <div>
+                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">RF KANALI (0-125)</label>
+                <input type="number" class="modal-input" id="nrfDevChannelInput" min="0" max="125" value="76" style="margin-bottom:0; padding:8px 10px; font-family:monospace;">
+              </div>
+              <div>
+                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">VERİ HIZI (DATA RATE)</label>
+                <select class="select-box" id="nrfDevRateSelect" style="width:100%;">
+                  <option value="0">250 kbps (Uzun Menzil)</option>
+                  <option value="1" selected>1 Mbps (Dengeli)</option>
+                  <option value="2">2 Mbps (Düşük Gecikme)</option>
+                </select>
+              </div>
+              <div>
+                <label class="control-name" style="font-size:11px; display:block; margin-bottom:4px;">PA ÇIKIŞ GÜCÜ</label>
+                <select class="select-box" id="nrfDevPaSelect" style="width:100%;">
+                  <option value="0">-18 dBm (Düşük)</option>
+                  <option value="1">-12 dBm (Orta)</option>
+                  <option value="2" selected>-6 dBm (Yüksek)</option>
+                  <option value="3">0 dBm (Maksimum)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px;">
+              <div style="font-family:monospace; font-size:11px; color:#caced8;" id="nrfDevRawDiagText">
+                STATUS_REG: 0xFF | IRQ(PB9): 1 | BTN_MASK: 0x00000000 | FREQ: 2476 MHz
+              </div>
+              <button class="action-btn btn-primary" style="flex:0 0 180px; font-size:11px;" onclick="applyNrf24Config()">RF AYARLARINI UYGULA</button>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.35); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); font-family:monospace; font-size:11px; color:var(--text-muted); line-height:1.5;">
+              <b style="color:#fff;">STM32F411CE Donanım SPI2 Pin Eşleşmesi (Çakışmasız):</b>
+              SCK=<b style="color:#2ecc71;">PB13</b> | MISO=<b style="color:#2ecc71;">PB14</b> | MOSI=<b style="color:#2ecc71;">PB15</b> | CE=<b style="color:#00d2ff;">PB6</b> | CSN=<b style="color:#00d2ff;">PB7</b> | IRQ=<b style="color:#ffb703;">PB9</b><br>
+              <span>Not: PA8 (TIM1 Motor PWM), PA5/PA6/PA7 (ADC1 Pedal Girişleri) ve PB0 (DIN3 Buton) FFB direksiyon tarafından aktif kullanıldığı için nRF24L01 bağımsız SPI2 hattına atanmıştır.</span>
+            </div>
+          </div>
+        </div>
+
         <!-- SECTION 3: GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME -->
         <div class="glass-panel">
           <div class="settings-section-title"> GÖRÜNÜM & ARAYÜZ KİŞİSELLEŞTİRME</div>
@@ -1967,11 +2045,11 @@ Komut girmeye hazir...
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
-              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.14.0 (Production Stable)</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.15.0 (Production Stable)</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">MOTOR ALTYAPISI</div>
-              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">OpenFFBoard Firmware v3.14.0</div>
+              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">OpenFFBoard Firmware v3.15.0</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">GELİŞTİRİCİ</div>
@@ -3051,7 +3129,7 @@ Komut girmeye hazir...
       document.getElementById('hubModalOverlay').classList.remove('active');
     }
 
-    const CURRENT_APP_VERSION = "v3.14.0";
+    const CURRENT_APP_VERSION = "v3.15.0";
     let lastSerialResponse = "";
 
     function showCustomAlert(opts) {
@@ -3484,6 +3562,80 @@ Komut girmeye hazir...
 
       setDeveloperMode(devActive, false);
       refreshFirmwarePaneStatus();
+      refreshNrf24Status();
+    }
+
+    async function refreshNrf24Status() {
+      const pillEl = document.getElementById('nrfStatusPill');
+      const stateEl = document.getElementById('nrfSimpleStateText');
+      const pktEl = document.getElementById('nrfSimplePacketsText');
+      const rawEl = document.getElementById('nrfDevRawDiagText');
+      const enSel = document.getElementById('nrfDevEnableSelect');
+      const chInp = document.getElementById('nrfDevChannelInput');
+      const rateSel = document.getElementById('nrfDevRateSelect');
+      const paSel = document.getElementById('nrfDevPaSelect');
+
+      const api = bridgeApi();
+      if (api && api.get_nrf24_status) {
+        try {
+          const st = await api.get_nrf24_status();
+          if (st && st.success) {
+            if (stateEl) stateEl.innerText = st.summary || 'Standart Kablolu Mod';
+            if (pktEl) pktEl.innerText = `${st.rx_packets || 0} Paket (${st.hw_present ? 'Aktif' : 'Beklemede'})`;
+            if (pillEl) {
+              if (!st.device_connected) {
+                pillEl.innerText = 'CİHAZ BAĞLI DEĞİL';
+                pillEl.style.color = '#ffb703';
+                pillEl.style.background = 'rgba(255,183,3,0.15)';
+              } else if (st.hw_present) {
+                pillEl.innerText = 'MODÜL AKTİF';
+                pillEl.style.color = '#2ecc71';
+                pillEl.style.background = 'rgba(46,204,113,0.15)';
+              } else {
+                pillEl.innerText = 'KABLOLU MOD (nRF24 TAKILI DEĞİL)';
+                pillEl.style.color = 'var(--accent)';
+                pillEl.style.background = 'rgba(0,180,216,0.15)';
+              }
+            }
+            if (enSel) enSel.value = st.enabled ? '1' : '0';
+            if (chInp) chInp.value = st.channel;
+            if (rateSel) rateSel.value = String(st.data_rate);
+            if (paSel) paSel.value = String(st.pa_level);
+            if (rawEl) {
+              const sreg = '0x' + Number(st.status_reg || 0).toString(16).toUpperCase().padStart(2, '0');
+              const bmask = '0x' + Number(st.buttons_mask || 0).toString(16).toUpperCase().padStart(8, '0');
+              rawEl.innerText = `STATUS_REG: ${sreg} | IRQ(PB9): ${st.irq_pin} | BTN_MASK: ${bmask} | FREQ: ${st.freq_mhz} MHz`;
+            }
+            return st;
+          }
+        } catch (e) {}
+      }
+      return null;
+    }
+
+    async function applyNrf24Config() {
+      const enSel = document.getElementById('nrfDevEnableSelect');
+      const chInp = document.getElementById('nrfDevChannelInput');
+      const rateSel = document.getElementById('nrfDevRateSelect');
+      const paSel = document.getElementById('nrfDevPaSelect');
+
+      const en = enSel ? (enSel.value === '1') : true;
+      const ch = chInp ? parseInt(chInp.value || '76', 10) : 76;
+      const rate = rateSel ? parseInt(rateSel.value || '1', 10) : 1;
+      const pa = paSel ? parseInt(paSel.value || '2', 10) : 2;
+
+      const api = bridgeApi();
+      if (api && api.configure_nrf24) {
+        await api.configure_nrf24(en, ch, rate, pa);
+        await refreshNrf24Status();
+      } else if (isConnected) {
+        sendCmd(`sys.nrfen=${en ? 1 : 0};sys.nrfch=${ch};sys.nrfrate=${rate};sys.nrfpa=${pa}`);
+      }
+      showCustomAlert({
+        title: "nRF24L01 AYARLARI KAYDEDİLDİ",
+        subtitle: "KABLOSUZ ALICI YAPILANDIRMASI",
+        content: `nRF24L01 parametreleri güncellendi (Kanal: ${ch} / ${2400 + ch} MHz).`
+      });
     }
 
     function openDeveloperCodeModal() {

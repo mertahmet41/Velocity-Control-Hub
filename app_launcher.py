@@ -78,10 +78,10 @@ def load_version_config(base_dir=None):
             except Exception:
                 pass
     return {
-        "version": "3.14.0",
-        "tag": "v3.14.0",
+        "version": "3.15.0",
+        "tag": "v3.15.0",
         "firmware_prefix": FIRMWARE_PREFIX,
-        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.14.0.hex"
+        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.15.0.hex"
     }
 
 
@@ -1077,6 +1077,135 @@ class HubApi:
         }
         self._update_fw_status(False, "done", 100, ok_msg, error=None, result=res)
         return res
+
+    # ------------------------------------------------------------------
+    # FAZ 2: nRF24L01 2.4GHz Wireless Accessory Receiver Status & Config
+    # ------------------------------------------------------------------
+    def get_nrf24_status(self):
+        """
+        Queries STM32 nRF24L01 status via `sys.nrfstatus?`.
+        Format returned by firmware: present:enabled:channel:rate:pa:rx_count:buttons:irq:status_reg
+        Works seamlessly whether the nRF24L01 module is plugged in or not.
+        """
+        pinout = {
+            "sck": "PB13 (SPI2_SCK)",
+            "miso": "PB14 (SPI2_MISO)",
+            "mosi": "PB15 (SPI2_MOSI)",
+            "ce": "PB6 (GPIO Output)",
+            "csn": "PB7 (GPIO Output)",
+            "irq": "PB9 (GPIO Input, Pull-Up)"
+        }
+        rate_labels = {0: "250 kbps", 1: "1 Mbps", 2: "2 Mbps"}
+        pa_labels = {0: "-18 dBm (Dusuk)", 1: "-12 dBm (Orta)", 2: "-6 dBm (Yuksek)", 3: "0 dBm (Maksimum)"}
+
+        raw = ""
+        device_connected = False
+        if self._sim_hooks and "read_nrf_status" in self._sim_hooks:
+            sim_res = self._sim_hooks["read_nrf_status"]()
+            device_connected = sim_res.get("connected", False)
+            raw = sim_res.get("raw", "")
+        elif self._ser and self._ser.is_open:
+            device_connected = True
+            res = self.serial_send_command("sys.nrfstatus?\n", wait_ms=80)
+            if res.get("success"):
+                raw = res.get("response", "")
+
+        if not device_connected:
+            return {
+                "success": True,
+                "device_connected": False,
+                "hw_present": False,
+                "enabled": True,
+                "channel": 76,
+                "freq_mhz": 2476,
+                "data_rate": 1,
+                "data_rate_label": rate_labels[1],
+                "pa_level": 2,
+                "pa_level_label": pa_labels[2],
+                "rx_packets": 0,
+                "buttons_mask": 0,
+                "irq_pin": 1,
+                "status_reg": 255,
+                "pinout": pinout,
+                "summary": "STM32 cihazi bagli degil"
+            }
+
+        # Parse response like [sys.nrfstatus|1:1:76:1:2:140:0:1:14] or 0:1:76:1:2:0:0:1:255
+        m = re.search(r'(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+)', raw)
+        if m:
+            hw_present = int(m.group(1)) == 1
+            enabled = int(m.group(2)) == 1
+            channel = int(m.group(3))
+            data_rate = int(m.group(4))
+            pa_level = int(m.group(5))
+            rx_packets = int(m.group(6))
+            buttons_mask = int(m.group(7))
+            irq_pin = int(m.group(8))
+            status_reg = int(m.group(9))
+        else:
+            hw_present = False
+            enabled = True
+            channel = 76
+            data_rate = 1
+            pa_level = 2
+            rx_packets = 0
+            buttons_mask = 0
+            irq_pin = 1
+            status_reg = 255
+
+        if not enabled:
+            summary = "Devre Disi (Kullanici tarafindan kapatildi)"
+        elif hw_present:
+            summary = f"Bagli ve Aktif ({2400 + channel} MHz, {rate_labels.get(data_rate, '1 Mbps')})"
+        else:
+            summary = "Modul Takili Degil — Cihaz Standart Kablolu Modda Sorunsuz Calisiyor"
+
+        return {
+            "success": True,
+            "device_connected": True,
+            "hw_present": hw_present,
+            "enabled": enabled,
+            "channel": channel,
+            "freq_mhz": 2400 + channel,
+            "data_rate": data_rate,
+            "data_rate_label": rate_labels.get(data_rate, "1 Mbps"),
+            "pa_level": pa_level,
+            "pa_level_label": pa_labels.get(pa_level, "-6 dBm (Yuksek)"),
+            "rx_packets": rx_packets,
+            "buttons_mask": buttons_mask,
+            "irq_pin": irq_pin,
+            "status_reg": status_reg,
+            "pinout": pinout,
+            "summary": summary
+        }
+
+    def configure_nrf24(self, enabled=True, channel=76, data_rate=1, pa_level=2):
+        """Updates nRF24L01 configuration in settings.json and sends commands to STM32 if connected."""
+        ch = max(0, min(125, int(channel)))
+        rate = max(0, min(2, int(data_rate)))
+        pa = max(0, min(3, int(pa_level)))
+        en = 1 if enabled else 0
+
+        self.save_settings({
+            "nrf24_enabled": bool(en),
+            "nrf24_channel": ch,
+            "nrf24_data_rate": rate,
+            "nrf24_pa_level": pa
+        })
+
+        cmds = [
+            f"sys.nrfen={en}\n",
+            f"sys.nrfch={ch}\n",
+            f"sys.nrfrate={rate}\n",
+            f"sys.nrfpa={pa}\n"
+        ]
+        if self._sim_hooks and "write_nrf_config" in self._sim_hooks:
+            self._sim_hooks["write_nrf_config"](en, ch, rate, pa)
+        elif self._ser and self._ser.is_open:
+            for c in cmds:
+                self.serial_send_command(c, wait_ms=40)
+
+        return self.get_nrf24_status()
 
     # ------------------------------------------------------------------
     # GitHub App Release Update Check
