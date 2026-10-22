@@ -1762,7 +1762,7 @@ Komut girmeye hazir...
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.10.0 (Developer & Production Channel).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.16.0 (Production Channel).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -2192,7 +2192,7 @@ Komut girmeye hazir...
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">BAĞLANTI BEKLENİYOR (USB SERIAL)</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.14.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | OPENFFBOARD ENGINE v3.16.0</div>
   </footer>
 
   <script>
@@ -3406,6 +3406,88 @@ Komut girmeye hazir...
         subtitle: "KALICI DONANIM AYARI",
         content: `Enkoder çözünürlüğü <b>${Math.round(newCpr / 4)} PPR (${newCpr} CPR)</b> olarak kaydedildi. Geliştirici modu kapatılsa dahi bu değer korunur.`
       });
+    }
+
+    function parseVerTupleJs(v) {
+      const m = String(v || '').replace(/^v/i, '').match(/(\d+)\.(\d+)(?:\.(\d+))?/);
+      if (!m) return [0, 0, 0];
+      return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3] || '0', 10)];
+    }
+
+    function isNewerVerJs(candidate, current) {
+      const a = parseVerTupleJs(candidate);
+      const b = parseVerTupleJs(current);
+      for (let i = 0; i < 3; i++) {
+        if (a[i] > b[i]) return true;
+        if (a[i] < b[i]) return false;
+      }
+      return false;
+    }
+
+    async function checkAppUpdates(manual = false) {
+      const autoToggle = document.getElementById('autoUpdateToggle');
+      if (!manual && autoToggle && !autoToggle.checked) return;
+
+      try {
+        let data = null;
+        const api = bridgeApi();
+        if (api && api.check_update) {
+          const res = await api.check_update(CURRENT_APP_VERSION);
+          if (res && res.success) {
+            data = res;
+          }
+        }
+        if (!data) {
+          const resp = await fetch('https://api.github.com/repos/mertahmet41/Velocity-Control-Hub/releases/latest');
+          if (resp.ok) {
+            const rel = await resp.json();
+            const latestTag = rel.tag_name || '';
+            let dlUrl = rel.html_url || 'https://github.com/mertahmet41/Velocity-Control-Hub/releases/latest';
+            if (Array.isArray(rel.assets)) {
+              const exeAsset = rel.assets.find(a => (a.name || '').toLowerCase().endsWith('.exe'));
+              if (exeAsset && exeAsset.browser_download_url) dlUrl = exeAsset.browser_download_url;
+            }
+            data = {
+              has_update: isNewerVerJs(latestTag, CURRENT_APP_VERSION),
+              latest_tag: latestTag,
+              body: rel.body || '',
+              download_url: dlUrl
+            };
+          }
+        }
+
+        if (data && data.has_update) {
+          showHubModal({
+            icon: "",
+            title: `YENİ SÜRÜM MEVCUT (${data.latest_tag})`,
+            subtitle: `MEVCUT SÜRÜM: ${CURRENT_APP_VERSION} -> YENİ: ${data.latest_tag}`,
+            content: `<div style="max-height:180px; overflow-y:auto; font-size:12px; line-height:1.5; color:#caced8; white-space:pre-wrap;">${(data.body || 'Yeni sürüm yayınlandı.').replace(/</g, '&lt;')}</div>`,
+            confirmText: "ŞİMDİ GÜNCELLE",
+            cancelText: "Daha Sonra",
+            onConfirm: () => {
+              startSilentSelfUpdate(data.download_url, data.latest_tag);
+            }
+          });
+        } else if (manual) {
+          showHubModal({
+            icon: "",
+            title: "UYGULAMANIZ GÜNCEL",
+            subtitle: `AKTİF SÜRÜM: ${CURRENT_APP_VERSION}`,
+            content: `Velocity Control Hub en güncel sürümde (${CURRENT_APP_VERSION}) çalışıyor.`,
+            confirmText: "TAMAM"
+          });
+        }
+      } catch (e) {
+        if (manual) {
+          showHubModal({
+            icon: "",
+            title: "GÜNCELLEME DENETLENEMEDİ",
+            subtitle: "BAĞLANTI HATASI",
+            content: "GitHub güncelleme sunucusuna ulaşılamadı. İnternet bağlantınızı kontrol edin.",
+            confirmText: "TAMAM"
+          });
+        }
+      }
     }
 
     async function startSilentSelfUpdate(downloadUrl, targetTag) {

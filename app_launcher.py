@@ -58,10 +58,10 @@ def get_settings_file_path():
 
 def load_version_config(base_dir=None):
     """Single source of truth for application and bundled firmware version."""
-    search_dirs = [base_dir or get_base_dir(), os.path.dirname(os.path.abspath(__file__))]
+    app_dir = os.path.join(get_app_data_dir(), 'app') if not base_dir else None
+    search_dirs = [d for d in [base_dir, app_dir, get_base_dir(), os.path.dirname(os.path.abspath(__file__))] if d]
+    best = None
     for d in search_dirs:
-        if not d:
-            continue
         vpath = os.path.join(d, 'version.json')
         if os.path.exists(vpath):
             try:
@@ -69,14 +69,18 @@ def load_version_config(base_dir=None):
                     data = json.load(f)
                 ver = str(data.get('version', '0.0.0')).lstrip('v')
                 prefix = data.get('firmware_prefix', FIRMWARE_PREFIX)
-                return {
+                cfg = {
                     "version": ver,
                     "tag": f"v{ver}",
                     "firmware_prefix": prefix,
                     "firmware_hex": data.get('firmware_hex', f"{prefix}_v{ver}.hex")
                 }
+                if best is None or is_newer_version(cfg["version"], best["version"]):
+                    best = cfg
             except Exception:
                 pass
+    if best is not None:
+        return best
     return {
         "version": "3.16.0",
         "tag": "v3.16.0",
@@ -1255,15 +1259,40 @@ class HubApi:
 
     def perform_silent_update(self, download_url):
         try:
-            live_html = get_html_path()
+            app_data_dir = os.path.join(get_app_data_dir(), 'app')
+            os.makedirs(app_data_dir, exist_ok=True)
+            live_html = os.path.join(app_data_dir, 'index.html')
             timestamp = int(time.time())
-            html_url = f"https://raw.githubusercontent.com/{REPO}/main/index.html?t={timestamp}"
             headers = {"User-Agent": "VelocityControlHubApp"}
+
+            # 1. Download latest index.html
+            html_url = f"https://raw.githubusercontent.com/{REPO}/main/index.html?t={timestamp}"
             req = urllib.request.Request(html_url, headers=headers)
             with urllib.request.urlopen(req, timeout=15) as resp:
                 new_html = resp.read()
                 with open(live_html, 'wb') as f:
                     f.write(new_html)
+
+            # 2. Download latest version.json and matching versioned .hex file
+            ver_url = f"https://raw.githubusercontent.com/{REPO}/main/version.json?t={timestamp}"
+            try:
+                vreq = urllib.request.Request(ver_url, headers=headers)
+                with urllib.request.urlopen(vreq, timeout=10) as vresp:
+                    vbytes = vresp.read()
+                    with open(os.path.join(app_data_dir, 'version.json'), 'wb') as vf:
+                        vf.write(vbytes)
+                    vdata = json.loads(vbytes.decode('utf-8'))
+                    hex_name = vdata.get('firmware_hex', '')
+                    if hex_name:
+                        hex_url = f"https://raw.githubusercontent.com/{REPO}/main/Firmware/{hex_name}?t={timestamp}"
+                        hreq = urllib.request.Request(hex_url, headers=headers)
+                        with urllib.request.urlopen(hreq, timeout=20) as hresp:
+                            hbytes = hresp.read()
+                            with open(os.path.join(app_data_dir, hex_name), 'wb') as hf:
+                                hf.write(hbytes)
+            except Exception:
+                pass
+
             return {"success": True, "live_html": live_html}
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -1297,7 +1326,7 @@ def get_html_path():
         except Exception:
             return None
 
-    assets = ['pro_wheel.png', 'wheel.png', 'version.json', vcfg["firmware_hex"]]
+    assets = ['pro_wheel.png', 'wheel.png', vcfg["firmware_hex"]]
     for asset in assets:
         src = os.path.join(bundle_dir, asset)
         if not os.path.exists(src):
@@ -1308,6 +1337,24 @@ def get_html_path():
                 shutil.copy2(src, dst)
             except Exception:
                 pass
+
+    # Only copy version.json if app_data_dir has no version.json or bundle is newer
+    bundle_vjson = os.path.join(bundle_dir, 'version.json')
+    app_vjson = os.path.join(app_data_dir, 'version.json')
+    if os.path.exists(bundle_vjson):
+        if not os.path.exists(app_vjson):
+            try:
+                shutil.copy2(bundle_vjson, app_vjson)
+            except Exception:
+                pass
+        else:
+            b_ver = load_version_config(bundle_dir).get("version", "0.0.0")
+            a_ver = load_version_config(app_data_dir).get("version", "0.0.0")
+            if not is_newer_version(a_ver, b_ver) and _digest(bundle_vjson) != _digest(app_vjson):
+                try:
+                    shutil.copy2(bundle_vjson, app_vjson)
+                except Exception:
+                    pass
 
     bundled_html = os.path.join(bundle_dir, 'index.html')
     if not os.path.exists(live_html):
