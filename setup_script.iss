@@ -2,8 +2,8 @@
 [Setup]
 AppId={{9F47C9D2-113B-441A-9721-3DA6D12E08A9}
 AppName=Velocity Control Hub
-AppVersion=3.13.0
-AppVerName=Velocity Control Hub 3.13.0
+AppVersion=3.14.0
+AppVerName=Velocity Control Hub 3.14.0
 AppPublisher=Wumpus
 AppPublisherURL=https://github.com/mertahmet41/Velocity-Control-Hub
 AppSupportURL=https://github.com/mertahmet41/Velocity-Control-Hub
@@ -29,7 +29,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\dist\VelocityControlHub.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\Firmware\OpenFFBoard_F411CE_V3_Profiles.hex"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.14.0.hex"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.14.0.hex"; DestDir: "{app}\Firmware"; Flags: ignoreversion
+Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\version.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\index.html"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\pro_wheel.png"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\amome\Desktop\Direksiyon_Projesi\Velocity-Control-Hub\wheel.png"; DestDir: "{app}"; Flags: ignoreversion
