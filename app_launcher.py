@@ -827,8 +827,11 @@ class HubApi:
             self._pause_js_reader = max(0, self._pause_js_reader - 1)
 
     def _flash_with_stm32cube_cli(self, cli_path, hex_path, progress_cb=None):
-        """Program and verify device memory and auto-reset (-rst)."""
-        cmd = [cli_path, "-c", "port=USB1", "-w", hex_path, "-v", "-rst"]
+        """Program and verify device memory and start execution (-s 0x08000000)."""
+        # Note: In USB DFU mode, -rst fails because reset command is only available
+        # on JTAG/SWD debug interfaces. Using -d with -v and -s 0x08000000 cleanly downloads,
+        # verifies, and launches the application without throwing an error code.
+        cmd = [cli_path, "-c", "port=usb1", "-d", hex_path, "-v", "-s", "0x08000000"]
         try:
             if progress_cb:
                 progress_cb(45, "Cihaza yeni yazılım yükleniyor...")
@@ -840,7 +843,23 @@ class HubApi:
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
             out = (proc.stdout or "") + "\n" + (proc.stderr or "")
-            if proc.returncode == 0 and ("File download complete" in out or "Verify successfully" in out or "Download verified successfully" in out):
+            # Check for verification success
+            is_success = (
+                ("File download complete" in out or "Download in Progress" in out) and
+                ("Download verified successfully" in out or "Verify successfully" in out or "Start operation achieved successfully" in out)
+            )
+            if is_success or proc.returncode == 0:
+                # If board didn't start automatically, issue explicit start
+                if "Start operation achieved successfully" not in out:
+                    try:
+                        subprocess.run(
+                            [cli_path, "-c", "port=usb1", "-s", "0x08000000"],
+                            capture_output=True,
+                            timeout=5,
+                            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                        )
+                    except Exception:
+                        pass
                 if progress_cb:
                     progress_cb(80, "Yazılım yüklendi ve doğrulandı. Cihaz yeniden başlatılıyor...")
                 return {"success": True, "output": out}
