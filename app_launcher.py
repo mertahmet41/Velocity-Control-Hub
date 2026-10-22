@@ -82,10 +82,10 @@ def load_version_config(base_dir=None):
     if best is not None:
         return best
     return {
-        "version": "3.17.0",
-        "tag": "v3.17.0",
+        "version": "3.18.0",
+        "tag": "v3.18.0",
         "firmware_prefix": FIRMWARE_PREFIX,
-        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.17.0.hex"
+        "firmware_hex": f"{FIRMWARE_PREFIX}_v3.18.0.hex"
     }
 
 

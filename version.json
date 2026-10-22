@@ -1,6 +1,6 @@
 {
-  "version": "3.17.0",
-  "tag": "v3.17.0",
+  "version": "3.18.0",
+  "tag": "v3.18.0",
   "firmware_prefix": "OpenFFBoard_F411CE_V3_Profiles",
-  "firmware_hex": "OpenFFBoard_F411CE_V3_Profiles_v3.17.0.hex"
+  "firmware_hex": "OpenFFBoard_F411CE_V3_Profiles_v3.18.0.hex"
 }

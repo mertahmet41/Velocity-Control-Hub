@@ -1,6 +1,6 @@
 # Velocity Control Hub & OpenFFBoard STM32F411CE Firmware
 
-**Sürüm:** v3.17.0  
+**Sürüm:** v3.18.0  
 **Hedef Donanım:** STM32F411CEU6 (WeAct Black Pill V3.1 - 48 Pin)  
 **Motor Sürücü:** BTS7960 (IBT-2) Çift Yönlü H-Köprüsü  
 **Altyapı:** OpenFFBoard Tabanlı Gerçek Zamanlı Force Feedback (1000 Hz USB HID + CDC VCP)
@@ -271,7 +271,7 @@ STM32 kartı USB üzerinden `115200 Baud` sanal seri port (CDC VCP) sağlar. Ba�
 
 | Komut | Açıklama | Örnek Yanıt / Kullanım |
 | :--- | :--- | :--- |
-| `sys.swver?` | Yüklü firmware sürümünü döndürür | `3.17.0` |
+| `sys.swver?` | Yüklü firmware sürümünü döndürür | `3.18.0` |
 | `sys.pedals?` | Gaz, Fren, Debriyaj ve Vites/Buton durumunu tek satırda döndürür (`gas:brake:clutch:btns`) | `-32768:-32768:-32768:0` |
 | `sys.hwtype?` | Donanım hedef adını döndürür | `F411CE` |
 | `sys.dfu=1` | Kartı yazılımsal olarak ROM DFU Bootloader moduna geçirir | Otomatik DFU geçişi |
@@ -311,8 +311,8 @@ python -m PyInstaller --noconfirm --onefile --windowed --name "VelocityControlHu
   --add-data "version.json;." `
   --add-data "pro_wheel.png;." `
   --add-data "wheel.png;." `
-  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.17.0.hex;Firmware" `
-  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.17.0.hex;." `
+  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.18.0.hex;Firmware" `
+  --add-data "Firmware\OpenFFBoard_F411CE_V3_Profiles_v3.18.0.hex;." `
   app_launcher.py
 ```
 
