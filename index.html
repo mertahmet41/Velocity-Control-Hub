@@ -1081,24 +1081,17 @@
 
           <div class="module-item" onclick="switchModule('pedals')">
             <span class="module-icon"></span>
-            <span>GAZ TAKIMI (PEDALLAR)</span>
+            <span>GAZ PEDAL SETİ (KABLOSUZ)</span>
           </div>
 
           <div class="module-item" onclick="switchModule('shifter')">
             <span class="module-icon"></span>
-            <span>VİTES (H-SHIFTER)</span>
+            <span>VİTES SETİ (KABLOSUZ)</span>
           </div>
 
           <div class="module-item" onclick="switchModule('wireless'); refreshNrf24Status();">
             <span class="module-icon"></span>
-            <span>KABLOSUZ BAĞLANTI</span>
-          </div>
-
-          <!-- DYNAMIC SUB-MODULES RENDERED HERE -->
-          <div id="dynamicSubModulesList"></div>
-
-          <div class="module-item add-module-btn" onclick="openAddModal('submodule')">
-            <span>[+] ALT CİHAZ / KABLOSUZ EKLE</span>
+            <span>KABLOSUZ EŞLEŞTİRME</span>
           </div>
         </div>
 
@@ -1549,12 +1542,12 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                   <div>
                     <div style="font-size:13px; font-weight:800; color:#fff;">CİHAZ EŞLEŞTİRME MODU</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Yeni bir kablosuz direksiyon tuş takımı veya vites eşleştirmek için butona tıklayın.</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Yeni bir kablosuz pedal seti veya vites takımı eşleştirmek için butona tıklayın.</div>
                   </div>
-                  <button class="action-btn btn-primary" id="btnNrfPairing" style="padding:10px 18px; font-size:12px;" onclick="startNrfPairingCountdown(15)">EŞLEŞTİRMEYİ BAŞLAT (15 SN)</button>
+                  <button class="action-btn btn-primary" id="btnNrfPairing" style="padding:10px 18px; font-size:12px;" onclick="startNrfPairingCountdown(30)">EŞLEŞTİRMEYİ BAŞLAT (30 SN)</button>
                 </div>
                 <div id="nrfPairingCountdownBox" style="display:none; font-size:12px; font-weight:800; color:#ffb703; padding:8px 12px; background:rgba(255,183,3,0.12); border-radius:6px; border:1px solid rgba(255,183,3,0.3);">
-                  Eşleştirme Modu Aktif: Kalan Süre <span id="nrfPairingSeconds">15</span> saniye — Kablosuz aksesuarınızın eşleştirme tuşuna basılı tutun.
+                  Eşleştirme Modu Aktif: Kalan Süre <span id="nrfPairingSeconds">30</span> saniye — Kablosuz aksesuarınızın ("WPAIR" yayını) enerjisini açın.
                 </div>
               </div>
 
@@ -1602,7 +1595,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v4.1.1 (Kararlı Sürüm).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v5.0.0 (Kararlı Sürüm).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1807,11 +1800,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
-              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v4.1.1 (Kararlı Sürüm)</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v5.0.0 (Kararlı Sürüm)</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">CİHAZ YAZILIM MOTORU</div>
-              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">Velocity Firmware v4.1.1</div>
+              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">Velocity Firmware v5.0.0</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">GELİŞTİRİCİ</div>
@@ -1984,17 +1977,14 @@
 
         <label class="control-name">Eşleştirilecek Aksesuar Türü:</label>
         <select class="select-box modal-input" id="newWirelessType">
-          <option value="pedals">Kablosuz Pedal Seti (Gaz, Fren, Debriyaj)</option>
-          <option value="wheel_rim">Kablosuz Direksiyon Tuş Takımı</option>
-          <option value="handbrake">Kablosuz El Freni</option>
-          <option value="buttonbox">Kablosuz Düğme Kutusu (Button Box)</option>
-          <option value="shifter">Kablosuz Vites Aparatı</option>
+          <option value="pedals">Kablosuz Gaz Pedal Seti (Gaz, Fren, Debriyaj)</option>
+          <option value="shifter">Kablosuz Vites Seti (H-Shifter)</option>
         </select>
 
         <div id="wirelessScanProgressBox" style="display:none; margin:14px 0; padding:12px; background:rgba(0,180,216,0.1); border:1px solid rgba(0,180,216,0.3); border-radius:8px; text-align:center;">
           <div style="font-size:13px; font-weight:800; color:var(--accent); margin-bottom:4px;" id="wirelessScanStatus">Kablosuz Sinyal Aranıyor...</div>
           <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">Aksesuarınızın (Arduino vb.) enerjisini açın ve yayın yapmasını sağlayın.</div>
-          <div style="font-size:15px; font-weight:900; color:#ffb703;" id="wirelessScanCountdown">15 sn</div>
+          <div style="font-size:15px; font-weight:900; color:#ffb703;" id="wirelessScanCountdown">30 sn</div>
         </div>
 
         <button class="action-btn btn-primary" id="btnStartWirelessScan" style="width: 100%;" onclick="scanAndAddWirelessAccessory()">KABLOSUZ CİHAZI ŞİMDİ TARA VE BAĞLA</button>
@@ -2003,7 +1993,7 @@
       <!-- MANUAL TAB -->
       <div id="modalManualPane" style="display: none;">
         <label class="control-name">Cihaz / Aksesuar İsmi:</label>
-        <input type="text" class="modal-input" id="newDevName" placeholder="Örn: El Freni, Düğme Kutusu">
+        <input type="text" class="modal-input" id="newDevName" placeholder="Örn: Kablosuz Pedal, Vites Takımı">
 
         <div class="dev-only-block" style="display: none;">
           <label class="control-name">Geliştirici Cihaz / Pin Kodu:</label>
@@ -2012,11 +2002,8 @@
 
         <label class="control-name">Cihaz Türü:</label>
         <select class="select-box modal-input" id="newDevType">
-          <option value="handbrake">El Freni (Handbrake)</option>
-          <option value="buttonbox">Düğme Kutusu (Button Box)</option>
-          <option value="dashboard">Dijital Gösterge (Dashboard)</option>
-          <option value="pedals">Ayrı Pedal Seti</option>
-          <option value="custom">Özel Aksesuar</option>
+          <option value="pedals">Kablosuz Gaz Pedal Seti</option>
+          <option value="shifter">Kablosuz Vites Seti</option>
         </select>
 
         <button class="action-btn btn-primary" style="width: 100%;" onclick="saveManualDevice()">KAYDET & EKLE</button>
@@ -2072,7 +2059,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">CİHAZ BAĞLANTISI BEKLENİYOR</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | SÜRÜM v4.1.1</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | SÜRÜM v5.0.0</div>
   </footer>
 
   <script>
@@ -2134,9 +2121,6 @@
             </div>
           `;
         }
-        else if (dev.type === "handbrake") imgHtml = `<div class="card-icon"></div>`;
-        else if (dev.type === "buttonbox") imgHtml = `<div class="card-icon"></div>`;
-        else if (dev.type === "dashboard") imgHtml = `<div class="card-icon"></div>`;
         else imgHtml = `<div class="card-icon"></div>`;
 
         card.innerHTML = `
@@ -2160,20 +2144,7 @@
 
     function renderSubModules() {
       const container = document.getElementById("dynamicSubModulesList");
-      container.innerHTML = "";
-      userSubModules.forEach(mod => {
-        const item = document.createElement("div");
-        item.className = "module-item";
-        item.innerHTML = `<span class="module-icon"></span><span>${mod.name}</span>`;
-        item.onclick = () => {
-          document.querySelectorAll('.module-item').forEach(el => el.classList.remove('active'));
-          item.classList.add('active');
-          document.querySelectorAll('.module-pane').forEach(el => el.classList.remove('active'));
-          document.getElementById('module-custom-pane').classList.add('active');
-          document.getElementById('customModuleTitle').innerText = mod.name;
-        };
-        container.appendChild(item);
-      });
+      if (container) container.innerHTML = "";
     }
 
     renderDevices();
@@ -2587,6 +2558,16 @@
       const txtClutch = document.getElementById('txtClutch');
       if (barClutch) barClutch.style.height = clutchPct + '%';
       if (txtClutch) txtClutch.innerText = clutchPct + '%';
+
+      // Update Live Status Badge
+      const statusBadge = document.getElementById('pedalLiveStatusBadge');
+      if (statusBadge) {
+        if (rawGas > 0 || rawBrake > 0 || rawClutch > 0) {
+          statusBadge.innerText = `● KABLOSUZ AKTİF | GAZ: %${gasPct}`;
+          statusBadge.style.background = 'rgba(46, 204, 113, 0.2)';
+          statusBadge.style.color = '#2ecc71';
+        }
+      }
 
       // Update Developer ADC diagnostics as well
       const toAdc12 = (raw) => {
@@ -3062,7 +3043,13 @@
 
     async function sendCmd(cmdStr) {
       if (!isConnected) return;
-      const data = cmdStr + String.fromCharCode(10);
+      let finalCmd = String(cmdStr);
+      // Safety: STM32 sys.nrfpair requires milliseconds! Convert values <= 120 (seconds) to ms.
+      finalCmd = finalCmd.replace(/sys\.nrfpair=(\d+)/g, (match, p1) => {
+        const val = parseInt(p1, 10);
+        return (val > 0 && val <= 120) ? `sys.nrfpair=${val * 1000}` : match;
+      });
+      const data = finalCmd + String.fromCharCode(10);
       try {
         if (bridgeMode) {
           const api = bridgeApi();
@@ -3161,11 +3148,8 @@
       const sel = document.getElementById('newWirelessType');
       const wType = sel ? sel.value : 'pedals';
       const labelMap = {
-        pedals: 'KABLOSUZ PEDAL TAKIMI',
-        wheel_rim: 'KABLOSUZ DİREKSİYON TUŞ TAKIMI',
-        handbrake: 'KABLOSUZ EL FRENİ',
-        buttonbox: 'KABLOSUZ DÜĞME KUTUSU',
-        shifter: 'KABLOSUZ VİTES APARATI'
+        pedals: 'KABLOSUZ GAZ PEDAL TAKIMI',
+        shifter: 'KABLOSUZ VİTES TAKIMI'
       };
       const friendlyName = labelMap[wType] || 'KABLOSUZ AKSESUAR';
 
@@ -3189,15 +3173,15 @@
         } catch(e) {}
       }
 
-      // 2. Start hardware pairing on STM32 for 15 seconds
-      sendCmd("sys.nrfpair=15");
+      // 2. Start hardware pairing on STM32 for 30 seconds (30000 ms)
+      sendCmd("sys.nrfpair=30000");
       if (api && api.start_nrf_pairing) {
-        try { await api.start_nrf_pairing(15); } catch(e) {}
+        try { await api.start_nrf_pairing(30); } catch(e) {}
       }
 
-      let timeLeft = 15;
+      let timeLeft = 30;
       if (countEl) countEl.innerText = `${timeLeft} sn`;
-      if (statusEl) statusEl.innerText = `${friendlyName} aranıyor...`;
+      if (statusEl) statusEl.innerText = `${friendlyName} aranıyor... ("WPAIR" dinleniyor)`;
 
       if (wirelessScanInterval) clearInterval(wirelessScanInterval);
 
@@ -3228,20 +3212,14 @@
           if (progBox) progBox.style.display = 'none';
 
           const devTypeName = newDeviceFound.type_name || friendlyName;
-          const newMod = {
-            id: "submod_nrf_" + newDeviceFound.id,
-            name: devTypeName.toUpperCase(),
-            code: "NRF_0x" + Number(newDeviceFound.id).toString(16).toUpperCase(),
-            type: wType
-          };
-
-          if (!userSubModules.some(m => m.id === newMod.id)) {
-            userSubModules.push(newMod);
-            localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
-            renderSubModules();
-          }
           closeAddModal();
           refreshNrfDevicesList();
+
+          if (wType === 'pedals') {
+            switchModule('pedals');
+          } else if (wType === 'shifter') {
+            switchModule('shifter');
+          }
 
           showHubModal({
             icon: "",
@@ -3262,8 +3240,8 @@
           showHubModal({
             icon: "",
             title: "CİHAZ BULUNAMADI",
-            subtitle: "EŞLEŞTİRME ZAMAN AŞIMI (15 SN)",
-            content: "15 saniye içinde hiçbir kablosuz sinyal algılanamadı.<br><br><b>Kontrol Listesi:</b><br>1. Arduino/aksesuarınızın açık ve yayın yaptığından emin olun.<br>2. nRF24 modülünün 3.3V bacaklarındaki kondansatörü kontrol edin.<br>3. STM32'deki nRF24 alıcısının doğru pinlere bağlı olduğunu doğrulayın.",
+            subtitle: "EŞLEŞTİRME ZAMAN AŞIMI (30 SN)",
+            content: "30 saniye içinde kablosuz sinyal algılanamadı.<br><br><b>Kontrol Listesi:</b><br>1. Arduino'nuzun açık ve 'WPAIR' adresine eşleşme paketi gönderdiğinden emin olun.<br>2. nRF24 modülünün 3.3V bacaklarındaki kondansatörü kontrol edin.<br>3. STM32 nRF24 SPI2 pinlerinin (PB13, PB14, PB15, PB6, PB7) doğru bağlandığını doğrulayın.",
             confirmText: "TEKRAR DENE"
           });
         }
@@ -3425,7 +3403,7 @@
       document.getElementById('hubModalOverlay').classList.remove('active');
     }
 
-    const CURRENT_APP_VERSION = "v4.1.1";
+    const CURRENT_APP_VERSION = "v5.0.0";
     let lastSerialResponse = "";
 
     function showCustomAlert(opts) {
@@ -4445,7 +4423,7 @@
     let pairingTimer = null;
     let pairingSecondsLeft = 0;
 
-    async function startNrfPairingCountdown(seconds = 15) {
+    async function startNrfPairingCountdown(seconds = 30) {
       pairingSecondsLeft = seconds;
       const box = document.getElementById('nrfPairingCountdownBox');
       const secEl = document.getElementById('nrfPairingSeconds');
@@ -4453,7 +4431,7 @@
       if (box) box.style.display = 'block';
       if (btn) btn.disabled = true;
 
-      sendCmd(`sys.nrfpair=${seconds}`);
+      sendCmd(`sys.nrfpair=${seconds * 1000}`);
       const api = bridgeApi();
       if (api && api.start_nrf_pairing) {
         try { await api.start_nrf_pairing(seconds); } catch(e){}
