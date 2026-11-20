@@ -1376,11 +1376,31 @@ class HubApi:
 
     def perform_silent_update(self, download_url=None):
         try:
+            headers = {"User-Agent": "VelocityControlHubApp"}
+
+            # If download_url points to an installer or executable, download and launch installer
+            if download_url and (download_url.lower().endswith(".exe") or "/releases/download/" in download_url):
+                import tempfile
+                temp_dir = tempfile.gettempdir()
+                filename = os.path.basename(download_url.split("?")[0]) or "Velocity_Control_Hub_Setup.exe"
+                if not filename.lower().endswith(".exe"):
+                    filename += ".exe"
+                installer_path = os.path.join(temp_dir, filename)
+
+                req = urllib.request.Request(download_url, headers=headers)
+                with urllib.request.urlopen(req, timeout=60) as resp, open(installer_path, 'wb') as out_f:
+                    shutil.copyfileobj(resp, out_f)
+
+                # Launch installer executable
+                subprocess.Popen([installer_path], shell=True)
+                if self._window:
+                    threading.Timer(0.8, self._window.destroy).start()
+                return {"success": True, "installer": True, "installer_path": installer_path}
+
             app_data_dir = os.path.join(get_app_data_dir(), 'app')
             os.makedirs(app_data_dir, exist_ok=True)
             live_html = os.path.join(app_data_dir, 'index.html')
             timestamp = int(time.time())
-            headers = {"User-Agent": "VelocityControlHubApp"}
 
             # 1. Download latest index.html
             html_url = f"https://raw.githubusercontent.com/{REPO}/main/index.html?t={timestamp}"

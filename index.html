@@ -1602,7 +1602,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <div class="setting-title">Velocity Control Hub Sürümü</div>
-              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v3.18.0 (Kararlı Sürüm).</div>
+              <div class="setting-desc" id="settingAppVersionDesc">Mevcut Sürüm: v4.1.0 (Kararlı Sürüm).</div>
             </div>
             <button class="action-btn btn-ghost" style="flex: 0 0 160px;" onclick="checkAppUpdates(true)">UYGULAMAYI DENETLE</button>
           </div>
@@ -1807,11 +1807,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 12px;">
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">UYGULAMA SÜRÜMÜ</div>
-              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v3.18.0 (Kararlı Sürüm)</div>
+              <div style="color: #fff; font-weight: 800;" id="aboutVersionText">v4.1.0 (Kararlı Sürüm)</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">CİHAZ YAZILIM MOTORU</div>
-              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">Velocity Firmware v3.18.0</div>
+              <div style="color: #00d2ff; font-weight: 800;" id="aboutFirmwareEngineText">Velocity Firmware v4.1.0</div>
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
               <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">GELİŞTİRİCİ</div>
@@ -1965,21 +1965,28 @@
       <!-- WIRELESS TAB (KABLOSUZ BAĞLANTI) -->
       <div id="modalWirelessPane" style="display: none;">
         <div class="auto-scan-box" style="margin-bottom: 14px;">
-          <div style="font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 6px;" id="modalWirelessTitle">Kablosuz Aksesuar & Alt Cihaz Eşleştirme</div>
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 6px;" id="modalWirelessTitle">Kablosuz Aksesuar Eşleştirme (nRF24)</div>
           <div style="color: var(--text-muted); font-size: 12px; line-height: 1.4;" id="modalWirelessStatusDesc">
-            Kablosuz direksiyon tuş takımı, el freni, vites veya düğme kutusunu kablosuz bağlantı üzerinden taratıp ekleyebilirsiniz.
+            Kablosuz pedal seti, direksiyon tuş takımı, el freni veya vites kutunuzu taratıp otomatik eşleştirin.
           </div>
         </div>
 
-        <label class="control-name">Kablosuz Aksesuar Türü:</label>
+        <label class="control-name">Eşleştirilecek Aksesuar Türü:</label>
         <select class="select-box modal-input" id="newWirelessType">
+          <option value="pedals">Kablosuz Pedal Seti (Gaz, Fren, Debriyaj)</option>
           <option value="wheel_rim">Kablosuz Direksiyon Tuş Takımı</option>
           <option value="handbrake">Kablosuz El Freni</option>
           <option value="buttonbox">Kablosuz Düğme Kutusu (Button Box)</option>
           <option value="shifter">Kablosuz Vites Aparatı</option>
         </select>
 
-        <button class="action-btn btn-primary" style="width: 100%;" onclick="scanAndAddWirelessAccessory()">KABLOSUZ CİHAZ TARA VE EKLE</button>
+        <div id="wirelessScanProgressBox" style="display:none; margin:14px 0; padding:12px; background:rgba(0,180,216,0.1); border:1px solid rgba(0,180,216,0.3); border-radius:8px; text-align:center;">
+          <div style="font-size:13px; font-weight:800; color:var(--accent); margin-bottom:4px;" id="wirelessScanStatus">Kablosuz Sinyal Aranıyor...</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">Aksesuarınızın (Arduino vb.) enerjisini açın ve yayın yapmasını sağlayın.</div>
+          <div style="font-size:15px; font-weight:900; color:#ffb703;" id="wirelessScanCountdown">15 sn</div>
+        </div>
+
+        <button class="action-btn btn-primary" id="btnStartWirelessScan" style="width: 100%;" onclick="scanAndAddWirelessAccessory()">KABLOSUZ CİHAZI ŞİMDİ TARA VE BAĞLA</button>
       </div>
 
       <!-- MANUAL TAB -->
@@ -2054,7 +2061,7 @@
       <span class="status-dot" id="footerDot"></span>
       <span id="footerStatusText">CİHAZ BAĞLANTISI BEKLENİYOR</span>
     </div>
-    <div id="footerAppVersionText">VELOCITY CONTROL HUB | SÜRÜM v3.18.0</div>
+    <div id="footerAppVersionText">VELOCITY CONTROL HUB | SÜRÜM v4.1.0</div>
   </footer>
 
   <script>
@@ -3126,10 +3133,24 @@
       if (manualBtn) manualBtn.classList.toggle('active', tab === 'manual');
     }
 
+    let wirelessScanInterval = null;
+
     async function scanAndAddWirelessAccessory() {
+      if (!isConnected) {
+        showHubModal({
+          icon: "",
+          title: "ANA KART BAĞLI DEĞİL",
+          subtitle: "STM32 BAĞLANTI HATASI",
+          content: "Kablosuz cihaz aramak için önce STM32 ana direksiyon kartınızın USB ile bağlı olması gerekir.",
+          confirmText: "TAMAM"
+        });
+        return;
+      }
+
       const sel = document.getElementById('newWirelessType');
-      const wType = sel ? sel.value : 'wheel_rim';
+      const wType = sel ? sel.value : 'pedals';
       const labelMap = {
+        pedals: 'KABLOSUZ PEDAL TAKIMI',
         wheel_rim: 'KABLOSUZ DİREKSİYON TUŞ TAKIMI',
         handbrake: 'KABLOSUZ EL FRENİ',
         buttonbox: 'KABLOSUZ DÜĞME KUTUSU',
@@ -3137,30 +3158,105 @@
       };
       const friendlyName = labelMap[wType] || 'KABLOSUZ AKSESUAR';
 
-      const st = await refreshNrf24Status(false);
-      const newMod = {
-        id: "submod_w_" + Date.now(),
-        name: friendlyName,
-        code: "KABLOSUZ",
-        type: wType
-      };
-      if (!userSubModules.some(m => m.name === friendlyName)) {
-        userSubModules.push(newMod);
-        localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
-        renderSubModules();
-      }
-      closeAddModal();
+      const btn = document.getElementById('btnStartWirelessScan');
+      const progBox = document.getElementById('wirelessScanProgressBox');
+      const countEl = document.getElementById('wirelessScanCountdown');
+      const statusEl = document.getElementById('wirelessScanStatus');
 
-      const receiverActive = st && st.hw_present;
-      showHubModal({
-        icon: "",
-        title: receiverActive ? "KABLOSUZ AKSESUAR EŞLEŞTİRİLDİ" : "KABLOSUZ AKSESUAR EKLENDİ",
-        subtitle: "KABLOSUZ BAĞLANTI",
-        content: receiverActive
-          ? `<b>${friendlyName}</b> kablosuz alıcı üzerinden algılandı ve direksiyon sisteminize eklendi.`
-          : `<b>${friendlyName}</b> sol menüye eklendi. Cihazınıza kablosuz alıcı taktığınızda otomatik olarak aktifleşecektir.`,
-        confirmText: "TAMAM"
-      });
+      if (btn) { btn.disabled = true; btn.innerText = "KABLOSUZ CİHAZ TARANIYOR..."; }
+      if (progBox) progBox.style.display = 'block';
+
+      // 1. Get initial paired devices to detect any newly paired device
+      const api = bridgeApi();
+      let initialIds = new Set();
+      if (api && api.get_nrf_devices) {
+        try {
+          const res = await api.get_nrf_devices();
+          if (res && res.devices) {
+            res.devices.forEach(d => initialIds.add(d.id));
+          }
+        } catch(e) {}
+      }
+
+      // 2. Start hardware pairing on STM32 for 15 seconds
+      sendCmd("sys.nrfpair=15");
+      if (api && api.start_nrf_pairing) {
+        try { await api.start_nrf_pairing(15); } catch(e) {}
+      }
+
+      let timeLeft = 15;
+      if (countEl) countEl.innerText = `${timeLeft} sn`;
+      if (statusEl) statusEl.innerText = `${friendlyName} aranıyor...`;
+
+      if (wirelessScanInterval) clearInterval(wirelessScanInterval);
+
+      wirelessScanInterval = setInterval(async () => {
+        timeLeft--;
+        if (countEl) countEl.innerText = `${timeLeft} sn`;
+
+        // Check if any device has paired
+        let newDeviceFound = null;
+        if (api && api.get_nrf_devices) {
+          try {
+            const res = await api.get_nrf_devices();
+            if (res && res.devices) {
+              for (const dev of res.devices) {
+                if (!initialIds.has(dev.id)) {
+                  newDeviceFound = dev;
+                  break;
+                }
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (newDeviceFound) {
+          clearInterval(wirelessScanInterval);
+          wirelessScanInterval = null;
+          if (btn) { btn.disabled = false; btn.innerText = "KABLOSUZ CİHAZI ŞİMDİ TARA VE BAĞLA"; }
+          if (progBox) progBox.style.display = 'none';
+
+          const devTypeName = newDeviceFound.type_name || friendlyName;
+          const newMod = {
+            id: "submod_nrf_" + newDeviceFound.id,
+            name: devTypeName.toUpperCase(),
+            code: "NRF_0x" + Number(newDeviceFound.id).toString(16).toUpperCase(),
+            type: wType
+          };
+
+          if (!userSubModules.some(m => m.id === newMod.id)) {
+            userSubModules.push(newMod);
+            localStorage.setItem("ghub_submodules", JSON.stringify(userSubModules));
+            renderSubModules();
+          }
+          closeAddModal();
+          refreshNrfDevicesList();
+
+          showHubModal({
+            icon: "",
+            title: "KABLOSUZ AKSESUAR EŞLEŞTİRİLDİ!",
+            subtitle: "DONANIM DOĞRULANDI",
+            content: `<b>${devTypeName}</b> (ID: 0x${Number(newDeviceFound.id).toString(16).toUpperCase()}) başarıyla algılandı ve direksiyon sisteminize eklendi!`,
+            confirmText: "HARİKA"
+          });
+          return;
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(wirelessScanInterval);
+          wirelessScanInterval = null;
+          if (btn) { btn.disabled = false; btn.innerText = "KABLOSUZ CİHAZI ŞİMDİ TARA VE BAĞLA"; }
+          if (progBox) progBox.style.display = 'none';
+
+          showHubModal({
+            icon: "",
+            title: "CİHAZ BULUNAMADI",
+            subtitle: "EŞLEŞTİRME ZAMAN AŞIMI (15 SN)",
+            content: "15 saniye içinde hiçbir kablosuz sinyal algılanamadı.<br><br><b>Kontrol Listesi:</b><br>1. Arduino/aksesuarınızın açık ve yayın yaptığından emin olun.<br>2. nRF24 modülünün 3.3V bacaklarındaki kondansatörü kontrol edin.<br>3. STM32'deki nRF24 alıcısının doğru pinlere bağlı olduğunu doğrulayın.",
+            confirmText: "TEKRAR DENE"
+          });
+        }
+      }, 1000);
     }
 
     async function autoDetectUsbDevice() {
@@ -3318,7 +3414,7 @@
       document.getElementById('hubModalOverlay').classList.remove('active');
     }
 
-    const CURRENT_APP_VERSION = "v3.18.0";
+    const CURRENT_APP_VERSION = "v4.1.0";
     let lastSerialResponse = "";
 
     function showCustomAlert(opts) {
