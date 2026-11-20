@@ -82,8 +82,8 @@ def load_version_config(base_dir=None):
     if best is not None:
         return best
     return {
-        "version": "4.0.0",
-        "tag": "v4.0.0",
+        "version": "5.0.0",
+        "tag": "v5.0.0",
         "firmware_prefix": FIRMWARE_PREFIX,
         "firmware_hex": f"{FIRMWARE_PREFIX}_v4.0.0.hex"
     }
@@ -553,7 +553,14 @@ class HubApi:
         if self._ser is None or not self._alive:
             return {"success": False, "error": "bagli degil"}
         try:
-            self._ser.write(str(text).encode("utf-8"))
+            txt = str(text)
+            # Auto-convert sys.nrfpair=<sec> (where sec <= 120) to milliseconds for STM32 firmware
+            m = re.search(r"sys\.nrfpair=(\d+)", txt)
+            if m:
+                val = int(m.group(1))
+                if 0 < val <= 120:
+                    txt = txt.replace(f"sys.nrfpair={val}", f"sys.nrfpair={val * 1000}")
+            self._ser.write(txt.encode("utf-8"))
             return {"success": True}
         except Exception as e:
             self._alive = False
@@ -1285,12 +1292,13 @@ class HubApi:
     # ------------------------------------------------------------------
     # Wireless (nRF24) Pairing & Unpairing
     # ------------------------------------------------------------------
-    def start_nrf_pairing(self, timeout_s: int = 15):
-        """Puts firmware into wireless pairing mode for specified duration in seconds."""
-        t = max(5, min(60, int(timeout_s)))
+    def start_nrf_pairing(self, timeout_s: int = 30):
+        """Puts firmware into wireless pairing mode for specified duration in seconds (sends ms to STM32)."""
+        t = max(5, min(120, int(timeout_s)))
+        ms = t * 1000 if t <= 120 else t
         if self._ser is not None and self._alive:
-            self.serial_write(f"sys.nrfpair={t}\n")
-        return {"success": True, "timeout_s": t}
+            self.serial_write(f"sys.nrfpair={ms}\n")
+        return {"success": True, "timeout_s": t, "timeout_ms": ms}
 
     def unpair_nrf_device(self, device_id: int):
         """Unpairs and deletes a paired device ID from firmware flash."""
