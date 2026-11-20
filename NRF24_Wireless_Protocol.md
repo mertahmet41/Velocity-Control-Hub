@@ -21,7 +21,7 @@ nRF24L01+ modulu STM32F411 uzerinde donanim SPI2 veri yoluna ve kesme pinine bag
 - **Tasiyici Frekans:** 2476 MHz (Kanal 76 - Wi-Fi 2.4 GHz bandindaki kirliligi onlemek icin 2.483 GHz altina secilmistir)
 - **Veri Hizi (Data Rate):** 1 Mbps (Dengeli menzil ve yuksek paket basarimi)
 - **Cikis Gucu (PA Level):** -6 dBm (Yuksek)
-- **Adres Uzunlugu:** 5 Bayt (Standart adres: `0xE7E7E7E7E7`, Eslestirme adresi: `0xB0B0B0B0B0`)
+- **Adres Uzunlugu:** 5 Bayt (Standart adres: `0xE7E7E7E7E7`, Eslestirme adresi: `"WPAIR"` (`0x57, 0x50, 0x41, 0x49, 0x52`))
 - **Dahili CRC:** 16-bit Hardware CRC (nRF24 CONFIG register)
 - **Otomatik Onay (Auto-ACK):** Aktif (Dinamik ACK)
 - **Yeniden Deneme:** 3 tekrar, 500 us gecikme (ARD=0x01, ARC=0x03)
@@ -120,12 +120,11 @@ Tum RF paketleri sabit 16 bayt uzunlugundadir. Bu sabit boyut, nRF24 modulleri a
 ## 5. Eslestirme (Pairing) ve Silme (Unpairing) Proseduru
 
 ### Eslestirme Akisi
-1. Kullanici Velocity Control Hub uzerinden veya seri konsoldan `sys.nrfpair=15` komutunu calistirir.
-2. Ana kart 15 saniyelik bir eslestirme penceresi acar. Bu sirada durum ledi zümrüt renkte yanar.
-3. Yeni kablosuz aksesuar, `MSG_TYPE = 0x02 (PAIR_REQ)` iceren paketini yayinlar.
+1. Kullanici Velocity Control Hub uzerinden "+ CİHAZ / KABLOSUZ EKLE" butonu ile eslestirmeyi baslatir veya seri konsoldan `sys.nrfpair=30000` (milisaniye cinsinden 30 saniye) komutunu gonderir.
+2. Ana kart 30 saniyelik bir eslestirme penceresi acar ve Pipe 1 ("WPAIR") uzerinden dinlemeye baslar.
+3. Yeni kablosuz aksesuar, `MSG_TYPE = 0x02 (PAIR_REQ)` iceren paketini "WPAIR" adresine yayinlar.
 4. Ana kart paketi alir, cihazin benzersiz 32-bit ID'sini ve cihaz tipini kalici flash tablosuna kaydeder.
-5. Cihaza `MSG_TYPE = 0x03 (PAIR_ACK)` paketi ile onay doner.
-6. Cihaz normal telemetri moduna gecer.
+5. Cihaz artik taninmistir ve Pipe 0 (`0xE7E7E7E7E7`) uzerinden telemetri (`MSG_TYPE = 0x01`) verilerini gondermeye baslar. STM32 bu verileri `sys.pedals?` veya HID eksenleri uzerinden uygulamaya aktarir.
 
 ### Cihaz Silme (Unpair) Akisi
 1. Kullanici arayuzden cihaz yanindaki "Eslesmeyi Kaldir" butonuna tiklar veya seri porttan `sys.nrfunpair=<DEV_ID>` gonderir.
