@@ -1,6 +1,6 @@
 # Velocity Control Hub & OpenFFBoard STM32F411CE Firmware
 
-**Sürüm:** v4.1.1  
+**Sürüm:** v5.0.0  
 **Hedef Donanım:** STM32F411CEU6 (WeAct Black Pill V3.1 - 48 Pin)  
 **Motor Sürücü:** BTS7960 (IBT-2) Çift Yönlü H-Köprüsü  
 **Altyapı:** OpenFFBoard Tabanlı Gerçek Zamanlı Force Feedback (1000 Hz USB HID + CDC VCP)
