@@ -2,8 +2,8 @@
 [Setup]
 AppId={{9F47C9D2-113B-441A-9721-3DA6D12E08A9}
 AppName=Velocity Control Hub
-AppVersion=4.1.1
-AppVerName=Velocity Control Hub 4.1.1
+AppVersion=5.0.0
+AppVerName=Velocity Control Hub 5.0.0
 AppPublisher=Wumpus
 AppPublisherURL=https://github.com/mertahmet41/Velocity-Control-Hub
 AppSupportURL=https://github.com/mertahmet41/Velocity-Control-Hub
