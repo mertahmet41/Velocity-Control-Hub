@@ -1038,7 +1038,7 @@
     </div>
 
     <div class="header-right">
-      <button class="btn-add-device" onclick="openAddModal('device')">+ CİHAZ / KABLOSUZ EKLE</button>
+      <button class="btn-add-device" onclick="openAddModal('wireless')">+ CİHAZ / KABLOSUZ EKLE</button>
     </div>
   </header>
 
@@ -1072,7 +1072,7 @@
 
       <div class="device-studio-layout">
         
-        <!-- VERTICAL LEFT SUB-NAVBAR FOR INTEGRATED MODULES -->
+        <!-- VERTICAL LEFT SUB-NAVBAR FOR INTEGRATED MODULES (SADELEŞTİRİLMİŞ: SADECE 3 ANA MODÜL) -->
         <div class="module-sidebar">
           <div class="module-item active" onclick="switchModule('wheel')">
             <span class="module-icon"></span>
@@ -1087,11 +1087,6 @@
           <div class="module-item" onclick="switchModule('shifter')">
             <span class="module-icon"></span>
             <span>VİTES SETİ (KABLOSUZ)</span>
-          </div>
-
-          <div class="module-item" onclick="switchModule('wireless'); refreshNrf24Status();">
-            <span class="module-icon"></span>
-            <span>KABLOSUZ EŞLEŞTİRME</span>
           </div>
         </div>
 
@@ -1430,12 +1425,33 @@
                               </div>
           </div>
 
-          <!-- 2. GAZ TAKIMI (PEDALLAR) MODÜLÜ -->
+          <!-- 2. GAZ PEDAL SETİ (KABLOSUZ) MODÜLÜ -->
           <div class="module-pane" id="module-pedals">
             <div class="glass-panel">
               <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>3'LÜ PRO PEDAL TAKIMI</span>
+                <span>PRO PEDAL TAKIMI (KABLOSUZ nRF24)</span>
                 <span id="pedalLiveStatusBadge" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:4px 10px; border-radius:6px; font-weight:800;">CANLI OKUMA HAZIR</span>
+              </div>
+
+              <!-- KABLOSUZ EŞLEŞTİRME VE BAĞLANTI KARTI -->
+              <div style="background:rgba(0, 180, 216, 0.08); border:1px solid rgba(0, 180, 216, 0.25); padding:16px 20px; border-radius:12px; margin-bottom:24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-size:14px; font-weight:900; color:#fff; display:flex; align-items:center; gap:8px;">
+                      <span>📡</span> KABLOSUZ PEDAL EŞLEŞTİRME (nRF24 2.4 GHz)
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                      Arduino vericinizi direksiyon ana kartına bağlamak için eşleştirmeyi başlatın.
+                    </div>
+                  </div>
+                  <button class="action-btn btn-primary" id="btnNrfPairing" style="padding:10px 20px; font-size:12px; font-weight:900;" onclick="startNrfPairingCountdown(30)">
+                    📡 EŞLEŞTİRMEYİ BAŞLAT (30 SN)
+                  </button>
+                </div>
+
+                <div id="nrfPairingCountdownBox" style="display:none; margin-top:14px; font-size:13px; font-weight:800; color:#ffb703; padding:10px 14px; background:rgba(255,183,3,0.14); border-radius:8px; border:1px solid rgba(255,183,3,0.35); text-align:center;">
+                  ⏳ Eşleştirme Modu Aktif: Kalan Süre <span id="nrfPairingSeconds">30</span> saniye — Arduino'nuzun enerjisini verin (STM32 "WPAIR" borusunu dinliyor).
+                </div>
               </div>
               
               <div class="pedals-stage">
@@ -1500,7 +1516,20 @@
           <!-- 3. VİTES (H-SHIFTER) MODÜLÜ -->
           <div class="module-pane" id="module-shifter">
             <div class="glass-panel shifter-stage">
-              <div class="section-title">6+R H-SHIFTER VİTES MODÜLÜ</div>
+              <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>6+R H-SHIFTER VİTES MODÜLÜ (KABLOSUZ)</span>
+                <span id="shifterLiveStatusBadge" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:4px 10px; border-radius:6px; font-weight:800;">HAZIR</span>
+              </div>
+
+              <!-- KABLOSUZ VİTES EŞLEŞTİRME KARTI -->
+              <div style="background:rgba(0, 180, 216, 0.08); border:1px solid rgba(0, 180, 216, 0.25); padding:14px 18px; border-radius:10px; margin: 18px 0; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:13px; font-weight:800; color:#fff;">KABLOSUZ VİTES EŞLEŞTİRME</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Kablosuz vites aparatı için STM32 eşleştirme modunu başlatın.</div>
+                </div>
+                <button class="action-btn btn-primary" style="padding:8px 16px; font-size:12px;" onclick="startNrfPairingCountdown(30)">VİTESİ EŞLEŞTİR (30 SN)</button>
+              </div>
+
               <div style="font-size: 32px; font-weight: 900; color: var(--accent); margin: 20px 0;" id="activeGearBadge">AKTİF VİTES: BOŞTA (N)</div>
 
               <div style="display: flex; gap: 14px; margin-top: 20px;">
@@ -1515,67 +1544,6 @@
               <div style="color: var(--text-muted); font-size: 12px; margin-top: 22px;">
                 Vites geçişleri cihaz bağlıyken gerçek zamanlı olarak burada görüntülenir.
               </div>
-            </div>
-          </div>
-
-          <!-- 4. KABLOSUZ BAĞLANTI (WIRELESS ACCESSORIES) MODÜLÜ -->
-          <div class="module-pane" id="module-wireless">
-            <div class="glass-panel">
-              <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>KABLOSUZ AKSESUARLAR</span>
-                <span id="nrfStatusPill" style="font-size:11px; background:rgba(0,180,216,0.15); color:var(--accent); padding:4px 10px; border-radius:6px; font-weight:800;">KABLOLU MOD</span>
-              </div>
-
-              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:18px;">
-                <div style="background:rgba(0,0,0,0.28); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
-                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">KABLOSUZ BAĞLANTI DURUMU</div>
-                  <div style="font-size:15px; font-weight:800; color:#fff;" id="nrfSimpleStateText">Kablolu Mod Aktif</div>
-                </div>
-                <div style="background:rgba(0,0,0,0.28); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
-                  <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">EŞLEŞMİŞ CİHAZ SAYISI</div>
-                  <div style="font-size:15px; font-weight:800; color:var(--accent);" id="nrfPairedCountText">0 Cihaz Kayıtlı</div>
-                </div>
-              </div>
-
-              <!-- EŞLEŞTİRME BUTONU VE GERİ SAYIM -->
-              <div style="background:rgba(0, 180, 216, 0.08); border:1px solid rgba(0, 180, 216, 0.25); padding:16px; border-radius:10px; margin-bottom:18px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                  <div>
-                    <div style="font-size:13px; font-weight:800; color:#fff;">CİHAZ EŞLEŞTİRME MODU</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Yeni bir kablosuz pedal seti veya vites takımı eşleştirmek için butona tıklayın.</div>
-                  </div>
-                  <button class="action-btn btn-primary" id="btnNrfPairing" style="padding:10px 18px; font-size:12px;" onclick="startNrfPairingCountdown(30)">EŞLEŞTİRMEYİ BAŞLAT (30 SN)</button>
-                </div>
-                <div id="nrfPairingCountdownBox" style="display:none; font-size:12px; font-weight:800; color:#ffb703; padding:8px 12px; background:rgba(255,183,3,0.12); border-radius:6px; border:1px solid rgba(255,183,3,0.3);">
-                  Eşleştirme Modu Aktif: Kalan Süre <span id="nrfPairingSeconds">30</span> saniye — Kablosuz aksesuarınızın ("WPAIR" yayını) enerjisini açın.
-                </div>
-              </div>
-
-              <!-- EŞLEŞMİŞ CİHAZLAR LİSTESİ -->
-              <div style="background:rgba(0,0,0,0.25); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                  <div style="font-size:13px; font-weight:800; color:#fff;">KAYITLI KABLOSUZ CİHAZLAR</div>
-                  <button class="action-btn btn-ghost" style="padding:4px 10px; font-size:11px;" onclick="refreshNrfDevicesList()">LİSTEYİ YENİLE</button>
-                </div>
-
-                <div id="nrfPairedDevicesList" style="display:flex; flex-direction:column; gap:8px;">
-                  <div style="font-size:12px; color:var(--text-muted); padding:10px 0; text-align:center;">
-                    Henüz eşleşmiş bir kablosuz cihaz bulunmuyor.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- DYNAMIC CUSTOM SUBMODULE CONTENT CONTAINER -->
-          <div class="module-pane" id="module-custom-pane">
-            <div class="glass-panel" style="text-align: center; padding: 48px 20px;">
-              <div style="font-size: 40px; margin-bottom: 12px;"></div>
-              <div style="font-size: 18px; font-weight: 800; margin-bottom: 8px;" id="customModuleTitle">ÖZEL ALT MODÜL</div>
-              <div style="color: var(--text-muted); font-size: 13px; max-width: 480px; margin: 0 auto 24px auto;">
-                Bu alt donanım cihazınızın girişlerine bağlıdır. Giriş kalibrasyonu ve tuş atamalarını buradan yapabilirsiniz.
-              </div>
-              <button class="action-btn btn-ghost" style="max-width: 200px; margin: 0 auto;" onclick="showCustomAlert({title:'ALT CİHAZ AKTİF', subtitle:'BAĞLANTI DOĞRULANDI', content:'Alt cihaz sinyalleri aktif olarak dinleniyor.'})">SİNYALİ TEST ET</button>
             </div>
           </div>
 
@@ -2169,6 +2137,9 @@
     }
 
     function switchModule(moduleName) {
+      if (moduleName === 'wireless') {
+        moduleName = 'pedals';
+      }
       document.querySelectorAll('.module-pane').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.module-item').forEach(el => el.classList.remove('active'));
 
@@ -2179,10 +2150,6 @@
       if (moduleName === 'wheel') items[0]?.classList.add('active');
       if (moduleName === 'pedals') items[1]?.classList.add('active');
       if (moduleName === 'shifter') items[2]?.classList.add('active');
-      if (moduleName === 'wireless') {
-        items[3]?.classList.add('active');
-        refreshNrf24Status(false);
-      }
     }
 
     function switchSubPane(paneName) {
